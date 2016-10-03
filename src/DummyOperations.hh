@@ -3,6 +3,7 @@
 #include "Definitions.hh"
 #include "General.hh"
 #include "IOperation.hh"
+#include "ICfgNode.hh"
 #include "IState.hh"
 #include "StateStorage.hh"
 #include "DummyState.hh"

@@ -34,7 +34,7 @@ public:
   virtual ICfgNode& GetNext() const = 0;
   virtual ICfgNode& GetNextTrue() const = 0;
   virtual ICfgNode& GetNextFalse() const = 0;
-  virtual const ref_vector<ICfgNode> GetPrevs() const = 0;
+  virtual const ref_vector<ICfgNode>& GetPrevs() const = 0;
 
   virtual StateManger GetStates() = 0;
   virtual void GetDebugInfo() const = 0;
@@ -66,6 +66,7 @@ protected:
   /*ctr*/ ICfgNode(ICfgNode* next) : next{next}, prevs{} {}
   /*ctr*/ ICfgNode(ref_vector<ICfgNode> prevs) : next{nullptr}, prevs{prevs} {}
   /*ctr*/ ICfgNode(ICfgNode* next, ref_vector<ICfgNode> prevs) : next{next}, prevs{prevs} {}
+  /*dst*/ virtual ~ICfgNode() = default;
 };
 
 
@@ -74,19 +75,19 @@ class StartCfgNode : public ICfgNode {
   friend LlvmCfgNode;
 public:
   ICfgNode& GetNext() const override { return *next; }
-  ICfgNode& GetNextTrue() const override { throw runtime_error{"NS"}; }
-  ICfgNode& GetNextFalse() const override { throw runtime_error{"NS"}; }
-  const ref_vector<ICfgNode> GetPrevs() const override { throw runtime_error{"NS"}; }
+  ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
+  ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
+  const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
 
-  StateManger GetStates() override { throw runtime_error{"NS"}; }
-  void GetDebugInfo() const override { throw runtime_error{"NS"}; }
-  vector<InstrArg> GetArguments() const override { throw runtime_error{"NS"}; }
+  StateManger GetStates() override { throw NotSupportedException{}; }
+  void GetDebugInfo() const override { throw NotSupportedException{}; }
+  vector<InstrArg> GetArguments() const override { throw NotSupportedException{}; }
 
   bool IsStartNode() override { return true; }
 
   void Execute(IState& s, const vector<InstrArg>& args) override
   {
-    throw runtime_error{"NS"};
+    throw NotSupportedException{};
   }
 
 private:
@@ -97,20 +98,20 @@ class TerminalCfgNode : public ICfgNode {
   friend CfgNode;
   friend LlvmCfgNode;
 public:
-  ICfgNode& GetNext() const override { throw runtime_error{"NS"}; }
-  ICfgNode& GetNextTrue() const override { throw runtime_error{"NS"}; }
-  ICfgNode& GetNextFalse() const override { throw runtime_error{"NS"}; }
-  const ref_vector<ICfgNode> GetPrevs() const override { return prevs; }
+  ICfgNode& GetNext() const override { throw NotSupportedException{}; }
+  ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
+  ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
+  const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  StateManger GetStates() override { throw runtime_error{"NS"}; }
-  void GetDebugInfo() const override { throw runtime_error{"NS"}; }
-  vector<InstrArg> GetArguments() const override { throw runtime_error{"NS"}; }
+  StateManger GetStates() override { throw NotSupportedException{}; }
+  void GetDebugInfo() const override { throw NotSupportedException{}; }
+  vector<InstrArg> GetArguments() const override { throw NotSupportedException{}; }
 
   bool IsTerminalNode() override { return true; }
 
   void Execute(IState& s, const vector<InstrArg>& args) override
   {
-    throw runtime_error{"NS"};
+    throw NotSupportedException{};
   }
 
 private:
@@ -118,12 +119,6 @@ private:
 };
 
 
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Instructions.h>
-#include <llvm/IRReader/IRReader.h>
-#include <llvm/Support/SourceMgr.h>
-
-//uses llvm::Instruction*
 class CfgNode : public ICfgNode {
 private:
   IOperation& op;
@@ -144,7 +139,8 @@ public:
       throw runtime_error("not branch");
     return *nextFalse;
   }
-  const ref_vector<ICfgNode> GetPrevs() const override { return prevs; }
+
+  const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
   void Execute(IState& s, const vector<InstrArg>& args) override
   {
@@ -162,7 +158,7 @@ protected:
 
   // ---------------------- for dev needs only ---------------------------- //
 public:
-  virtual void GetDebugInfo() const override { throw runtime_error("not implemented"); }
+  virtual void GetDebugInfo() const override { throw NotImplementedException{}; }
 
   static CfgNode& CreateNode(IOperation& op)
   {
@@ -182,86 +178,3 @@ public:
   // ---------------------- for dev needs only ---------------------------- //
 };
 
-
-class LlvmCfgNode : public CfgNode {
-private:
-  const llvm::Instruction& innerInstruction;
-  //const vector<InstrArg> 
-
-  /*ctr*/ LlvmCfgNode(IOperation& op, vector<InstrArg> args,
-    const llvm::Instruction& inner,
-    ICfgNode& prev,
-    ICfgNode& next
-  ) :
-    innerInstruction{inner},
-    CfgNode(op, prev, next) {
-  }
-
-
-
-public:
-
-  virtual void GetDebugInfo() const override { throw runtime_error("not implemented"); }
-  virtual vector<InstrArg> GetArguments() const override { return vector<InstrArg>(); }
-
-  static LlvmCfgNode& CreateNode(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
-  {
-    LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *new StartCfgNode{}, *new TerminalCfgNode{}};
-    ((ICfgNode&)newNode->prevs[0]).next = newNode;
-    newNode->next->prevs.push_back(*newNode);
-    return *newNode;
-  }
-
-  //beware - adding a node after terminal node here(after inproper cast) would not raise exception
-  //same applies for similar linking manipulation
-
-  LlvmCfgNode& InsertNewAfter(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
-  {
-    LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
-    this->next = newNode;
-    return *newNode;
-  }
-
-  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
-  {
-    LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
-    newNode->nextFalse = new TerminalCfgNode{};
-    this->next = newNode;
-    return *newNode;
-  }
-
-  static void LinkTogetherTrue(ICfgNode& prev, ICfgNode& next)
-  {
-    if (prev.next->next != nullptr)
-      throw runtime_error("prev Node has a succesor other then terminal node");
-    prev.next = &next;
-    next.prevs.push_back(next);
-  }
-
-  static void LinkTogetherFalse(ICfgNode& prev, ICfgNode& next)
-  {
-    if (prev.nextFalse->next != nullptr)
-      throw runtime_error("prev Node has a succesor other then terminal node");
-    prev.nextFalse = &next;
-    next.prevs.push_back(next);
-  }
-
-  static void LinkTogether(ICfgNode& prev, ICfgNode& next)
-  {
-    LinkTogetherTrue(prev, next);
-  }
-
-  //target index specifies target when multi-target node is concenrned
-  //0 -> true
-  //1 -> false
-  //as per LLVM's getSuccessor()
-  static void LinkTogether(ICfgNode& prev, ICfgNode& next, unsigned int targetIndex)
-  {
-    if (targetIndex == 0)
-      LinkTogetherTrue(prev, next);
-    else if (targetIndex == 1)
-      LinkTogetherFalse(prev, next);
-    else
-      throw runtime_error("unsupported targetIndex value");
-  }
-};

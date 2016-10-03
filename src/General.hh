@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-using namespace ::std;
-
 class ValueId {
   uint64_t inner;
 public:

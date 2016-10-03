@@ -3,8 +3,6 @@
 #include "Definitions.hh"
 #include "General.hh"
 
-using namespace ::std;
-
 class ValueRep {
 public:
   ValueType type;

@@ -7,14 +7,12 @@
 #include "Values.hh"
 #include "IState.hh"
 
-using namespace ::std;
-
 typedef int DummyValueId;
 
 class DummyState : public IState {
 private:
-  map<ValueId, ValueRep> globalVarMapping;
-  map<ValueId, ValueRep> varMapping;
+  std::map<ValueId, ValueRep> globalVarMapping;
+  std::map<ValueId, ValueRep> varMapping;
 
 public:
   virtual void AddGlobalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) override
@@ -29,15 +27,21 @@ public:
 
   virtual void DelLocalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
-    throw runtime_error("not implemented");
+    throw NotImplementedException{"DelLocalVar"};
   }
-  virtual void PushFrame(FunctionCallInfo info) override { throw runtime_error("not implemented"); }
-  virtual void PopFrame(InstrArg retVar) override { throw runtime_error("not implemented"); }
+  virtual void PushFrame(FunctionCallInfo info) override
+  {
+    throw NotImplementedException{"PushFrame"};
+  }
+  virtual void PopFrame(InstrArg retVar) override
+  {
+    throw NotImplementedException{"PopFrame"};
+  }
 
   /*ctr*/ DummyState(ICfgNode& lastNode, ICfgNode& nextNode) :
+    IState(lastNode, nextNode),
     globalVarMapping{},
-    varMapping{},
-    IState(lastNode, nextNode)
+    varMapping{}
   { }
 
 };

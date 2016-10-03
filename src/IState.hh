@@ -25,7 +25,7 @@ public:
 
   ref_vector<IState> prevStates; //optional
 
-  virtual bool SetExplored() { condition = StateCondition::Explored; }
+  virtual void SetExplored() { condition = StateCondition::Explored; }
   virtual bool IsNew() { return condition == StateCondition::New; }
 
   virtual void AddGlobalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;

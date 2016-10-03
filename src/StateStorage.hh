@@ -27,7 +27,7 @@ private:
 
 public:
   void InsertAndEnqueue(
-    uptr<IState> statePtr, 
+    uptr<IState> statePtr,
     WorklistPriority prioroty = WorklistPriority::Standard
   )
   {
@@ -42,7 +42,7 @@ public:
       //set them to AbstractedOut
       //and add the result of join operation
     }
-    
+
     //else -> just add it
     {
       IState& state = *statePtr;
@@ -52,8 +52,5 @@ public:
       //here we should utilize priorities
       worklist.push_back(state);
     }
-  }  
+  }
 };
-
-vector<uptr<IState>> StateManger::statePool = vector<uptr<IState>>{};
-ref_list<IState> StateManger::worklist = ref_list<IState>{};

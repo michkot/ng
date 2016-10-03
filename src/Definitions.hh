@@ -6,6 +6,8 @@
 #include <queue>
 #include <list>
 
+#include "Exceptions.hh"
+
 template<class T>
 using uptr = ::std::unique_ptr<T>;
 template<class T>
@@ -16,4 +18,3 @@ template<class T>
 using ref_queue = ::std::queue<::std::reference_wrapper<T>>;
 template<class T>
 using ref_list = ::std::list<::std::reference_wrapper<T>>;
-
