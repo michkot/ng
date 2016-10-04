@@ -14,18 +14,18 @@
 //KISS!!!
 
 //Q:
-//je moné, e po naplánování stavu k dalšímu kroku dojde k pøidání dalšího kontextu do stejné lokace
-//a k abstrakci tìcho SMG?
-//pøedpoklad - ne?
+//je moÅ¾nÃ©, Å¾e po naplÃ¡novÃ¡nÃ­ stavu k dalÅ¡Ã­mu kroku dojde k pÅ™idÃ¡nÃ­ dalÅ¡Ã­ho kontextu do stejnÃ© lokace
+//a k abstrakci tÄ›cho SMG?
+//pÅ™edpoklad - ne?
 
-//logické ohodnocení parametrù stavu
-//je dosaitelnı? -> hodnotovı systém pøi pøidání podmínek, øíká nám e nelze
-//došlo k chybì pamìti (predator works!!!)
+//logickÃ© ohodnocenÃ­ parametrÅ¯ stavu
+//je dosaÅ¾itelnÃ½? -> hodnotovÃ½ systÃ©m pÅ™i pÅ™idÃ¡nÃ­ podmÃ­nek, Å™Ã­kÃ¡ nÃ¡m Å¾e nelze
+//doÅ¡lo k chybÄ› pamÄ›ti (predator works!!!)
 
-//do budoucna - zmìnit flow novıch stavù tak,
-//aby tvùrce domény mohl mít plnou kontrolu na zpùsobem pøidávání do worklistu
+//do budoucna - zmÄ›nit flow novÃ½ch stavÅ¯ tak,
+//aby tvÅ¯rce domÃ©ny mohl mÃ­t plnou kontrolu na zpÅ¯sobem pÅ™idÃ¡vÃ¡nÃ­ do worklistu
 
-//indirect call of malloc - jak se o nej postarat aby se dostal do analyzátoru tam kam patøí
+//indirect call of malloc - jak se o nej postarat aby se dostal do analyzÃ¡toru tam kam patÅ™Ã­
 
 //#include "core\LlvmLoader.hh"
 //#include "core\LlvmSourceParser.hh"
@@ -44,21 +44,21 @@ using namespace ::std;
 #include "DummyOperations.hh"
 #include "FrontendLlvm.hh"
 
-//fronta stavù ke zpracování
+//fronta stavÅ¯ ke zpracovÃ¡nÃ­
 ref_queue<IState> toProcess{};
 
 void VerificationLoop()
 {
-  //smyèka
+  //smyÄka
   while (!toProcess.empty())
   {
-    //naèti stav
+    //naÄti stav
     IState& state = toProcess.front();
     toProcess.pop();
 
     //zpracuj stav
     {
-      //vypoèet novıch stavù
+      //vypoÄet novÃ½ch stavÅ¯
       if (!state.IsNew())
         continue;
 
