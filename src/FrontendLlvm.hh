@@ -27,11 +27,12 @@ public:
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;
 
-  static ValueType GetValueType(const llvm::Type&);
+  static ValueType GetValueType(const llvm::Type*);
 
   static ValueId GetValueId(int id);
   static ValueId GetValueId(uint64_t id);
   static ValueId GetValueId(const llvm::Instruction* instr);
+  static ValueId GetValueId(const llvm::Instruction& instr);
 
   static vector<InstrArg> GetInstrArgsFor(const llvm::Instruction& instr);
 

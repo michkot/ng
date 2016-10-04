@@ -1,13 +1,17 @@
+#include <cstdlib>
+#include <cstring>
 
 int main(int argc, char** argv)
 {
-  int* supernumber = new int();
-  *supernumber = 64;
+  int* mojexxx = new int();
+  int* mojezzz = (int*)malloc(sizeof(int));
+  *mojexxx = 64;
+  memset(mojezzz, 0, sizeof(int));
   if (argc <= 2)
-    *supernumber = *supernumber + argc;
+    *mojexxx = *mojexxx + argc;
   else
-    *supernumber = *supernumber - argc;
+    *mojexxx = *mojexxx - argc;
 
-  return *supernumber;
+  return *mojexxx;
 }
 

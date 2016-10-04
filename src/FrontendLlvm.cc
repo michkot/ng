@@ -2,6 +2,7 @@
 
 #include "ICfgNode.hh"
 
+//following is mingw / clang hack described in LLVM DataTypes file
 #ifndef _MSC_VER
 
 # ifdef __cplusplus
@@ -20,7 +21,7 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/SourceMgr.h>
-//#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/raw_ostream.h>
 
 //std::string dbgstr;
 //llvm::raw_string_ostream dbgstr_rso(dbgstr);
@@ -29,7 +30,7 @@
 class LlvmCfgNode : public CfgNode {
 private:
   const llvm::Instruction& innerInstruction;
-  //const vector<InstrArg> 
+  //const vector<InstrArg>
 
   /*ctr*/ LlvmCfgNode(IOperation& op, vector<InstrArg> args,
     const llvm::Instruction& inner,
@@ -193,7 +194,7 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
   return *op;
 }
 
-ValueType LlvmCfgParser::GetValueType(const llvm::Type&)
+ValueType LlvmCfgParser::GetValueType(const llvm::Type*)
 {
   return ValueType{};
 }
@@ -212,14 +213,17 @@ ValueId LlvmCfgParser::GetValueId(const llvm::Instruction* instr)
 {
   return ValueId{reinterpret_cast<uintptr_t>(instr)};
 }
+ValueId LlvmCfgParser::GetValueId(const llvm::Instruction& instr)
+{
+  return ValueId{reinterpret_cast<uintptr_t>(&instr)};
+}
 
 vector<InstrArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
 {
   vector<InstrArg> args;
 
-  //instr.print()
-  //instr.print(llvm::errs()/*, true*/);
-  //llvm::errs() << "\n";
+  instr.print(llvm::errs()/*, true*/);
+  llvm::errs() << "\n";
 
   unsigned num = instr.getNumOperands();
   switch (instr.getOpcode())
@@ -230,34 +234,34 @@ vector<InstrArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
     //  break;
   case llvm::Instruction::Call:
   {
-    //auto& typedInstr = static_cast<const llvm::DbgDeclareInst&>(instr);
-    //typedInstr.getVariable().
-
     auto& typedInstr = static_cast<const llvm::CallInst&>(instr);
-    auto& x = *typedInstr.getOperand(0);
+
+    //First, parse the call target
     auto func = typedInstr.getCalledFunction();
     if (func != nullptr)
     {
-
+      args.push_back(InstrArg{GetValueId(instr), GetValueType(instr.getType())});
     }
     else
     {
       auto val = typedInstr.getCalledValue();
     }
+    //Then, parse operands
+
     break;
   }
   default:
   {
     args.emplace_back(
       GetValueId(&instr),
-      GetValueType(*instr.getType())
+      GetValueType(instr.getType())
     );
     for (int i = 0; i < num; ++i)
     {
       const auto& operand = *instr.getOperand(i);
       args.emplace_back(
         GetValueId(0),
-        GetValueType(*operand.getType())
+        GetValueType(operand.getType())
       );
 
     }
@@ -280,14 +284,14 @@ bool LlvmCfgParser::TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode*
 }
 
 void LlvmCfgParser::LinkWithOrPlanProcessing(
-    LlvmCfgNode* currentNode, 
-    const llvm::BasicBlock* nextBlock, 
+    LlvmCfgNode* currentNode,
+    const llvm::BasicBlock* nextBlock,
     unsigned targetIndex
     )
 {
   LlvmCfgNode* nextBlockNode;
   if (TryGetMappedCfgNode(nextBlock, &nextBlockNode))
-  { //this block was already parsed before            
+  { //this block was already parsed before
     //just link it together
     LlvmCfgNode::LinkTogether(*currentNode, *nextBlockNode, targetIndex);
   }
@@ -307,7 +311,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
   //first BB instruction
   auto instrPtr = &entryBlock->front();
 
-  //get matching op 
+  //get matching op
   auto& op = GetOperationFor(*instrPtr);
   auto args = GetInstrArgsFor(*instrPtr);
   //create first node of cfgpart
@@ -347,7 +351,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
         currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
         LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
       }
-      else //if (branchIsntrPtr->isConditional()) 
+      else //if (branchIsntrPtr->isConditional())
       {
         // Conditional branch - has two successors for true and false branches
         currentNode = &currentNode->InsertNewBranchAfter(op, args, *instrPtr);
