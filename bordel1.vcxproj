@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.cc" />
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.cc" />
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.cc" />
     <ClCompile Include="src\cfg\InstructionNode.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -58,6 +61,8 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.hh" />
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.hh" />
     <ClInclude Include="src\cfg\IInstruction.hh" />
     <ClInclude Include="src\cfg\IInstructionWithOperation.hh" />
     <ClInclude Include="src\cfg\InstructionNode.hh" />

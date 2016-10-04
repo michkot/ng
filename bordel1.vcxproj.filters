@@ -54,6 +54,15 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cfg\IInstructionWithOperation.hh">
@@ -138,6 +147,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\DummyState.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
