@@ -12,6 +12,7 @@ namespace llvm
   class BasicBlock;
   class Module;
   class Instruction;
+  class Value;
   class Type;
 }
 
@@ -31,8 +32,8 @@ private:
 
   static ValueId GetValueId(int id);
   static ValueId GetValueId(uint64_t id);
-  static ValueId GetValueId(const llvm::Instruction* instr);
-  static ValueId GetValueId(const llvm::Instruction& instr);
+  static ValueId GetValueId(const llvm::Value* instr);
+  static ValueId GetValueId(const llvm::Value& instr);
 
   static vector<InstrArg> GetInstrArgsFor(const llvm::Instruction& instr);
 

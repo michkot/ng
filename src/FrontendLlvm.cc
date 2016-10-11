@@ -18,6 +18,7 @@
 
 #endif
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Value.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/SourceMgr.h>
@@ -209,11 +210,11 @@ ValueId LlvmCfgParser::GetValueId(uint64_t id)
   return ValueId{id};
 }
 
-ValueId LlvmCfgParser::GetValueId(const llvm::Instruction* instr)
+ValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
 {
   return ValueId{reinterpret_cast<uintptr_t>(instr)};
 }
-ValueId LlvmCfgParser::GetValueId(const llvm::Instruction& instr)
+ValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
 {
   return ValueId{reinterpret_cast<uintptr_t>(&instr)};
 }
@@ -247,6 +248,12 @@ vector<InstrArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
       auto val = typedInstr.getCalledValue();
     }
     //Then, parse operands
+    unsigned imax = typedInstr.getNumArgOperands();
+    for (unsigned i = 0; i < imax; ++i)
+    {
+      const auto argument = typedInstr.getArgOperand(i);
+      //args.push_back(InstrArg{GetValueId(argument), --});
+    }
 
     break;
   }
