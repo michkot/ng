@@ -15,145 +15,72 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\cfg\InstructionNode.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\LlvmLoader.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\LlvmSourceParser.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\BaseSpcOperation.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\SpcOperationAdd.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\SpcOperationAlloca.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\SpcOperationLoad.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\SpcOperationRet.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\operations\SpcOperationStore.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\Spc.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\SpcOperationsFactory.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domains\smg\SpcSymbolicState.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.cc">
+    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyOperations.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Type.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LlvmGlobals.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\cfg\IInstructionWithOperation.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cfg\InstructionNode.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cfg\IOperation.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cfg\IOperationFactory.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cfg\IInstruction.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\IAbstractProgramConfiguration.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\ISymState.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\LlvmLoader.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\LlvmSourceParser.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\SpcOperationLoad.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\SpcOperationRet.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\SpcOperationStore.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\BaseSpcOperation.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\SpcOperationAdd.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\operations\SpcOperationAlloca.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\SpcOperationsFactory.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\SpcSymbolicState.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domains\smg\Spc.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\types\Type.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DummyOperations.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\General.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ICfgNode.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IOperation.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Definitions.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Values.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IState.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\StateStorage.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DummyState.hh">
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.hh">
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\General.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\ICfgNode.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\IOperation.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\IState.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Type.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Values.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Definitions.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyOperations.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyState.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LlvmGlobals.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="NatvisFile.natvis" />
+    <Natvis Include="clang.natvis" />
+    <Natvis Include="llvm.natvis" />
   </ItemGroup>
 </Project>

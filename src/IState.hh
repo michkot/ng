@@ -28,15 +28,15 @@ public:
   virtual void SetExplored() { condition = StateCondition::Explored; }
   virtual bool IsNew() { return condition == StateCondition::New; }
 
-  virtual void AddGlobalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
-  virtual void AddLocalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
+  virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
+  virtual void AddLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
   //pro dead value analysis / memory leaks 
-  virtual void DelLocalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
+  virtual void DelLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
 
-  //p¯ed·vanÈ argumenty, n·vratov˝ typ, n·vratov· lokace/instrukce
+  //p≈ôed√°van√© argumenty, n√°vratov√Ω typ, n√°vratov√° lokace/instrukce
   virtual void PushFrame(FunctionCallInfo info) = 0;
-  //pozn lokace n·vratu musÌ b˝t uloûena ve stavu, na adekv·tnÌ urovni, p¯ilepena na stack frame
-  virtual void PopFrame(InstrArg retVar) = 0;
+  //pozn lokace n√°vratu mus√≠ b√Ωt ulo≈æena ve stavu, na adekv√°tn√≠ urovni, p≈ôilepena na stack frame
+  virtual void PopFrame(OperArg retVar) = 0;
 
 protected:
   /*ctr*/ IState(ICfgNode& lastNode, ICfgNode& nextNode) :

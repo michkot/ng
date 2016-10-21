@@ -11,12 +11,12 @@
 using namespace ::std;
 
 class BaseOperation : public IOperation {
-  virtual uptr<IState> ExecuteSimple(IState& s, const vector<InstrArg>& args) = 0;
+  virtual uptr<IState> ExecuteSimple(IState& s, const vector<OperArg>& args) = 0;
   //{
   //  return make_unique<DummyState>(s.nextCfgNode, s.nextCfgNode.GetNext());
   //}
 
-  void Execute(IState& s, const vector<InstrArg>& args) override
+  void Execute(IState& s, const vector<OperArg>& args) override
   {
     s.nextCfgNode.GetStates().InsertAndEnqueue(
       ExecuteSimple(s, args)
@@ -29,7 +29,7 @@ class BaseOperation : public IOperation {
 
 class DummyOperation : public IOperation {
 public:
-  void Execute(IState& s, const vector<InstrArg>& args) override
+  void Execute(IState& s, const vector<OperArg>& args) override
   {
     if (s.nextCfgNode.HasTwoNext())
     {
@@ -151,7 +151,12 @@ public:
     return *new DummyOperation{};
   }
 
-  virtual IOperation & ICmp(unsigned predicateCode) override
+  virtual IOperation & ICmp(IOperation::ICmpPredicates pred) override
+  {
+    return *new DummyOperation{};
+  }
+
+  virtual IOperation & FCmp(IOperation::FCmpPredicates pred) override
   {
     return *new DummyOperation{};
   }

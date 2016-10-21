@@ -28,14 +28,17 @@ public:
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;
 
-  static ValueType GetValueType(const llvm::Type*);
+  static Type GetValueType(llvm::Type* type);
 
-  static ValueId GetValueId(int id);
   static ValueId GetValueId(uint64_t id);
-  static ValueId GetValueId(const llvm::Value* instr);
-  static ValueId GetValueId(const llvm::Value& instr);
+  static ValueId GetValueId(const llvm::Value* value);
+  static ValueId GetValueId(const llvm::Value& value);
 
-  static vector<InstrArg> GetInstrArgsFor(const llvm::Instruction& instr);
+  static OperArg ToOperArg(const llvm::Value* value);
+  static OperArg ToOperArg(const llvm::Value& value);
+  static OperArg GetEmptyOperArg();
+
+  static vector<OperArg> GetInstrArgsFor(const llvm::Instruction& instr);
 
   bool TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode);
 

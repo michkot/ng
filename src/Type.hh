@@ -4,30 +4,49 @@
 // (c) PP, 2016
 
 #include <string>
-#include <map>
-#include <vector>
-#include <memory>
-#include <iostream>
 
-typedef void* frontend_id;    // unique GCC id (or LLVM representation)
+#include <llvm/IR/Type.h>
+
+typedef llvm::Type* FrontendTypeId;    // unique GCC id (or LLVM representation)
+
+class LlvmType;
+typedef LlvmType Type;
 
 // Type -- reference to type representation (copyable, assignable)
-class Type {
- private:
-  virtual frontend_id FrontendId() const = 0;
+// Might be later changed to interaface(fully abstraact class) when multiple frontends are in mind
+class LlvmType {
+private:
+  FrontendTypeId frontedId;
+  FrontendTypeId GetFrontendId() const { return frontedId; }
 
- public:
-  bool operator==(const Type& rhs) {
-    return FrontendId() == rhs.FrontendId();
+public:
+  explicit /*ctr*/ LlvmType(FrontendTypeId frontedId) : frontedId{frontedId} {}
+
+  static Type CreateVoidType();
+
+  bool operator==(const Type& rhs)
+  {
+    return GetFrontendId() == rhs.GetFrontendId();
   }
 
-  virtual size_t SizeOf() const = 0;
-  virtual size_t Width() const = 0;
-  virtual std::string ToString() const = 0;
+  void        ToString(std::string& str) const;
+  std::string ToString() const { std::string s{}; ToString(s); return s; }
 
-  virtual bool IsInteger() const = 0;
-  virtual bool IsPointer() const = 0;
-  virtual bool IsStruct() const = 0;
-  virtual bool IsUnion() const = 0;
-  virtual bool IsArray() const = 0;
+  size_t SizeOf() const; // Returns type's allocation size
+  size_t BitWidth() const; // Returns type's bit size
+
+  bool IsInteger() const;
+  bool IsInteger(unsigned bitwidth) const;
+  bool IsPointer() const;
+  bool IsFunction() const;
+  bool IsSimdVector() const;
+  bool IsAggregateType() const; // LLVM type group for Arrays and Structs
+  bool IsArray() const;
+  bool IsStruct() const;
+  // bool IsUnion() const; // LLVM does not support Union type
+  bool IsVoid() const;
+
+
+  Type GetPointerElementType() const;
+  Type GetStructElementType(unsigned index) const;
 };

@@ -73,7 +73,7 @@ void Verify()
 {
   auto f = DummyOperationFactory{};
   LlvmCfgParser parser{f};
-  auto& firstNode = parser.ParseAndOpenIrFile("input2.bc");
+  auto& firstNode = parser.ParseAndOpenIrFile("input3.ll");
 
   auto emptyStateUPtr = make_unique<DummyState>(firstNode.GetPrevs()[0], firstNode);
 
@@ -82,8 +82,18 @@ void Verify()
   VerificationLoop();
 }
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 int main()
 {
+#ifdef _WIN32
+  SetConsoleTitle("NextGen");
+#endif
+
   Verify();
+
+  getchar();
   return 0;
 }

@@ -31,23 +31,23 @@
 class LlvmCfgNode : public CfgNode {
 private:
   const llvm::Instruction& innerInstruction;
-  //const vector<InstrArg>
+  //const vector<OperArg>
 
-  /*ctr*/ LlvmCfgNode(IOperation& op, vector<InstrArg> args,
+  /*ctr*/ LlvmCfgNode(IOperation& op, vector<OperArg> args,
     const llvm::Instruction& inner,
     ICfgNode& prev,
     ICfgNode& next
   ) :
     innerInstruction{inner},
-    CfgNode(op, prev, next) {
+    CfgNode(op, args, prev, next) {
   }
 
 public:
 
   virtual void GetDebugInfo() const override { throw NotImplementedException{}; }
-  virtual vector<InstrArg> GetArguments() const override { return vector<InstrArg>(); }
+  virtual vector<OperArg> GetArguments() const override { return vector<OperArg>(); }
 
-  static LlvmCfgNode& CreateNode(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
+  static LlvmCfgNode& CreateNode(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *new StartCfgNode{}, *new TerminalCfgNode{}};
     ((ICfgNode&)newNode->prevs[0]).next = newNode;
@@ -58,14 +58,14 @@ public:
   //beware - adding a node after terminal node here(after inproper cast) would not raise exception
   //same applies for similar linking manipulation
 
-  LlvmCfgNode& InsertNewAfter(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     this->next = newNode;
     return *newNode;
   }
 
-  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, vector<InstrArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     newNode->nextFalse = new TerminalCfgNode{};
@@ -183,8 +183,18 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
     // Other operations
   case llvm::Instruction::ICmp:
   {
-    auto pred = static_cast<const llvm::CmpInst&>(instruction).getPredicate();
-    op = &opFactory.ICmp(pred);
+    auto pred = static_cast<const llvm::ICmpInst&>(instruction).getPredicate();
+    op = &opFactory.ICmp(
+      static_cast<IOperation::ICmpPredicates>(pred - decltype(pred)::FIRST_ICMP_PREDICATE)
+    );
+    break;
+  }
+  case llvm::Instruction::FCmp:
+  {
+    auto pred = static_cast<const llvm::FCmpInst&>(instruction).getPredicate();
+    op = &opFactory.FCmp(
+      static_cast<IOperation::FCmpPredicates>(pred - decltype(pred)::FIRST_FCMP_PREDICATE)
+    );
     break;
   }
 
@@ -195,21 +205,15 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
   return *op;
 }
 
-ValueType LlvmCfgParser::GetValueType(const llvm::Type*)
+Type LlvmCfgParser::GetValueType(llvm::Type* type)
 {
-  return ValueType{};
-}
-
-ValueId LlvmCfgParser::GetValueId(int id)
-{
-  return ValueId{static_cast<uint64_t>(id)};
+  return Type{type};
 }
 
 ValueId LlvmCfgParser::GetValueId(uint64_t id)
 {
   return ValueId{id};
 }
-
 ValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
 {
   return ValueId{reinterpret_cast<uintptr_t>(instr)};
@@ -219,62 +223,90 @@ ValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
   return ValueId{reinterpret_cast<uintptr_t>(&instr)};
 }
 
-vector<InstrArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
+OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
 {
-  vector<InstrArg> args;
+  return OperArg{GetValueId(value), GetValueType(value->getType())};
+}
+OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
+{
+  return ToOperArg(&value);
+}
+OperArg LlvmCfgParser::GetEmptyOperArg()
+{
+  return 
+    OperArg{GetValueId(
+      static_cast<uint64_t>(0)),
+      Type::CreateVoidType()
+      };
+}
+
+vector<OperArg> constantValuesToBeCreated;
+
+vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
+{
+  vector<OperArg> args;
+
+  //we know that this isntructions outcome/value is never used
+  //if (instr.user_empty())
+  //{
+  //  return args;
+  //}
 
   instr.print(llvm::errs()/*, true*/);
   llvm::errs() << "\n";
 
+  //add result if it is not void
+  if (instr.getType()->isVoidTy())
+  {
+    args.push_back(GetEmptyOperArg());
+  }
+  else
+  {
+    args.push_back(ToOperArg(instr));
+  }
+
   unsigned num = instr.getNumOperands();
   switch (instr.getOpcode())
   {
-    //case llvm::Instruction::Ret:
-    //  break;
-    //case llvm::Instruction::Br:
-    //  break;
   case llvm::Instruction::Call:
   {
     auto& typedInstr = static_cast<const llvm::CallInst&>(instr);
-
     //First, parse the call target
     auto func = typedInstr.getCalledFunction();
     if (func != nullptr)
-    {
-      args.push_back(InstrArg{GetValueId(instr), GetValueType(instr.getType())});
+    { // call target is a function value
+      args.push_back(ToOperArg(func));
     }
     else
-    {
+    { // call target is a pointer to a function of some sort
       auto val = typedInstr.getCalledValue();
+      args.push_back(ToOperArg(val));
     }
+
     //Then, parse operands
     unsigned imax = typedInstr.getNumArgOperands();
     for (unsigned i = 0; i < imax; ++i)
     {
       const auto argument = typedInstr.getArgOperand(i);
-      //args.push_back(InstrArg{GetValueId(argument), --});
+      args.push_back(ToOperArg(argument));
     }
 
     break;
   }
+  //case llvm::Instruction::Ret:
+  //  break;
+  //case llvm::Instruction::Br:
+  //  break;
   default:
   {
-    args.emplace_back(
-      GetValueId(&instr),
-      GetValueType(instr.getType())
-    );
-    for (int i = 0; i < num; ++i)
+    for (unsigned i = 0; i < num; ++i)
     {
       const auto& operand = *instr.getOperand(i);
-      args.emplace_back(
-        GetValueId(0),
-        GetValueType(operand.getType())
-      );
-
+      args.emplace_back(ToOperArg(operand));
     }
     break;
   }
-  }
+  } // switch
 
   return args;
 }

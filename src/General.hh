@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Type.hh"
+
 #include <cstdint>
 
 class ValueId {
@@ -13,23 +15,16 @@ public:
   /*ctr*/ explicit ValueId(uint64_t id) : inner{id} {}
 };
 
-class ValueType {
-public:
-  int blabla;
-  int bleble;
-  /*ctr*/ ValueType() : blabla{0}, bleble{0} {}
-};
-
-class InstrArg {
+class OperArg {
 public:
   ValueId id;
-  ValueType type;
+  Type type;
 
-  /*ctr*/ InstrArg(ValueId id, ValueType type) : id{id}, type{type} {}
+  /*ctr*/ OperArg(ValueId id, Type type) : id{id}, type{type} {}
 
 };
 
-//p¯ed·vanÈ argumenty, n·vratov˝ typ, n·vratov· lokace/instrukce
+//p≈ôed√°van√© argumenty, n√°vratov√Ω typ, n√°vratov√° lokace/instrukce
 typedef int FunctionCallInfo;
 typedef int FunctionInfo;
 

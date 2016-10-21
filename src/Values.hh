@@ -5,8 +5,8 @@
 
 class ValueRep {
 public:
-  ValueType type;
+  Type type;
   uint64_t value;
 
-  /*ctr*/ ValueRep(const ValueType& type) : type{type}, value{} {};
+  /*ctr*/ ValueRep(const Type& type) : type{type}, value{} {};
 };

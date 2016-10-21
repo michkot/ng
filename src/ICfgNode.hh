@@ -22,7 +22,7 @@ class LlvmCfgNode;
 //  virtual const ref_vector<INavigation> GetPrevs(); //?
 //
 //  virtual void GetDebugInfo();
-//  virtual vector<InstrArg> GetArguments();
+//  virtual vector<OperArg> GetArguments();
 //};
 
 
@@ -38,9 +38,9 @@ public:
 
   virtual StateManger GetStates() = 0;
   virtual void GetDebugInfo() const = 0;
-  virtual vector<InstrArg> GetArguments() const = 0;
+  virtual vector<OperArg> GetArguments() const = 0;
 
-  void Execute(IState& s, const vector<InstrArg>& args) override = 0;
+  void Execute(IState& s, const vector<OperArg>& args) override = 0;
   void Execute(IState& s)
   {
     return Execute(s, GetArguments());
@@ -56,8 +56,6 @@ protected:
   ICfgNode* next;
   ICfgNode* nextFalse = nullptr;
   ref_vector<ICfgNode> prevs;
-
-  vector<InstrArg> args;
 
   virtual bool IsStartNode() { return false; }
   virtual bool IsTerminalNode() { return false; }
@@ -81,11 +79,11 @@ public:
 
   StateManger GetStates() override { throw NotSupportedException{}; }
   void GetDebugInfo() const override { throw NotSupportedException{}; }
-  vector<InstrArg> GetArguments() const override { throw NotSupportedException{}; }
+  vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
   bool IsStartNode() override { return true; }
 
-  void Execute(IState& s, const vector<InstrArg>& args) override
+  void Execute(IState& s, const vector<OperArg>& args) override
   {
     throw NotSupportedException{};
   }
@@ -105,11 +103,11 @@ public:
 
   StateManger GetStates() override { throw NotSupportedException{}; }
   void GetDebugInfo() const override { throw NotSupportedException{}; }
-  vector<InstrArg> GetArguments() const override { throw NotSupportedException{}; }
+  vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
   bool IsTerminalNode() override { return true; }
 
-  void Execute(IState& s, const vector<InstrArg>& args) override
+  void Execute(IState& s, const vector<OperArg>& args) override
   {
     throw NotSupportedException{};
   }
@@ -121,6 +119,7 @@ private:
 
 class CfgNode : public ICfgNode {
 private:
+  vector<OperArg> args;
   IOperation& op;
   StateManger states;
 
@@ -142,39 +141,40 @@ public:
 
   const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  void Execute(IState& s, const vector<InstrArg>& args) override
+  void Execute(IState& s, const vector<OperArg>& args) override
   {
     return op.Execute(s, args);
   }
   StateManger GetStates() override { return states; }
-  vector<InstrArg> GetArguments() const override { return args; }
+  vector<OperArg> GetArguments() const override { return args; }
 
 protected:
-  /*ctr*/ CfgNode(IOperation& op, ICfgNode& prev, ICfgNode& next) :
+  /*ctr*/ CfgNode(IOperation& op, vector<OperArg> args, ICfgNode& prev, ICfgNode& next) :
     op{op},
+    args{args},
     ICfgNode(&next, ref_vector<ICfgNode>{1, prev})
   {
   }
-
-  // ---------------------- for dev needs only ---------------------------- //
-public:
-  virtual void GetDebugInfo() const override { throw NotImplementedException{}; }
-
-  static CfgNode& CreateNode(IOperation& op)
-  {
-    CfgNode* newNode = new CfgNode{op, *new StartCfgNode{}, *new TerminalCfgNode{}};
-    ((ICfgNode&)newNode->prevs[0]).next = newNode;
-    newNode->next->prevs.push_back(*newNode);
-    return *newNode;
-  }
-
-  //beware - adding a node after terminal node here(after inproper cast) would not raise exception
-  CfgNode& InsertNewAfter(IOperation& op)
-  {
-    CfgNode* newNode = new CfgNode{op, *this, *this->next};
-    this->next = newNode;
-    return *newNode;
-  }
-  // ---------------------- for dev needs only ---------------------------- //
+//
+//  // ---------------------- for dev needs only ---------------------------- //
+//public:
+//  virtual void GetDebugInfo() const override { throw NotImplementedException{}; }
+//
+//  static CfgNode& CreateNode(IOperation& op)
+//  {
+//    CfgNode* newNode = new CfgNode{op, *new StartCfgNode{}, *new TerminalCfgNode{}};
+//    ((ICfgNode&)newNode->prevs[0]).next = newNode;
+//    newNode->next->prevs.push_back(*newNode);
+//    return *newNode;
+//  }
+//
+//  //beware - adding a node after terminal node here(after inproper cast) would not raise exception
+//  CfgNode& InsertNewAfter(IOperation& op)
+//  {
+//    CfgNode* newNode = new CfgNode{op, *this, *this->next};
+//    this->next = newNode;
+//    return *newNode;
+//  }
+//  // ---------------------- for dev needs only ---------------------------- //
 };
 

@@ -15,17 +15,17 @@ private:
   std::map<ValueId, ValueRep> varMapping;
 
 public:
-  virtual void AddGlobalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
     globalVarMapping.insert_or_assign(var.id, ValueRep{var.type});
   }
 
-  virtual void AddLocalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void AddLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
     varMapping.insert_or_assign(var.id, ValueRep{var.type});
   }
 
-  virtual void DelLocalVar(InstrArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void DelLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
     throw NotImplementedException{"DelLocalVar"};
   }
@@ -33,7 +33,7 @@ public:
   {
     throw NotImplementedException{"PushFrame"};
   }
-  virtual void PopFrame(InstrArg retVar) override
+  virtual void PopFrame(OperArg retVar) override
   {
     throw NotImplementedException{"PopFrame"};
   }
