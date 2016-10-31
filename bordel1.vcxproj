@@ -19,33 +19,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyOperations.cc" />
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.cc" />
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.cc" />
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\main.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.cc" />
+    <ClCompile Include="src\DummyOperations.cc" />
+    <ClCompile Include="src\Exceptions.cc" />
+    <ClCompile Include="src\FrontendLlvm.cc" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\StateStorage.cc" />
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Definitions.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyOperations.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\DummyState.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Exceptions.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\FrontendLlvm.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\General.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\ICfgNode.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\IOperation.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\IState.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\StateStorage.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Type.hh" />
-    <ClInclude Include="..\..\..\..\..\..\Apps\GIT\FIT\bordel\bordel1\src\Values.hh" />
+    <ClInclude Include="src\Definitions.hh" />
+    <ClInclude Include="src\DummyOperations.hh" />
+    <ClInclude Include="src\DummyState.hh" />
+    <ClInclude Include="src\Exceptions.hh" />
+    <ClInclude Include="src\FrontendLlvm.hh" />
+    <ClInclude Include="src\General.hh" />
+    <ClInclude Include="src\ICfgNode.hh" />
+    <ClInclude Include="src\IOperation.hh" />
+    <ClInclude Include="src\IState.hh" />
+    <ClInclude Include="src\StateStorage.hh" />
+    <ClInclude Include="src\Type.hh" />
+    <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="clang.natvis" />
+    <Natvis Include="custom.natvis" />
     <Natvis Include="llvm.natvis" />
-    <Natvis Include="NatvisFile.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3AE65D4C-C54E-4BF4-B067-D170D68AA8E7}</ProjectGuid>
