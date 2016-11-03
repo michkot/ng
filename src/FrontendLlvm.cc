@@ -295,8 +295,13 @@ vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
   }
   //case llvm::Instruction::Ret:
   //  break;
-  //case llvm::Instruction::Br:
-  //  break;
+  case llvm::Instruction::Add:
+  {
+    auto& x = static_cast<const llvm::BinaryOperator&>(instr);
+    auto mtd = x.hasMetadataOtherThanDebugLoc();
+    auto nsw = x.hasNoSignedWrap();
+    break;
+  }
   default:
   {
     for (unsigned i = 0; i < num; ++i)
@@ -435,7 +440,11 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
   llvm::LLVMContext &context = *new llvm::LLVMContext();
 
   auto tmp = llvm::parseIRFile(fileName, err, context);
-  //string msg{err.getMessage().str()};
+  if (tmp == nullptr)
+  {
+    string msg{err.getMessage().str()};
+    throw msg;
+  }
   return tmp;
 }
 

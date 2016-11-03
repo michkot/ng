@@ -73,7 +73,7 @@ void Verify()
 {
   auto f = DummyOperationFactory{};
   LlvmCfgParser parser{f};
-  auto& firstNode = parser.ParseAndOpenIrFile("input3.ll");
+  auto& firstNode = parser.ParseAndOpenIrFile("input-int-conv.ll");
 
   auto emptyStateUPtr = make_unique<DummyState>(firstNode.GetPrevs()[0], firstNode);
 
