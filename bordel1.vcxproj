@@ -26,11 +26,13 @@
     <ClCompile Include="src\StateStorage.cc" />
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
+    <ClCompile Include="src\ValueRepImplementation.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Definitions.hh" />
     <ClInclude Include="src\DummyOperations.hh" />
     <ClInclude Include="src\DummyState.hh" />
+    <ClInclude Include="src\enum_flags.h" />
     <ClInclude Include="src\Exceptions.hh" />
     <ClInclude Include="src\FrontendLlvm.hh" />
     <ClInclude Include="src\General.hh" />
@@ -39,6 +41,7 @@
     <ClInclude Include="src\IState.hh" />
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
+    <ClInclude Include="src\ValueRepImplementation.hh" />
     <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
   </ItemGroup>

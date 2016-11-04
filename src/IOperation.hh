@@ -59,15 +59,12 @@ public:
   virtual IOperation& Add() = 0;
   virtual IOperation& Sub() = 0;
   virtual IOperation& Mul() = 0;
-  virtual IOperation& UDiv() = 0;
-  virtual IOperation& SDiv() = 0;
-  virtual IOperation& URem() = 0;
-  virtual IOperation& SRem() = 0;
+  virtual IOperation& Div() = 0;
+  virtual IOperation& Rem() = 0;
 
   // Bitwise binary operations
   virtual IOperation& Shl() = 0;
-  virtual IOperation& LShr() = 0;
-  virtual IOperation& AShr() = 0;
+  virtual IOperation& Shr() = 0;
   virtual IOperation& And() = 0;
   virtual IOperation& Or() = 0;
   virtual IOperation& Xor() = 0;

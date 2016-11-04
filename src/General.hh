@@ -4,23 +4,23 @@
 
 #include <cstdint>
 
-class ValueId {
+class FrontendValueId {
   uint64_t inner;
 public:
-  bool operator<(const ValueId& right) const
+  bool operator<(const FrontendValueId& right) const
   {
     return inner < right.inner;
   }
 
-  /*ctr*/ explicit ValueId(uint64_t id) : inner{id} {}
+  /*ctr*/ explicit FrontendValueId(uint64_t id) : inner{id} {}
 };
 
 class OperArg {
 public:
-  ValueId id;
+  FrontendValueId id;
   Type type;
 
-  /*ctr*/ OperArg(ValueId id, Type type) : id{id}, type{type} {}
+  /*ctr*/ OperArg(FrontendValueId id, Type type) : id{id}, type{type} {}
 
 };
 

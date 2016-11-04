@@ -81,22 +81,11 @@ public:
     return *new DummyOperation{};
   }
 
-  virtual IOperation & UDiv() override
+  virtual IOperation & Div() override
   {
     return *new DummyOperation{};
   }
-
-  virtual IOperation & SDiv() override
-  {
-    return *new DummyOperation{};
-  }
-
-  virtual IOperation & URem() override
-  {
-    return *new DummyOperation{};
-  }
-
-  virtual IOperation & SRem() override
+  virtual IOperation & Rem() override
   {
     return *new DummyOperation{};
   }
@@ -106,16 +95,10 @@ public:
     return *new DummyOperation{};
   }
 
-  virtual IOperation & LShr() override
+  virtual IOperation & Shr() override
   {
     return *new DummyOperation{};
   }
-
-  virtual IOperation & AShr() override
-  {
-    return *new DummyOperation{};
-  }
-
   virtual IOperation & And() override
   {
     return *new DummyOperation{};

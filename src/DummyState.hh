@@ -11,18 +11,18 @@ typedef int DummyValueId;
 
 class DummyState : public IState {
 private:
-  std::map<ValueId, TypedValueRep> globalVarMapping;
-  std::map<ValueId, TypedValueRep> varMapping;
+  std::map<FrontendValueId, ValueId> globalVarMapping;
+  std::map<FrontendValueId, ValueId> varMapping;
 
 public:
   virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
-    globalVarMapping.insert_or_assign(var.id, TypedValueRep{var.type});
+    globalVarMapping.insert_or_assign(var.id, ValueId{});
   }
 
   virtual void AddLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
-    varMapping.insert_or_assign(var.id, TypedValueRep{var.type});
+    varMapping.insert_or_assign(var.id, ValueId{});
   }
 
   virtual void DelLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override

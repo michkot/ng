@@ -36,6 +36,9 @@
     <ClCompile Include="src\StateStorage.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ValueRepImplementation.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\LlvmGlobals.hh">
@@ -75,6 +78,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Values.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ValueRepImplementation.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\enum_flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

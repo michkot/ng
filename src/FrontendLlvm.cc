@@ -134,16 +134,12 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
     op = &opFactory.Mul();
     break;
   case llvm::Instruction::UDiv:
-    op = &opFactory.UDiv();
-    break;
   case llvm::Instruction::SDiv:
-    op = &opFactory.SDiv();
+    op = &opFactory.Div();
     break;
   case llvm::Instruction::URem:
-    op = &opFactory.URem();
-    break;
   case llvm::Instruction::SRem:
-    op = &opFactory.SRem();
+    op = &opFactory.Rem();
     break;
 
     // Bitwise binary instructions
@@ -151,10 +147,8 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
     op = &opFactory.Shl();
     break;
   case llvm::Instruction::LShr:
-    op = &opFactory.LShr();
-    break;
   case llvm::Instruction::AShr:
-    op = &opFactory.AShr();
+    op = &opFactory.Shr();
     break;
   case llvm::Instruction::And:
     op = &opFactory.And();
@@ -210,17 +204,17 @@ Type LlvmCfgParser::GetValueType(llvm::Type* type)
   return Type{type};
 }
 
-ValueId LlvmCfgParser::GetValueId(uint64_t id)
+FrontendValueId LlvmCfgParser::GetValueId(uint64_t id)
 {
-  return ValueId{id};
+  return FrontendValueId{id};
 }
-ValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
+FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
 {
-  return ValueId{reinterpret_cast<uintptr_t>(instr)};
+  return FrontendValueId{reinterpret_cast<uintptr_t>(instr)};
 }
-ValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
+FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
 {
-  return ValueId{reinterpret_cast<uintptr_t>(&instr)};
+  return FrontendValueId{reinterpret_cast<uintptr_t>(&instr)};
 }
 
 OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
@@ -242,6 +236,7 @@ OperArg LlvmCfgParser::GetEmptyOperArg()
 
 vector<OperArg> constantValuesToBeCreated;
 
+//TODO: Add flags for UDIV/SDIV UREM/SREM LSHR/ASHR
 vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
 {
   vector<OperArg> args;

@@ -30,9 +30,9 @@ private:
 
   static Type GetValueType(llvm::Type* type);
 
-  static ValueId GetValueId(uint64_t id);
-  static ValueId GetValueId(const llvm::Value* value);
-  static ValueId GetValueId(const llvm::Value& value);
+  static FrontendValueId GetValueId(uint64_t id);
+  static FrontendValueId GetValueId(const llvm::Value* value);
+  static FrontendValueId GetValueId(const llvm::Value& value);
 
   static OperArg ToOperArg(const llvm::Value* value);
   static OperArg ToOperArg(const llvm::Value& value);
