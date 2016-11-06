@@ -1,6 +1,7 @@
 #include "FrontendLlvm.hh"
 
 #include "ICfgNode.hh"
+#include "ValuesZ3.hh"
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
@@ -228,8 +229,6 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
 
   return *op;
 }
-
-ValueContainer vc;
 //non null!!
 std::set<const llvm::Constant*> constantValuesToBeCreated;
 
@@ -297,12 +296,15 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     {
     case llvm::CmpInst::ICMP_NE:
       flags |= CmpFlags::Neq;
+      break;
     case llvm::CmpInst::ICMP_UGT:
     case llvm::CmpInst::ICMP_UGE:
       flags |= CmpFlags::Gt;
+      break;
     case llvm::CmpInst::ICMP_ULT:
     case llvm::CmpInst::ICMP_ULE:
       flags |= CmpFlags::Lt;
+      break;
     default:
       break;
     }
@@ -329,19 +331,22 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       ArithFlags flags = ArithFlags::Default;
       flags |= typedInstr.hasNoSignedWrap()   ? ArithFlags::NoSignedWrap   : ArithFlags::Default; 
       flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default; 
-      flags |= typedInstr.isExact()           ? ArithFlags::Exact          : ArithFlags::Default; 
       //TODO: Add more?                     
 
       switch (instr.getOpcode())
       {
       case llvm::Instruction::SDiv:
-      case llvm::Instruction::SRem:
       case llvm::Instruction::AShr:
+        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default; 
+      case llvm::Instruction::SRem:
         flags |= ArithFlags::Signed;
+        break;
       case llvm::Instruction::UDiv:
-      case llvm::Instruction::URem:
       case llvm::Instruction::LShr:
+        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default; 
+      case llvm::Instruction::URem:
         flags |= ArithFlags::Unsigned;
+        break;
       default:
         break;
       } 
@@ -467,6 +472,8 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
 
 void LlvmCfgParser::DealWithConstants()
 {
+  IValueContainer& vc = *new Z3ValueContainer();
+
   for (auto x : constantValuesToBeCreated)
   {
     /**/ if (auto constInt = llvm::dyn_cast<llvm::ConstantInt>(x))

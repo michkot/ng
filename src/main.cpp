@@ -82,6 +82,8 @@ void Verify()
   VerificationLoop();
 }
 
+#include "ValuesZ3.hh"
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -91,6 +93,12 @@ int main()
 #ifdef _WIN32
   SetConsoleTitle("NextGen");
 #endif
+
+  Z3ValueContainer vc;
+  vc.CreateConstIntVal(0);
+  vc.CreateConstIntVal(1);
+  vc.CreateConstIntVal(2);
+  vc.CreateVal();
 
   Verify();
 

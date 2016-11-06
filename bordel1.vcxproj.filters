@@ -39,6 +39,9 @@
     <ClCompile Include="src\ValueRepImplementation.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ValuesZ3.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\Values.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\enum_flags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ValuesZ3.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

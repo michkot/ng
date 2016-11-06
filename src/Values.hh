@@ -80,56 +80,55 @@ enum class CmpFlags {
 /// Class holding a set of values / their constraint based representations.
 /// Internaly everything is a string of bits.
 /// All integer values are reperesented in two's complement code
-/// 
-/// Arithemtic and shift operations which tends to have separated signed and unsigned instructions 
-/// are abstracted into single operation. 
+///
+/// Arithemtic and shift operations which tends to have separated signed and unsigned instructions
+/// are abstracted into single operation.
 /// Also note, wrapping/overflow of certain operations is undefined behaviour in some languages.
 /// Use the <paramref name="flags"/> parameter to specify wanted behaviour in these cases.
 /// </summary>
-class ValueContainer {
+class IValueContainer {
 public:
   // parametrzied
-  boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const;
+  virtual boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
   // signed "C style" by default
-  boost::tribool IsCmp     (ValueId first, ValueId second, Type type) const;
-  boost::tribool IsEq      (ValueId first, ValueId second, Type type) const;
-  boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const;
-  boost::tribool IsTrue    (ValueId first, Type type) const;
-  boost::tribool IsFalse   (ValueId first, Type type) const;
+  virtual virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type) const = 0;
+  virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const = 0;
+  virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const = 0;
+  virtual boost::tribool IsTrue    (ValueId first, Type type) const = 0;
+  virtual boost::tribool IsFalse   (ValueId first, Type type) const = 0;
 
-  boost::tribool IsBinaryEq(ValueId first, ValueId second) const;
-  boost::tribool IsUnknown (ValueId first) const;
-  boost::tribool IsZero    (ValueId first) const;
+  virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const = 0;
+  virtual boost::tribool IsUnknown (ValueId first) const = 0;
+  virtual boost::tribool IsZero    (ValueId first) const = 0;
 
-  ValueId SetCmp(ValueId first, ValueId second, Type type, CmpFlags flags);
+  virtual ValueId SetCmp(ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
 
-  ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags);
+  virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
 
-  ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags);
+  virtual ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
 
-  ValueId LogAnd(ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId LogOr (ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId LogXor(ValueId first, ValueId second, Type type, ArithFlags flags);
-  ValueId LogNot(ValueId first, ValueId second, Type type, ArithFlags flags);
+  virtual ValueId LogAnd(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId LogOr (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId LogXor(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId LogNot(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
 
-  ValueId BitAnd(ValueId first, ValueId second, Type type);
-  ValueId BitOr (ValueId first, ValueId second, Type type);
-  ValueId BitXor(ValueId first, ValueId second, Type type);
-  ValueId BitNot(ValueId first, Type type);
+  virtual ValueId BitAnd(ValueId first, ValueId second, Type type) = 0;
+  virtual ValueId BitOr (ValueId first, ValueId second, Type type) = 0;
+  virtual ValueId BitXor(ValueId first, ValueId second, Type type) = 0;
+  virtual ValueId BitNot(ValueId first, Type type) = 0;
 
-  ValueId ConvIntToFloat(ValueId first, uint32_t flags);
-  ValueId ConvFloatToInt(ValueId first, uint32_t flags);
+  virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) = 0;
+  virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) = 0;
 
-  ValueId CreateVal();
+  virtual ValueId CreateVal() = 0;
 
-  ValueId CreateConstIntVal  (uint64_t value, Type type);
-  //TODO: Maybe remove, because value should be binary representation
-  ValueId CreateConstIntVal  (int64_t  value, Type type);
-  ValueId CreateConstFloatVal(float    value, Type type);
-  ValueId CreateConstFloatVal(double   value, Type type);
+  virtual ValueId CreateConstIntVal  (uint64_t value, Type type) = 0;
+  virtual ValueId CreateConstIntVal  (uint64_t value) = 0;
+  virtual ValueId CreateConstFloatVal(float    value, Type type) = 0;
+  virtual ValueId CreateConstFloatVal(double   value, Type type) = 0;
 };
