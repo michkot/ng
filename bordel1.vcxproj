@@ -26,7 +26,11 @@
     <ClCompile Include="src\StateStorage.cc" />
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
-    <ClCompile Include="src\ValueRepImplementation.cc" />
+    <ClCompile Include="src\ValueRepImplementation.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Values.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Definitions.hh" />
@@ -41,7 +45,10 @@
     <ClInclude Include="src\IState.hh" />
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
-    <ClInclude Include="src\ValueRepImplementation.hh" />
+    <ClInclude Include="src\ValueRepImplementation.hh">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
   </ItemGroup>

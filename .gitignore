@@ -4,3 +4,5 @@ nouse/*
 x64/*
 *.bc
 *.ll
+*.VC.db
+*.suo
