@@ -2,6 +2,7 @@
 
 #include "ICfgNode.hh"
 
+
 //following is mingw / clang hack described in LLVM DataTypes file
 #ifndef _MSC_VER
 
@@ -109,6 +110,60 @@ public:
   }
 };
 
+
+Type LlvmCfgParser::GetValueType(llvm::Type* type)
+{
+  return Type{type};
+}
+
+FrontendValueId LlvmCfgParser::GetValueId(uint64_t id)
+{
+  return FrontendValueId{id};
+}
+FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
+{
+  return FrontendValueId{reinterpret_cast<uintptr_t>(instr)};
+}
+FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
+{
+  return FrontendValueId{reinterpret_cast<uintptr_t>(&instr)};
+}
+
+OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
+{
+  return OperArg{GetValueId(value), GetValueType(value->getType())};
+}
+OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
+{
+  return ToOperArg(&value);
+}
+OperArg LlvmCfgParser::GetEmptyOperArg()
+{
+  return 
+    OperArg{GetValueId(
+      static_cast<uint64_t>(0)),
+    Type::CreateVoidType()
+  };
+}
+
+OperArg LlvmCfgParser::GetFlagsOperArg(CmpFlags flags)
+{
+  return 
+    OperArg{GetValueId(
+      static_cast<uint64_t>(flags)),
+    Type::CreateVoidType()
+  };
+}
+
+OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
+{
+  return 
+    OperArg{GetValueId(
+      static_cast<uint64_t>(flags)),
+    Type::CreateVoidType()
+  };
+}
+
 IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction) const
 {
   // Create correct operation
@@ -176,21 +231,9 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
 
     // Other operations
   case llvm::Instruction::ICmp:
-  {
-    auto pred = static_cast<const llvm::ICmpInst&>(instruction).getPredicate();
-    op = &opFactory.ICmp(
-      static_cast<IOperation::ICmpPredicates>(pred - decltype(pred)::FIRST_ICMP_PREDICATE)
-    );
-    break;
-  }
   case llvm::Instruction::FCmp:
-  {
-    auto pred = static_cast<const llvm::FCmpInst&>(instruction).getPredicate();
-    op = &opFactory.FCmp(
-      static_cast<IOperation::FCmpPredicates>(pred - decltype(pred)::FIRST_FCMP_PREDICATE)
-    );
+    op = &opFactory.Cmp();
     break;
-  }
 
   default:
     op = &opFactory.NotSupportedInstr();
@@ -199,45 +242,9 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
   return *op;
 }
 
-Type LlvmCfgParser::GetValueType(llvm::Type* type)
-{
-  return Type{type};
-}
-
-FrontendValueId LlvmCfgParser::GetValueId(uint64_t id)
-{
-  return FrontendValueId{id};
-}
-FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value* instr)
-{
-  return FrontendValueId{reinterpret_cast<uintptr_t>(instr)};
-}
-FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
-{
-  return FrontendValueId{reinterpret_cast<uintptr_t>(&instr)};
-}
-
-OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
-{
-  return OperArg{GetValueId(value), GetValueType(value->getType())};
-}
-OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
-{
-  return ToOperArg(&value);
-}
-OperArg LlvmCfgParser::GetEmptyOperArg()
-{
-  return 
-    OperArg{GetValueId(
-      static_cast<uint64_t>(0)),
-      Type::CreateVoidType()
-      };
-}
-
 vector<OperArg> constantValuesToBeCreated;
 
-//TODO: Add flags for UDIV/SDIV UREM/SREM LSHR/ASHR
-vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
+vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
   vector<OperArg> args;
 
@@ -250,7 +257,7 @@ vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
   instr.print(llvm::errs()/*, true*/);
   llvm::errs() << "\n";
 
-  //add result if it is not void
+  //add result value, if it is not void
   if (instr.getType()->isVoidTy())
   {
     args.push_back(GetEmptyOperArg());
@@ -287,25 +294,82 @@ vector<OperArg> LlvmCfgParser::GetInstrArgsFor(const llvm::Instruction& instr)
     }
 
     break;
-  }
-  //case llvm::Instruction::Ret:
-  //  break;
-  case llvm::Instruction::Add:
+  } //  case llvm::Instruction::Call:
+  case llvm::Instruction::ICmp:
   {
-    auto& x = static_cast<const llvm::BinaryOperator&>(instr);
-    auto mtd = x.hasMetadataOtherThanDebugLoc();
-    auto nsw = x.hasNoSignedWrap();
+    auto& typedInstr = static_cast<const llvm::ICmpInst&>(instr);
+    CmpFlags flags = CmpFlags::Default;
+    flags |= typedInstr.isSigned()        ? CmpFlags::Signed   : CmpFlags::Default;
+    flags |= typedInstr.isUnsigned()      ? CmpFlags::Unsigned : CmpFlags::Default;
+    flags |= typedInstr.isTrueWhenEqual() ? CmpFlags::Eq       : CmpFlags::Default;
+
+    switch (typedInstr.getUnsignedPredicate())
+    {
+    case llvm::CmpInst::ICMP_NE:
+      flags |= CmpFlags::Neq;
+    case llvm::CmpInst::ICMP_UGT:
+    case llvm::CmpInst::ICMP_UGE:
+      flags |= CmpFlags::Gt;
+    case llvm::CmpInst::ICMP_ULT:
+    case llvm::CmpInst::ICMP_ULE:
+      flags |= CmpFlags::Lt;
+    default:
+      break;
+    }
+
+    args.push_back(GetFlagsOperArg(flags));
     break;
-  }
+  } // case llvm::Instruction::ICmp:
+  case llvm::Instruction::FCmp:
+  {
+    auto& typedInstr = static_cast<const llvm::FCmpInst&>(instr);
+    CmpFlags flags = CmpFlags::Default;
+    flags |= CmpFlags::Float;
+
+    throw NotImplementedException();
+
+    args.push_back(GetFlagsOperArg(flags));
+    break;
+  } // case llvm::Instruction::ICmp:
   default:
   {
+    if (llvm::isa<llvm::BinaryOperator>(instr))
+    {
+      auto& typedInstr = static_cast<const llvm::BinaryOperator&>(instr);
+      ArithFlags flags = ArithFlags::Default;
+      flags |= typedInstr.hasNoSignedWrap()   ? ArithFlags::NoSignedWrap   : ArithFlags::Default; 
+      flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default; 
+      flags |= typedInstr.isExact()           ? ArithFlags::Exact          : ArithFlags::Default; 
+      //TODO: Add more?                     
+
+      switch (instr.getOpcode())
+      {
+      case llvm::Instruction::SDiv:
+      case llvm::Instruction::SRem:
+      case llvm::Instruction::AShr:
+        flags |= ArithFlags::Signed;
+      case llvm::Instruction::UDiv:
+      case llvm::Instruction::URem:
+      case llvm::Instruction::LShr:
+        flags |= ArithFlags::Unsigned;
+      default:
+        break;
+      } 
+      args.push_back(GetFlagsOperArg(flags));
+    }
+    else // add empty operand placeholder for flags/function target
+    {
+      args.push_back(GetEmptyOperArg());
+    }
+
     for (unsigned i = 0; i < num; ++i)
     {
       const auto& operand = *instr.getOperand(i);
       args.emplace_back(ToOperArg(operand));
     }
+
     break;
-  }
+  } // default:
   } // switch
 
   return args;
@@ -352,7 +416,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
 
   //get matching op
   auto& op = GetOperationFor(*instrPtr);
-  auto args = GetInstrArgsFor(*instrPtr);
+  auto args = GetOperArgsForInstr(*instrPtr);
   //create first node of cfgpart
   LlvmCfgNode& firstNode = LlvmCfgNode::CreateNode(op, args, *instrPtr);
 
@@ -365,7 +429,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
   while (!instrPtr->isTerminator())
   {
     auto& op = GetOperationFor(*instrPtr);
-    auto args = GetInstrArgsFor(*instrPtr);
+    auto args = GetOperArgsForInstr(*instrPtr);
     currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
     instrPtr = instrPtr->getNextNode();
   }
@@ -376,7 +440,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
 
     //get matching op
     auto& op = GetOperationFor(*instrPtr);
-    auto args = GetInstrArgsFor(*instrPtr);
+    auto args = GetOperArgsForInstr(*instrPtr);
 
     switch (instrPtr->getOpcode())
     {

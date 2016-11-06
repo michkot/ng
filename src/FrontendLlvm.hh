@@ -2,6 +2,7 @@
 
 #include "Definitions.hh"
 #include "IOperation.hh"
+#include "Values.hh"
 
 #include <map>
 
@@ -37,8 +38,10 @@ private:
   static OperArg ToOperArg(const llvm::Value* value);
   static OperArg ToOperArg(const llvm::Value& value);
   static OperArg GetEmptyOperArg();
+  static OperArg GetFlagsOperArg(CmpFlags flags);
+  static OperArg GetFlagsOperArg(ArithFlags flags);
 
-  static vector<OperArg> GetInstrArgsFor(const llvm::Instruction& instr);
+  static vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
 
   bool TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode);
 

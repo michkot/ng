@@ -5,14 +5,30 @@
 #include <cstdint>
 
 class FrontendValueId {
-  uint64_t inner;
-public:
-  bool operator<(const FrontendValueId& right) const
-  {
-    return inner < right.inner;
-  }
+  // Fields
+private:
+  uint64_t id;
 
-  /*ctr*/ explicit FrontendValueId(uint64_t id) : inner{id} {}
+  // Constructors
+private:
+  /**/     FrontendValueId()            : id{ 0 }  { }
+public:
+  explicit FrontendValueId(uint64_t id) : id{ id } { }
+
+  // Conversion methods
+  explicit operator uint64_t() const { return id; }
+
+  // Methods
+  FrontendValueId operator++()    { id++; return *this; } // prefix
+  FrontendValueId operator++(int) { auto copy = *this; id++; return copy; } // postfix
+
+  bool operator==(const FrontendValueId& other) const { return this->id == other.id; }
+  bool operator!=(const FrontendValueId& other) const { return this->id != other.id; }
+  bool operator< (const FrontendValueId& other) const { return this->id < other.id; }
+  bool operator> (const FrontendValueId& other) const { return this->id > other.id; }
+  bool operator<=(const FrontendValueId& other) const { return this->id <= other.id; }
+  bool operator>=(const FrontendValueId& other) const { return this->id >= other.id; }
+
 };
 
 class OperArg {

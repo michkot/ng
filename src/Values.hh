@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Definitions.hh"
-#include "General.hh"
+#include "Type.hh"
 
 #include "enum_flags.h"
 
@@ -39,6 +39,7 @@ public:
 
 ENUM_FLAGS(ArithFlags)
 enum class ArithFlags {
+  Default        = 0x0000,
   Signed         = 0x0001,
   Unsigned       = 0x0002,
   Exact          = 0x0004,

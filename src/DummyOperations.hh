@@ -134,12 +134,7 @@ public:
     return *new DummyOperation{};
   }
 
-  virtual IOperation & ICmp(IOperation::ICmpPredicates pred) override
-  {
-    return *new DummyOperation{};
-  }
-
-  virtual IOperation & FCmp(IOperation::FCmpPredicates pred) override
+  virtual IOperation & Cmp() override
   {
     return *new DummyOperation{};
   }
