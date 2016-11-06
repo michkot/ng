@@ -15,20 +15,28 @@ set(SOURCE_FILES
     src/Definitions.hh
     src/DummyOperations.cc
     src/DummyOperations.hh
-    src/FrontendLlvm.cc
-    src/FrontendLlvm.hh
+    src/DummyState.hh
     src/Exceptions.cc
     src/Exceptions.hh
-    src/DummyState.hh
+    src/FrontendLlvm.cc
+    src/FrontendLlvm.hh
     src/General.hh
     src/ICfgNode.hh
     src/IOperation.hh
     src/IState.hh
-    src/main.cpp
-    src/StateStorage.hh
+    src/LlvmGlobals.cc
+    src/LlvmGlobals.hh
     src/StateStorage.cc
+    src/StateStorage.hh
+    src/Type.cc
     src/Type.hh
-    src/Values.hh)
+    #src/ValueRepImplementation.cc
+    #src/ValueRepImplementation.hh
+    src/Values.cc
+    src/Values.hh
+    src/enum_flags.h
+    src/main.cpp
+)
 
 add_executable(bordel1 ${SOURCE_FILES})
 

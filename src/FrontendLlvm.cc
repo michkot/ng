@@ -2,22 +2,6 @@
 
 #include "ICfgNode.hh"
 
-
-//following is mingw / clang hack described in LLVM DataTypes file
-#ifndef _MSC_VER
-
-# ifdef __cplusplus
-#  if !defined(__STDC_LIMIT_MACROS)
-#   define __STDC_LIMIT_MACROS
-#   define __STDC_LIMIT_MACROS_DEFINED_BY_CLANG
-#  endif
-#  if !defined(__STDC_CONSTANT_MACROS)
-#   define __STDC_CONSTANT_MACROS
-#   define __STDC_CONSTANT_MACROS_DEFINED_BY_CLANG
-#  endif
-# endif
-
-#endif
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Instructions.h>

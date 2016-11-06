@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Type.hh"
-
 #include <cstdint>
+
+#include "Type.hh"
 
 class FrontendValueId {
   // Fields

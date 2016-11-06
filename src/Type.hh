@@ -5,7 +5,10 @@
 
 #include <string>
 
-#include <llvm/IR/Type.h>
+namespace llvm 
+{
+  class Type;
+}
 
 typedef llvm::Type* FrontendTypeId;    // unique GCC id (or LLVM representation)
 
