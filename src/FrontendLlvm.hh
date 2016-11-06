@@ -53,6 +53,8 @@ private:
 
   LlvmCfgNode& ParseBasicBlock(const llvm::BasicBlock* entryBlock);
 
+  void DealWithConstants();
+
 public:
   ICfgNode& ParseModule(const llvm::Module& module);
 

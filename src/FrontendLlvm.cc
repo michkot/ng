@@ -25,6 +25,9 @@
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/raw_ostream.h>
 
+
+#include <llvm/IR/Constants.h>
+
 //std::string dbgstr;
 //llvm::raw_string_ostream dbgstr_rso(dbgstr);
 
@@ -242,7 +245,9 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
   return *op;
 }
 
-vector<OperArg> constantValuesToBeCreated;
+ValueContainer vc;
+//non null!!
+std::set<const llvm::Constant*> constantValuesToBeCreated;
 
 vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
@@ -290,6 +295,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     for (unsigned i = 0; i < imax; ++i)
     {
       const auto argument = typedInstr.getArgOperand(i);
+      //TODO: constants!!! like in default part of select
       args.push_back(ToOperArg(argument));
     }
 
@@ -365,6 +371,10 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     for (unsigned i = 0; i < num; ++i)
     {
       const auto& operand = *instr.getOperand(i);
+      if (llvm::isa<llvm::Constant>(operand))
+      {
+        constantValuesToBeCreated.insert(&static_cast<const llvm::Constant&>(operand));
+      }
       args.emplace_back(ToOperArg(operand));
     }
 
@@ -464,11 +474,37 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
     }
     default:
       break;
-    } // end of swtich
+    } // end of switch
 
   }
 
   return firstNode;
+}
+
+void LlvmCfgParser::DealWithConstants()
+{
+  for (auto x : constantValuesToBeCreated)
+  {
+    /**/ if (auto constInt = llvm::dyn_cast<llvm::ConstantInt>(x))
+    {
+      vc.CreateConstIntVal(constInt->getValue().getZExtValue(), Type{constInt->getType()});
+    }
+    else if (auto constFp = llvm::dyn_cast<llvm::ConstantFP>(x))
+    {
+      if (&constFp->getValueAPF().getSemantics() == &llvm::APFloat::IEEEdouble)
+      {
+        vc.CreateConstFloatVal(constFp->getValueAPF().convertToDouble(), Type{constFp->getType()});
+      }
+      else if (&constFp->getValueAPF().getSemantics() == &llvm::APFloat::IEEEsingle)
+      {
+        vc.CreateConstFloatVal(constFp->getValueAPF().convertToFloat(), Type{constFp->getType()});
+      }
+      else
+        throw NotImplementedException();
+    }
+    else
+      throw NotImplementedException();
+  }
 }
 
 ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
@@ -490,6 +526,9 @@ ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
     auto& blockStartNode = ParseBasicBlock(blockToParse);
     LlvmCfgNode::LinkTogether(*prevNodeToLink, blockStartNode, targetIndexInNode);
   }
+
+  DealWithConstants();
+
   return firstNode;
 }
 
@@ -506,8 +545,6 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
   }
   return tmp;
 }
-
-
 
 uptr<llvm::Module> moduleHandle;
 ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(string fileName)

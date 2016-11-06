@@ -128,6 +128,7 @@ public:
   ValueId CreateVal();
 
   ValueId CreateConstIntVal  (uint64_t value, Type type);
+  //TODO: Maybe remove, because value should be binary representation
   ValueId CreateConstIntVal  (int64_t  value, Type type);
   ValueId CreateConstFloatVal(float    value, Type type);
   ValueId CreateConstFloatVal(double   value, Type type);
