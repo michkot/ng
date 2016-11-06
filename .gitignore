@@ -2,3 +2,5 @@ _Bin/*
 backup bordelu/*
 nouse/*
 x64/*
+*.bc
+*.ll
