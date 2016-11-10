@@ -9,11 +9,6 @@ boost::tribool Z3ValueContainer::IsCmp(ValueId first, ValueId second, Type type,
   throw NotImplementedException();
 }
 
-boost::tribool Z3ValueContainer::IsCmp(ValueId first, ValueId second, Type type) const
-{
-  throw NotImplementedException();
-}
-
 boost::tribool Z3ValueContainer::IsEq(ValueId first, ValueId second, Type type) const
 {
   throw NotImplementedException();
@@ -49,7 +44,7 @@ boost::tribool Z3ValueContainer::IsZero(ValueId first) const
   throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::SetCmp(ValueId first, ValueId second, Type type, CmpFlags flags)
+ValueId Z3ValueContainer::Assume(ValueId first, ValueId second, Type type, CmpFlags flags)
 {
   throw NotImplementedException();
 }
@@ -126,31 +121,35 @@ ValueId Z3ValueContainer::BitXor(ValueId first, ValueId second, Type type)
 
 ValueId Z3ValueContainer::BitNot(ValueId first, Type type)
 {
- throw NotImplementedException();
+  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::ConvIntToFloat(ValueId first, uint32_t flags)
+ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetType)
 {
- throw NotImplementedException();
+  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::ConvFloatToInt(ValueId first, uint32_t flags)
+ValueId Z3ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetType)
 {
- throw NotImplementedException();
+  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::CreateVal()
+ValueId Z3ValueContainer::CreateVal(Type type)
 {
   //c.constant(c.int_symbol(static_cast<uint64_t>(id)), c.bv_sort(64));
   try {
     std::cout << "find_model_example1\n";
     context c;
-    expr x = c.constant(c.int_symbol(0), c.bv_sort(64));
+
+    expr x = c.constant(c.int_symbol(0), c.bv_sort(64)); //type.BitWidth()
     expr y = c.constant(c.int_symbol(1), c.bv_sort(64));
+    expr vyraz1 = x >= 1;
+    expr vyraz2 = y < x + 3;
+
     solver s(c);
 
-    s.add(x >= 1);
-    s.add(y < x + 3);
+    s.add(vyraz1);
+    s.add(vyraz2);
     std::cout << s.check() << "\n";
 
     model m = s.get_model();
@@ -159,7 +158,7 @@ ValueId Z3ValueContainer::CreateVal()
     for (unsigned i = 0; i < m.size(); i++) {
       func_decl v = m[i];
       // this problem contains only constants
-      assert(v.arity() == 0); 
+      assert(v.arity() == 0);
       std::cout << v.name() << " = " << m.get_const_interp(v) << "\n";
     }
     // we can evaluate expressions in the model.
@@ -191,10 +190,10 @@ ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value)
 
 ValueId Z3ValueContainer::CreateConstFloatVal(float value, Type type)
 {
-  return ValueId();
+  throw NotImplementedException();
 }
 
 ValueId Z3ValueContainer::CreateConstFloatVal(double value, Type type)
 {
-  return ValueId();
+  throw NotImplementedException();
 }

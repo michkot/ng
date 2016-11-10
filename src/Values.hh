@@ -45,11 +45,11 @@ enum class ArithFlags {
   Exact          = 0x0004,
   NoSignedWrap   = 0x0008,
   NoUnsignedWrap = 0x0010,
-  FmfFlag1       = 0x0010,
-  FmfFlag2       = 0x0020,
-  FmfFlag3       = 0x0040,
-  FmfFlag4       = 0x0080,
-  FmfFlag5       = 0x0100,
+  FmfFlag1       = 0x0020,
+  FmfFlag2       = 0x0040,
+  FmfFlag3       = 0x0080,
+  FmfFlag4       = 0x0100,
+  FmfFlag5       = 0x0200,
 };
 
 ENUM_FLAGS(CmpFlags)
@@ -89,9 +89,7 @@ enum class CmpFlags {
 class IValueContainer {
 public:
   // parametrzied
-  virtual boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
-  // signed "C style" by default
-  virtual virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type) const = 0;
+  virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const = 0;
   virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const = 0;
   virtual boost::tribool IsTrue    (ValueId first, Type type) const = 0;
@@ -101,7 +99,7 @@ public:
   virtual boost::tribool IsUnknown (ValueId first) const = 0;
   virtual boost::tribool IsZero    (ValueId first) const = 0;
 
-  virtual ValueId SetCmp(ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
+  virtual ValueId Assume(ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
 
   virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
   virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
@@ -122,13 +120,16 @@ public:
   virtual ValueId BitXor(ValueId first, ValueId second, Type type) = 0;
   virtual ValueId BitNot(ValueId first, Type type) = 0;
 
-  virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) = 0;
-  virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) = 0;
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) = 0;
+  virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) = 0;
 
-  virtual ValueId CreateVal() = 0;
+  //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) = 0;
+  //virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) = 0;
+
+  virtual ValueId CreateVal(Type type) = 0;
 
   virtual ValueId CreateConstIntVal  (uint64_t value, Type type) = 0;
-  virtual ValueId CreateConstIntVal  (uint64_t value) = 0;
+  virtual ValueId CreateConstIntVal  (uint64_t value           ) = 0; // To be potentially removed
   virtual ValueId CreateConstFloatVal(float    value, Type type) = 0;
   virtual ValueId CreateConstFloatVal(double   value, Type type) = 0;
 };

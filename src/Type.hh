@@ -15,6 +15,8 @@ typedef llvm::Type* FrontendTypeId;    // unique GCC id (or LLVM representation)
 class LlvmType;
 typedef LlvmType Type;
 
+//TODO: Udelat const type??
+
 // Type -- reference to type representation (copyable, assignable)
 // Might be later changed to interaface(fully abstraact class) when multiple frontends are in mind
 class LlvmType {

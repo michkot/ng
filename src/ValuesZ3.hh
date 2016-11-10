@@ -10,9 +10,7 @@
 class Z3ValueContainer : public IValueContainer {
 public:
   // parametrzied
-  virtual boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
-  // signed "C style" by default
-  virtual virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type) const override;
+  virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const override;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const override;
   virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const override;
   virtual boost::tribool IsTrue    (ValueId first, Type type) const override;
@@ -22,7 +20,7 @@ public:
   virtual boost::tribool IsUnknown (ValueId first) const override;
   virtual boost::tribool IsZero    (ValueId first) const override;
 
-  virtual ValueId SetCmp(ValueId first, ValueId second, Type type, CmpFlags flags) override;
+  virtual ValueId Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
 
   virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
@@ -43,13 +41,15 @@ public:
   virtual ValueId BitXor(ValueId first, ValueId second, Type type) override;
   virtual ValueId BitNot(ValueId first, Type type) override;
 
-  virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
-  virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) override;
+  virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) override;
 
-  virtual ValueId CreateVal() override;
+  //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
+  //virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
+
+  virtual ValueId CreateVal(Type type) override;
 
   virtual ValueId CreateConstIntVal  (uint64_t value, Type type) override;
-  //TODO: Maybe remove, because value should be binary representation
   virtual ValueId CreateConstIntVal  (uint64_t value           ) override;
   virtual ValueId CreateConstFloatVal(float    value, Type type) override;
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;

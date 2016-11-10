@@ -338,12 +338,14 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       case llvm::Instruction::SDiv:
       case llvm::Instruction::AShr:
         flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default;
+        // no break!
       case llvm::Instruction::SRem:
         flags |= ArithFlags::Signed;
         break;
       case llvm::Instruction::UDiv:
       case llvm::Instruction::LShr:
         flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default;
+        // no break!
       case llvm::Instruction::URem:
         flags |= ArithFlags::Unsigned;
         break;

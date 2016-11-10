@@ -94,11 +94,13 @@ int main()
   SetConsoleTitle("NextGen");
 #endif
 
+  //this is a debugging code for experimenting
   Z3ValueContainer vc;
+  vc.CreateVal(Type{0});
   vc.CreateConstIntVal(0);
   vc.CreateConstIntVal(1);
   vc.CreateConstIntVal(2);
-  vc.CreateVal();
+  //this is end of experimental code
 
   Verify();
 
