@@ -1,7 +1,7 @@
 
 #include <llvm/IR/Module.h>
 
-namespace llvm 
+namespace llvm
 {
   class DataLayout;
   class LLVMContext;

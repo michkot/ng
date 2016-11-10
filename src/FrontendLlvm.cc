@@ -127,7 +127,7 @@ OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
 }
 OperArg LlvmCfgParser::GetEmptyOperArg()
 {
-  return 
+  return
     OperArg{GetValueId(
       static_cast<uint64_t>(0)),
     Type::CreateVoidType()
@@ -136,7 +136,7 @@ OperArg LlvmCfgParser::GetEmptyOperArg()
 
 OperArg LlvmCfgParser::GetFlagsOperArg(CmpFlags flags)
 {
-  return 
+  return
     OperArg{GetValueId(
       static_cast<uint64_t>(flags)),
     Type::CreateVoidType()
@@ -145,7 +145,7 @@ OperArg LlvmCfgParser::GetFlagsOperArg(CmpFlags flags)
 
 OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
 {
-  return 
+  return
     OperArg{GetValueId(
       static_cast<uint64_t>(flags)),
     Type::CreateVoidType()
@@ -329,27 +329,27 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     {
       auto& typedInstr = static_cast<const llvm::BinaryOperator&>(instr);
       ArithFlags flags = ArithFlags::Default;
-      flags |= typedInstr.hasNoSignedWrap()   ? ArithFlags::NoSignedWrap   : ArithFlags::Default; 
-      flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default; 
-      //TODO: Add more?                     
+      flags |= typedInstr.hasNoSignedWrap()   ? ArithFlags::NoSignedWrap   : ArithFlags::Default;
+      flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default;
+      //TODO: Add more?
 
       switch (instr.getOpcode())
       {
       case llvm::Instruction::SDiv:
       case llvm::Instruction::AShr:
-        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default; 
+        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default;
       case llvm::Instruction::SRem:
         flags |= ArithFlags::Signed;
         break;
       case llvm::Instruction::UDiv:
       case llvm::Instruction::LShr:
-        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default; 
+        flags |= typedInstr.isExact() ? ArithFlags::Exact : ArithFlags::Default;
       case llvm::Instruction::URem:
         flags |= ArithFlags::Unsigned;
         break;
       default:
         break;
-      } 
+      }
       args.push_back(GetFlagsOperArg(flags));
     }
     else // add empty operand placeholder for flags/function target

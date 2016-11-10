@@ -30,7 +30,7 @@ public:
 
   virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
   virtual void AddLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
-  //pro dead value analysis / memory leaks 
+  //pro dead value analysis / memory leaks
   virtual void DelLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) = 0;
 
   //předávané argumenty, návratový typ, návratová lokace/instrukce

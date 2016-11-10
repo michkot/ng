@@ -8,7 +8,7 @@
 
 class LlvmCfgNode;
 
-namespace llvm 
+namespace llvm
 {
   class BasicBlock;
   class Module;

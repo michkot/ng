@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace llvm 
+namespace llvm
 {
   class Type;
 }
