@@ -88,12 +88,11 @@ enum class CmpFlags {
 /// </summary>
 class IValueContainer {
 public:
-  // parametrzied
   virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const = 0;
   virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const = 0;
-  virtual boost::tribool IsTrue    (ValueId first, Type type) const = 0;
-  virtual boost::tribool IsFalse   (ValueId first, Type type) const = 0;
+  virtual boost::tribool IsTrue    (ValueId first, Type type) const = 0; // !=0
+  virtual boost::tribool IsFalse   (ValueId first, Type type) const = 0; // ==0
 
   virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const = 0;
   virtual boost::tribool IsUnknown (ValueId first) const = 0;
@@ -110,15 +109,16 @@ public:
   virtual ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
   virtual ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
 
-  virtual ValueId LogAnd(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId LogOr (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId LogXor(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId LogNot(ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-
   virtual ValueId BitAnd(ValueId first, ValueId second, Type type) = 0;
   virtual ValueId BitOr (ValueId first, ValueId second, Type type) = 0;
   virtual ValueId BitXor(ValueId first, ValueId second, Type type) = 0;
   virtual ValueId BitNot(ValueId first, Type type) = 0;
+
+  //following are not an LLVM operations
+  //when C/C++ is compiled in LLVM, everything is series of != 0 tests and branch/phi instructions
+  virtual ValueId LogAnd(ValueId first, ValueId second, Type type) = 0;
+  virtual ValueId LogOr (ValueId first, ValueId second, Type type) = 0;
+  virtual ValueId LogNot(ValueId first, Type type) = 0;
 
   virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) = 0;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) = 0;

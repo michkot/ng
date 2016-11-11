@@ -84,22 +84,17 @@ ValueId Z3ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFla
  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::LogAnd(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId Z3ValueContainer::LogAnd(ValueId first, ValueId second, Type type)
 {
  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::LogOr(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId Z3ValueContainer::LogOr(ValueId first, ValueId second, Type type)
 {
  throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::LogXor(ValueId first, ValueId second, Type type, ArithFlags flags)
-{
- throw NotImplementedException();
-}
-
-ValueId Z3ValueContainer::LogNot(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId Z3ValueContainer::LogNot(ValueId first, Type type)
 {
  throw NotImplementedException();
 }

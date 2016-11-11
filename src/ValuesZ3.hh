@@ -9,12 +9,11 @@
 
 class Z3ValueContainer : public IValueContainer {
 public:
-  // parametrzied
   virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const override;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const override;
   virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const override;
-  virtual boost::tribool IsTrue    (ValueId first, Type type) const override;
-  virtual boost::tribool IsFalse   (ValueId first, Type type) const override;
+  virtual boost::tribool IsTrue    (ValueId first, Type type) const override; // !=0
+  virtual boost::tribool IsFalse   (ValueId first, Type type) const override; // ==0
 
   virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const override;
   virtual boost::tribool IsUnknown (ValueId first) const override;
@@ -31,15 +30,16 @@ public:
   virtual ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
 
-  virtual ValueId LogAnd(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  virtual ValueId LogOr (ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  virtual ValueId LogXor(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  virtual ValueId LogNot(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-
   virtual ValueId BitAnd(ValueId first, ValueId second, Type type) override;
   virtual ValueId BitOr (ValueId first, ValueId second, Type type) override;
   virtual ValueId BitXor(ValueId first, ValueId second, Type type) override;
   virtual ValueId BitNot(ValueId first, Type type) override;
+
+  //following are not an LLVM operations
+  //when C/C++ is compiled in LLVM, everything is series of != 0 tests and branch/phi instructions
+  virtual ValueId LogAnd(ValueId first, ValueId second, Type type) override;
+  virtual ValueId LogOr (ValueId first, ValueId second, Type type) override;
+  virtual ValueId LogNot(ValueId first, Type type) override;
 
   virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) override;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) override;
