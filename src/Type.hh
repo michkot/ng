@@ -42,6 +42,8 @@ public:
 
   bool IsInteger() const;
   bool IsInteger(unsigned bitwidth) const;
+  bool IsBool() const { return IsInteger(1u); }
+  bool IsReal() const;
   bool IsPointer() const;
   bool IsFunction() const;
   bool IsSimdVector() const;

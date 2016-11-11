@@ -46,6 +46,11 @@ bool LlvmType::IsInteger(unsigned bitwidth) const
   return GetFrontendId()->isIntegerTy(bitwidth);
 }
 
+bool LlvmType::IsReal() const
+{
+  return GetFrontendId()->isFloatingPointTy();
+}
+
 bool LlvmType::IsPointer() const
 {
   return GetFrontendId()->isPointerTy();
