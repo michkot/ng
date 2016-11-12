@@ -6,8 +6,15 @@
 #include "Values.hh"
 
 #include <boost/logic/tribool.hpp>
+#include <map>
+#include <z3++.h>
 
 class Z3ValueContainer : public IValueContainer {
+private:
+  static z3::context c;
+  static std::map<ValueId, z3::expr> idsToExprs;
+  std::multimap<ValueId, z3::expr> assumptions;
+
 public:
   virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const override;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const override;
@@ -19,7 +26,12 @@ public:
   virtual boost::tribool IsUnknown (ValueId first) const override;
   virtual boost::tribool IsZero    (ValueId first) const override;
 
-  virtual ValueId Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
+  // Creates new boolean (1bit integer) value expressing the constraint
+  virtual ValueId Cmp        (ValueId first, ValueId second, Type type, CmpFlags flags) override;
+  // Sets constraint on both values
+  virtual void    Assume     (ValueId first, ValueId second, Type type, CmpFlags flags) override;
+  virtual void    AssumeTrue (ValueId first) override; // Sets contraint: first != 0 ( == true )
+  virtual void    AssumeFalse(ValueId first) override; // Sets contraint: first == 0 ( == false)
 
   virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
@@ -50,7 +62,7 @@ public:
   virtual ValueId CreateVal(Type type) override;
 
   virtual ValueId CreateConstIntVal  (uint64_t value, Type type) override;
-  virtual ValueId CreateConstIntVal  (uint64_t value           ) override;
+  virtual ValueId CreateConstIntVal  (uint64_t value           ) override; // To be potentially removed
   virtual ValueId CreateConstFloatVal(float    value, Type type) override;
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;
 };

@@ -98,7 +98,12 @@ public:
   virtual boost::tribool IsUnknown (ValueId first) const = 0;
   virtual boost::tribool IsZero    (ValueId first) const = 0;
 
-  virtual ValueId Assume(ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
+  // Creates new boolean (1bit integer) value expressing the constraint
+  virtual ValueId Cmp        (ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
+  // Sets constraint on both values
+  virtual void    Assume     (ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
+  virtual void    AssumeTrue (ValueId first) = 0; // Sets contraint: first != 0 ( == true )
+  virtual void    AssumeFalse(ValueId first) = 0; // Sets contraint: first == 0 ( == false)
 
   virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
   virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
