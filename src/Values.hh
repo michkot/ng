@@ -125,7 +125,7 @@ public:
   virtual ValueId LogOr (ValueId first, ValueId second, Type type) = 0;
   virtual ValueId LogNot(ValueId first, Type type) = 0;
 
-  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) = 0;
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) = 0;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) = 0;
 
   //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) = 0;

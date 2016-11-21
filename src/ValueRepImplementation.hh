@@ -1,100 +1,115 @@
 //
-// Created by Charvin on 17. 10. 2016.
+// Created by Charvin on 11. 11. 2016.
 //
-
-#ifndef _VALUEREPIMPLEMENTATION_HH_
-#define _VALUEREPIMPLEMENTATION_HH_
+#pragma once
 
 #include "Values.hh"
-#include "Type.hh"
-
-#include <cstdint>
+#include "Exceptions.hh"
 #include <unordered_map>
+#include <map>
 #include <vector>
-#include <ostream>
 
-typedef uint64_t ValueId;
 
-/*
- * Typedef union for constants in interval value representations
- */
-typedef union{
-	int64_t Integer;
-}IntervalData;
-
-/*
- * Class representing Binary relation constraint
- * \detail idVal1 type idVal2 (e.g. 42 < 1337 ... Value representation of id 42 is less than value representation of id 1337)
- */
-class BinaryConstraint{
-private:
-	static ValueId  constraintIdGenerator;
-
+class BinaryConstraint {
 public:
-	ValueId id;
-	ValueId idVal1;
-	ValueId idVal2;
-	ConstraintType type;
+	ValueId first;
+	ValueId second;
+	CmpFlags relation;
 
-	BinaryConstraint(ValueId _idVal1, ConstraintType _type, ValueId _idVal2) : idVal1(_idVal1), idVal2(_idVal2), type(_type), id(constraintIdGenerator++) {}
-	friend std::ostream& operator<<(std::ostream& stream, BinaryConstraint val);
-};
-
-/*
- * Class representing binary relations
- * \details ValueRep1 has IntervalConstraint of type eGT and data 42 -> ValueRep1 > 42
- */
-class IntervalConstraint{
-public:
-	ConstraintType type;
-	IntervalData   data;
-
-	IntervalConstraint(ConstraintType type, int64_t val) : type(type) {data.Integer = val;} ///if IntervalData changes (maybe add float?..) overload constructor is all it takes
-	friend std::ostream& operator<< (std::ostream& stream, IntervalConstraint val);
+	BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
+	bool Contains(ValueId id) const { return id == first || id == second; }
+	ValueId GetOther(ValueId id) const { if (id == first) return second; else if (id == second) return first; else throw std::runtime_error("Constraint does not contain ValueId it should"); }
 };
 
 
-/*
- * Class implementing ValueRepresentation
- */
-class ValueRep : public IValueRep
+typedef uint64_t ConstraintId;
+
+class ValueContainer : public IValueContainer
 {
 private:
-	static ValueId  valueIdGenerator;
-	static std::unordered_map < ValueId , std::pair < IType , std::vector< ValueId > > >   binaryRelationsContainer;    ///hash table of [ValueRep id, pair[ValueRep type , vector[ Constraint id ]]]
-	static std::unordered_map < ValueId , BinaryConstraint >                               binaryConstraintContainer;   ///hash table of [Constraint id, Binary constraint]
-	static std::unordered_map < ValueId , std::vector< IntervalConstraint >  >             intervalConstraintContainer; ///hash table of [ValueRep id, vector[IntervalConstraint]]
-	//those names tho...
+	std::map<ValueId, uint64_t> eqContainer; //boost bimap?				//contains mapping from ValueId to constant
+	std::map<ConstraintId, BinaryConstraint> constrContainer;			//contains mapping from ConstraintId to Constraint
+	std::map< ValueId, std::vector<ConstraintId>> constrIdContainer;	//contains mapping from ValueId to all used ConstraintIds
 
-	ValueId id;
+	static ConstraintId nextConstraintIdToGive; //can be static?
+	static ConstraintId GetNextConstraintId() { return nextConstraintIdToGive++; }
+	void InsertConstraint(BinaryConstraint);
+	void DeleteConstraint(ConstraintId constrId);
+
 
 public:
-	ValueRep() : id(valueIdGenerator++) {} //ctr
-	virtual ~ValueRep() override;
 
-	virtual std::string ToString() const override;
-	virtual boost::tribool operator<(const IValueRep &other) const override;
-	virtual boost::tribool operator>(const IValueRep &other) const override;
-	virtual boost::tribool operator<=(const IValueRep &other) const override;
-	virtual boost::tribool operator>=(const IValueRep &other) const override;
-	virtual boost::tribool IsEQ(const IValueRep &other) const override;
-	virtual boost::tribool IsNEQ(const IValueRep &other) const override;
+	ValueContainer() : eqContainer(), constrContainer(), constrIdContainer(){}
+	ValueContainer(const ValueContainer &c) : eqContainer(c.eqContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer){}
+	bool IsConstant(ValueId first) const { auto res = eqContainer.find(first); return res != eqContainer.end(); }
 
-	virtual boost::tribool operator<(const int64_t constValue) const override;
-	virtual boost::tribool operator>(const int64_t constValue) const override;
-	virtual boost::tribool operator<=(const int64_t constValue) const override;
-	virtual boost::tribool operator>=(const int64_t constValue) const override;
-	virtual boost::tribool IsEQ(const int64_t constValue) const override;
-	virtual boost::tribool IsNEQ(const int64_t constValue) const override;
-	virtual boost::tribool IsUnknown() const override;
-	virtual boost::tribool IsZero() const override {return IsEQ(0);}
+	boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
+	boost::tribool IsEq(ValueId first, ValueId second, Type type) const override;
+	boost::tribool IsNeq(ValueId first, ValueId second, Type type) const override;
+	boost::tribool IsTrue(ValueId first, Type type) const override; // !=0
+	boost::tribool IsFalse(ValueId first, Type type) const override; // ==0
 
-	virtual void SetConstraint(ConstraintType type, IValueRep &other) override;
-	virtual void SetConstraint(ConstraintType type, int64_t constValue) override;
+	boost::tribool IsBinaryEq(ValueId first, ValueId second) const override;
+	boost::tribool IsUnknown(ValueId first) const override;
+	boost::tribool IsZero(ValueId first) const override;
 
-	friend std::ostream& operator<< (std::ostream& stream, IValueRep val) const { return stream << val.ToString(); }
+	void    Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
+	void    AssumeTrue(ValueId first) override; // Sets contraint: first != 0 ( == true )
+	void    AssumeFalse(ValueId first) override; // Sets contraint: first == 0 ( == false)
+
+	ValueId Add(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId Sub(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId Mul(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId Div(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId Rem(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+
+	ValueId LSh(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId RSh(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+
+	ValueId BitAnd(ValueId first, ValueId second, Type type) override;
+	ValueId BitOr(ValueId first, ValueId second, Type type) override;
+	ValueId BitXor(ValueId first, ValueId second, Type type) override;
+	ValueId BitNot(ValueId first, Type type) override;
+
+	//following are not an LLVM operations
+	//when C/C++ is compiled in LLVM, everything is series of !override tests and branch/phi instructions
+	ValueId LogAnd(ValueId first, ValueId second, Type type) override;
+	ValueId LogOr(ValueId first, ValueId second, Type type) override;
+	ValueId LogNot(ValueId first, Type type) override;
+
+	ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
+	ValueId TruncInt(ValueId first, Type sourceType, Type targetType) override;
+
+	//ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
+	//ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
+
+	ValueId CreateVal(Type type) override { return ValueId::GetNextId(); }
+
+	ValueId CreateConstIntVal(uint64_t value, Type type) override;
+	ValueId CreateConstIntVal(uint64_t value) override; // To be potentially removed
+	ValueId CreateConstFloatVal(float    value, Type type) override;
+	ValueId CreateConstFloatVal(double   value, Type type) override;
+
 };
 
+inline uint64_t ZeroExtend64(size_t numOfBits, uint64_t in)
+{
+	in &= (1ULL << numOfBits) - 1;
+	return in;
+}
 
+inline uint64_t SignExtend64(size_t numOfBits, uint64_t in)
+{
+		in = ZeroExtend64(numOfBits, in);
+		uint64_t mask = (1ULL << (numOfBits - 1));
+		return  (uint64_t) (-((int64_t)(in & mask))) | in;
+}
 
-#endif //_VALUEREPIMPLEMENTATION_HH_
+//bit scan reverse - returns position of first set bit from the left side
+inline uint64_t BSD(uint64_t val)
+{
+	uint64_t pos = 0;
+	while (val >>= 1)
+		pos++;
+	return pos;
+}
