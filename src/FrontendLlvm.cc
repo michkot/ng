@@ -1,7 +1,7 @@
 #include "FrontendLlvm.hh"
 
 #include "ICfgNode.hh"
-#include "ValuesZ3.hh"
+//#include "ValuesZ3.hh"
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
@@ -474,7 +474,7 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
 
 void LlvmCfgParser::DealWithConstants()
 {
-  IValueContainer& vc = *new Z3ValueContainer();
+	IValueContainer& vc = *(IValueContainer*)(nullptr);
 
   for (auto x : constantValuesToBeCreated)
   {

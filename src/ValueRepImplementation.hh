@@ -16,6 +16,7 @@ public:
 	ValueId second;
 	CmpFlags relation;
 
+	BinaryConstraint() : BinaryConstraint(ValueId(0), ValueId(0), CmpFlags::Default) {}
 	BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
 	bool Contains(ValueId id) const { return id == first || id == second; }
 	ValueId GetOther(ValueId id) const { if (id == first) return second; else if (id == second) return first; else throw std::runtime_error("Constraint does not contain ValueId it should"); }
@@ -27,7 +28,7 @@ typedef uint64_t ConstraintId;
 class ValueContainer : public IValueContainer
 {
 private:
-	std::map<ValueId, uint64_t> eqContainer; //boost bimap?				//contains mapping from ValueId to constant
+	std::map<ValueId, uint64_t> constantContainer; //boost bimap?				//contains mapping from ValueId to constant
 	std::map<ConstraintId, BinaryConstraint> constrContainer;			//contains mapping from ConstraintId to Constraint
 	std::map< ValueId, std::vector<ConstraintId>> constrIdContainer;	//contains mapping from ValueId to all used ConstraintIds
 
@@ -35,13 +36,14 @@ private:
 	static ConstraintId GetNextConstraintId() { return nextConstraintIdToGive++; }
 	void InsertConstraint(BinaryConstraint);
 	void DeleteConstraint(ConstraintId constrId);
+	const std::vector<ConstraintId> &GetConstraintIdVector(const ValueId id) const;
 
 
 public:
 
-	ValueContainer() : eqContainer(), constrContainer(), constrIdContainer(){}
-	ValueContainer(const ValueContainer &c) : eqContainer(c.eqContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer){}
-	bool IsConstant(ValueId first) const { auto res = eqContainer.find(first); return res != eqContainer.end(); }
+	ValueContainer() : constantContainer(), constrContainer(), constrIdContainer(){}
+	ValueContainer(const ValueContainer &c) : constantContainer(c.constantContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer){}
+	bool IsConstant(ValueId first) const { auto res = constantContainer.find(first); return res != constantContainer.end(); }
 
 	boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
 	boost::tribool IsEq(ValueId first, ValueId second, Type type) const override;
@@ -92,7 +94,7 @@ public:
 
 };
 
-inline uint64_t ZeroExtend64(size_t numOfBits, uint64_t in)
+inline uint64_t RipBits(size_t numOfBits, uint64_t in)
 {
 	in &= (1ULL << numOfBits) - 1;
 	return in;
@@ -100,13 +102,13 @@ inline uint64_t ZeroExtend64(size_t numOfBits, uint64_t in)
 
 inline uint64_t SignExtend64(size_t numOfBits, uint64_t in)
 {
-		in = ZeroExtend64(numOfBits, in);
+		in = RipBits(numOfBits, in);
 		uint64_t mask = (1ULL << (numOfBits - 1));
 		return  (uint64_t) (-((int64_t)(in & mask))) | in;
 }
 
 //bit scan reverse - returns position of first set bit from the left side
-inline uint64_t BSD(uint64_t val)
+inline uint64_t BSR(uint64_t val)
 {
 	uint64_t pos = 0;
 	while (val >>= 1)

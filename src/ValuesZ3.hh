@@ -53,7 +53,7 @@ public:
   virtual ValueId LogOr (ValueId first, ValueId second, Type type) override;
   virtual ValueId LogNot(ValueId first, Type type) override;
 
-  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) override;
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) override;
 
   //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;

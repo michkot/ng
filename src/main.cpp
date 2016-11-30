@@ -82,7 +82,7 @@ void Verify()
   VerificationLoop();
 }
 
-#include "ValuesZ3.hh"
+//#include "ValuesZ3.hh"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -95,11 +95,11 @@ int main()
 #endif
 
   //this is a debugging code for experimenting
-  Z3ValueContainer vc;
+  /*Z3ValueContainer vc;
   vc.CreateVal(Type{0});
   vc.CreateConstIntVal(0);
   vc.CreateConstIntVal(1);
-  vc.CreateConstIntVal(2);
+  vc.CreateConstIntVal(2);*/
   //this is end of experimental code
 
   Verify();

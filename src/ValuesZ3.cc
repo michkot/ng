@@ -226,7 +226,7 @@ ValueId Z3ValueContainer::BitNot(ValueId first, Type type)
   throw NotImplementedException();
 }
 
-ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetType)
+ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags)
 {
   throw NotImplementedException();
 }

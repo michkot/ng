@@ -2,6 +2,8 @@
 
 #define CHECK_FLAG(var, flag) ((var & flag) == flag)
 
+ConstraintId ValueContainer::nextConstraintIdToGive = 0;
+
 BinaryConstraint::BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation)
 {
 	if (first > second)
@@ -9,17 +11,34 @@ BinaryConstraint::BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _re
 		std::swap(first, second);
 		switch(_relation)
 		{
-		case CmpFlags::Gt:
-			_relation = CmpFlags::Lt;
+		case CmpFlags::Eq:
+		case CmpFlags::Neq:
+			//missing break intended
 			break;
-		case CmpFlags::GtEq:
-			_relation = CmpFlags::LtEq;
+
+		case CmpFlags::SigGt:
+			_relation = CmpFlags::SigLt;
 			break;
-		case CmpFlags::Lt:
-			_relation = CmpFlags::Gt;
+		case CmpFlags::SigGtEq:
+			_relation = CmpFlags::SigLtEq;
 			break;
-		case CmpFlags::LtEq:
-			_relation = CmpFlags::GtEq;
+		case CmpFlags::SigLt:
+			_relation = CmpFlags::SigGt;
+			break;
+		case CmpFlags::SigLtEq:
+			_relation = CmpFlags::SigGtEq;
+			break;
+		case CmpFlags::UnsigGt:
+			_relation = CmpFlags::UnsigLt;
+			break;
+		case CmpFlags::UnsigGtEq:
+			_relation = CmpFlags::UnsigLtEq;
+			break;
+		case CmpFlags::UnsigLt:
+			_relation = CmpFlags::UnsigGt;
+			break;
+		case CmpFlags::UnsigLtEq:
+			_relation = CmpFlags::UnsigGtEq;
 			break;
 		default:
 			throw std::runtime_error("Creating binaryconstraint with odd relation");
@@ -42,8 +61,7 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 		if (IsConstant(constr.first))
 		{
 			//first valueId is a constant
-			auto rhsConstraintIds = constrIdContainer.find(constr.second);
-			for (auto oldConstraintId : rhsConstraintIds->second)
+			for (auto oldConstraintId : GetConstraintIdVector(constr.second))
 			{
 				//for each constraint of nonconstatnt valueId
 				auto oldConstraint = constrContainer.find(oldConstraintId);
@@ -67,8 +85,7 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 		else
 		{
 			//second valueId is a constant
-			auto lhsConstraintIds = constrIdContainer.find(constr.first);
-			for (auto oldConstraintId : lhsConstraintIds->second)
+			for (auto oldConstraintId : GetConstraintIdVector(constr.first))
 			{
 				//for each constraint of nonconstatnt valueId
 				auto oldConstraint = constrContainer.find(oldConstraintId);
@@ -90,24 +107,19 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 
 		}
 	}
-	else
+	
+
+	//invalidate constraints with each other
+	for (auto oldConstraintId : GetConstraintIdVector(constr.first))
 	{
-		//not a relation with a constant -> invalidate only constraints with each other
-		auto lhs = constrIdContainer.find(constr.first);
-		if (lhs != constrIdContainer.end())
+		if (constr.second == constrContainer.at(oldConstraintId).GetOther(constr.first))
 		{
-			for (auto oldConstraintId : lhs->second)
-			{
-				if (constr.second == constrContainer[oldConstraintId].GetOther(constr.first))
-				{
-					//delete previous mutual constraints
-					DeleteConstraint(oldConstraintId);
-				}
-
-			}
+			//delete mutual constraints
+			DeleteConstraint(oldConstraintId);
 		}
-	}
 
+	}
+	
 	//create and insert new constraint
 	//--------------------------------
 	ConstraintId newConstraintId = GetNextConstraintId();
@@ -136,301 +148,164 @@ void ValueContainer::DeleteConstraint(ConstraintId constrId)
 	constrContainer.erase(constrId);
 }
 
+const std::vector<ConstraintId>& ValueContainer::GetConstraintIdVector(const ValueId id) const
+{
+	auto lhsConstrId = constrIdContainer.find(id);
+
+	//is there a record of any constraints for the id
+	if (lhsConstrId == constrIdContainer.end())
+		return std::vector<ConstraintId>();
+
+	//return reference to the vector of constraintIds corresponding to the id
+	return lhsConstrId->second;
+}
+
 
 boost::tribool ValueContainer::IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const
 {
 	//NOTE::first and second must be sorted
 
-	if (IsConstant(first))
+	if (IsConstant(first) && IsConstant(second))
 	{
-		if (IsConstant(second))
+		//both are constants
+		int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(first));
+		int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(second));
+		uint64_t uval1 = RipBits(type.BitWidth(), constantContainer.at(first));
+		uint64_t uval2 = RipBits(type.BitWidth(), constantContainer.at(second));
+
+		switch (flags)
 		{
-			//both are constants
-
-			if(CHECK_FLAG(flags, CmpFlags::Signed))
-			{
-				int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), eqContainer.at(first));
-				int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), eqContainer.at(second));
-
-				switch (flags)
-				{
-				case CmpFlags::Eq:
-					return val1 == val2;
-				case CmpFlags::Neq:
-					return val1 != val2;
-				case CmpFlags::Gt:
-					return  val1 > val2;
-				case CmpFlags::GtEq:
-					return  val1 >= val2;
-				case CmpFlags::Lt:
-					return  val1 < val2;
-				case CmpFlags::LtEq:
-					return  val1 <= val2;
-				default:
-					break;
-				}
-			}
-			else
-			{
-				uint64_t val1 = ZeroExtend64(type.BitWidth(), eqContainer.at(first));
-				uint64_t val2 = ZeroExtend64(type.BitWidth(), eqContainer.at(second));
-
-				switch (flags)
-				{
-				case CmpFlags::Eq:
-					return val1 == val2;
-				case CmpFlags::Neq:
-					return val1 != val2;
-				case CmpFlags::Gt:
-					return  val1 > val2;
-				case CmpFlags::GtEq:
-					return  val1 >= val2;
-				case CmpFlags::Lt:
-					return  val1 < val2;
-				case CmpFlags::LtEq:
-					return  val1 <= val2;
-				default:
-					break;
-				}
-			}
+		case CmpFlags::Eq:
+			return uval1 == uval2;
+		case CmpFlags::Neq:
+			return uval1 != uval2;
+		case CmpFlags::SigGt:
+			return  val1 > val2;
+		case CmpFlags::SigGtEq:
+			return  val1 >= val2;
+		case CmpFlags::SigLt:
+			return  val1 < val2;
+		case CmpFlags::SigLtEq:
+			return  val1 <= val2;
+		case CmpFlags::UnsigGt:
+			return  uval1 > uval2;
+		case CmpFlags::UnsigGtEq:
+			return  uval1 >= uval2;
+		case CmpFlags::UnsigLt:
+			return  uval1 < uval2;
+		case CmpFlags::UnsigLtEq:
+			return  uval1 <= uval2;
+		default:
+			throw std::runtime_error("Unexpected binary constraint");
 		}
-		else
-		{
-			//only first is a constant
-			if (CHECK_FLAG(flags, CmpFlags::Signed))
-			{
-				int64_t val1 = SignExtend64(type.BitWidth(), eqContainer.at(first));
 
-				auto rhsConstraintIds = constrIdContainer.find(second);
-				if (rhsConstraintIds != constrIdContainer.end())
-				{
-					for (auto constraintId : rhsConstraintIds->second)
-					{
-						auto constraint = constrContainer.at(constraintId);
-						ValueId other = constraint.GetOther(second);
-						if (IsConstant(other))
-						{
-							int64_t val2 = SignExtend64(type.BitWidth(), eqContainer.at(other));
-							switch (flags)
-							{
-							case CmpFlags::Eq:
-								if (constraint.relation == CmpFlags::Eq)
-									return val1 == val2;
-								if (constraint.relation == CmpFlags::Neq && val1 == val2)
-									return false;
-								//add intervals -- needs even more layers first<>second in constraint...
-								break;
-							case CmpFlags::Neq:
-								if (constraint.relation == CmpFlags::Eq)
-									return val1 != val2;
-								if (constraint.relation == CmpFlags::Neq && val1 == val2)
-									return true;
-							//intervals require more layers
-							case CmpFlags::Gt:								
-							case CmpFlags::GtEq:								
-							case CmpFlags::Lt:								
-							case CmpFlags::LtEq:								
-							default:
-								break;
-							}
-
-						}
-
-					}
-				}
-			}
-			else
-			{
-				//unsigned
-				uint64_t val1 = ZeroExtend64(type.BitWidth(), eqContainer.at(first));
-
-				auto rhsConstraintIds = constrIdContainer.find(second);
-				if (rhsConstraintIds != constrIdContainer.end())
-				{
-					for (auto constraintId : rhsConstraintIds->second)
-					{
-						auto constraint = constrContainer.at(constraintId);
-						ValueId other = constraint.GetOther(second);
-						if (IsConstant(other))
-						{
-							uint64_t val2 = ZeroExtend64(type.BitWidth(), eqContainer.at(other));
-							switch (flags)
-							{
-							case CmpFlags::Eq:
-								if (constraint.relation == CmpFlags::Eq)
-									return val1 == val2;
-								if (constraint.relation == CmpFlags::Neq && val1 == val2)
-									return false;
-								//add intervals -- needs even more layers first<>second in constraint...
-								break;
-							case CmpFlags::Neq:
-								if (constraint.relation == CmpFlags::Eq)
-									return val1 != val2;
-								if (constraint.relation == CmpFlags::Neq && val1 == val2)
-									return true;
-								//intervals require more layers
-							case CmpFlags::Gt:
-							case CmpFlags::GtEq:
-							case CmpFlags::Lt:
-							case CmpFlags::LtEq:
-							default:
-								break;
-							}
-
-						}
-
-					}
-				}
-			}
-
-		}
 	}
-	else if (IsConstant(second))
+
+
+	else if (IsConstant(first) || IsConstant(second))
 	{
-		//only a second is a constant
-		if (CHECK_FLAG(flags, CmpFlags::Signed))
+		//only one of ValueIds is a constant
+
+		if (IsConstant(second))
+			std::swap(first, second);
+
+		//first is a constant
+		int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(first));
+		uint64_t uval1 = RipBits(type.BitWidth(), constantContainer.at(first));
+
+		//go through constraints of second ValueId and check for constraints with other constants
+		for (auto constraintId : GetConstraintIdVector(second))
 		{
-			int64_t val1 = SignExtend64(type.BitWidth(), eqContainer.at(second));
-
-			auto rhsConstraintIds = constrIdContainer.find(first);
-			if (rhsConstraintIds != constrIdContainer.end())
+			auto constraint = constrContainer.at(constraintId);
+			ValueId other = constraint.GetOther(second);
+			if (IsConstant(other))
 			{
-				for (auto constraintId : rhsConstraintIds->second)
+				//constaint with a constant
+				int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(other));
+				uint64_t uval2 = RipBits(type.BitWidth(), constantContainer.at(other));
+
+				switch (flags)
 				{
-					auto constraint = constrContainer.at(constraintId);
-					ValueId other = constraint.GetOther(first);
-					if (IsConstant(other))
-					{
-						int64_t val2 = SignExtend64(type.BitWidth(), eqContainer.at(other));
-						switch (flags)
-						{
-						case CmpFlags::Eq:
-							if (constraint.relation == CmpFlags::Eq)
-								return val1 == val2;
-							if (constraint.relation == CmpFlags::Neq && val1 == val2)
-								return false;
-							//add intervals -- needs even more layers first<>second in constraint...
-							break;
-						case CmpFlags::Neq:
-							if (constraint.relation == CmpFlags::Eq)
-								return val1 != val2;
-							if (constraint.relation == CmpFlags::Neq && val1 == val2)
-								return true;
-							//intervals require more layers
-						case CmpFlags::Gt:
-						case CmpFlags::GtEq:
-						case CmpFlags::Lt:
-						case CmpFlags::LtEq:
-						default:
-							break;
-						}
-
-					}
-
+				case CmpFlags::Eq:
+					if (constraint.relation == CmpFlags::Eq)
+						return uval1 == uval2;
+					if (constraint.relation == CmpFlags::Neq && uval1 == uval2)
+						return false;
+					//add intervals -- needs even more layers first<>second in constraint...
+					break;
+				case CmpFlags::Neq:
+					if (constraint.relation == CmpFlags::Eq)
+						return uval1 != uval2;
+					if (constraint.relation == CmpFlags::Neq && uval1 == uval2)
+						return true;
+					//intervals require more layers
+				case CmpFlags::Gt:
+				case CmpFlags::GtEq:
+				case CmpFlags::Lt:
+				case CmpFlags::LtEq:
+				default:
+					break;
 				}
+
 			}
-		}
-		else
-		{
-			//unsigned
-			uint64_t val1 = ZeroExtend64(type.BitWidth(), eqContainer.at(second));
 
-			auto rhsConstraintIds = constrIdContainer.find(first);
-			if (rhsConstraintIds != constrIdContainer.end())
-			{
-				for (auto constraintId : rhsConstraintIds->second)
-				{
-					auto constraint = constrContainer.at(constraintId);
-					ValueId other = constraint.GetOther(first);
-					if (IsConstant(other))
-					{
-						uint64_t val2 = ZeroExtend64(type.BitWidth(), eqContainer.at(other));
-						switch (flags)
-						{
-						case CmpFlags::Eq:
-							if (constraint.relation == CmpFlags::Eq)
-								return val1 == val2;
-							if (constraint.relation == CmpFlags::Neq && val1 == val2)
-								return false;
-							//add intervals -- needs even more layers first<>second in constraint...
-							break;
-						case CmpFlags::Neq:
-							if (constraint.relation == CmpFlags::Eq)
-								return val1 != val2;
-							if (constraint.relation == CmpFlags::Neq && val1 == val2)
-								return true;
-							//intervals require more layers
-						case CmpFlags::Gt:
-						case CmpFlags::GtEq:
-						case CmpFlags::Lt:
-						case CmpFlags::LtEq:
-						default:
-							break;
-						}
-
-					}
-
-				}
-			}
 		}
 	}
 	else
 	{
 		//neither are a constant
-		auto lhsConstrIds = constrIdContainer.find(first);
-		if(lhsConstrIds != constrIdContainer.end())
+
+		//loop through constraintIds corresponding to the first ValueId
+		for(auto constrId : GetConstraintIdVector(first))
 		{ 
-			for(auto constrId : lhsConstrIds->second)
-			{ 
-				auto constraint = constrContainer.find(constrId);
-				if (constraint == constrContainer.end())
-					throw std::runtime_error("ConstraintId references constraint that does not exist.");
-				if (second == constraint->second.GetOther(first))
+			auto constraint = constrContainer.find(constrId);
+			if (constraint == constrContainer.end())
+				throw std::runtime_error("ConstraintId references constraint that does not exist.");
+			if (second == constraint->second.GetOther(first))
+			{
+				//this constraint contains both valueIds
+				switch (flags)
 				{
-					//this constraint contains both valueIds
-					switch (flags)
-					{
-					case CmpFlags::Eq:
-						if (constraint->second.relation == CmpFlags::Eq)
-							return true;
-						if (constraint->second.relation == CmpFlags::Neq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::Lt)
-							return false;
-						break;
-					case CmpFlags::Neq:
-						if (constraint->second.relation == CmpFlags::Eq)
-							return false;
-						if (constraint->second.relation == CmpFlags::Neq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::Lt)
-							return true;
-						break;
-					case CmpFlags::Gt:
-						if (constraint->second.relation == CmpFlags::Gt)
-							return true;
-						if (constraint->second.relation == CmpFlags::Eq || constraint->second.relation == CmpFlags::Lt || constraint->second.relation == CmpFlags::LtEq)
-							return false;
-						break;
-					case CmpFlags::Lt:
-						if (constraint->second.relation == CmpFlags::Lt)
-							return true;
-						if (constraint->second.relation == CmpFlags::Eq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::GtEq)
-							return false;
-						break;
-					case CmpFlags::GtEq:
-						if (constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::GtEq || constraint->second.relation == CmpFlags::Eq)
-							return true;
-						if (constraint->second.relation == CmpFlags::Lt)
-							return false;
-						break;
-					case CmpFlags::LtEq:
-						if (constraint->second.relation == CmpFlags::Lt || constraint->second.relation == CmpFlags::LtEq || constraint->second.relation == CmpFlags::Eq)
-							return true;
-						if (constraint->second.relation == CmpFlags::Gt)
-							return false;
-						break;
-					default:
-						break;
-					}
+				case CmpFlags::Eq:
+					if (constraint->second.relation == CmpFlags::Eq)
+						return true;
+					if (constraint->second.relation == CmpFlags::Neq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::Lt)
+						return false;
+					break;
+				case CmpFlags::Neq:
+					if (constraint->second.relation == CmpFlags::Eq)
+						return false;
+					if (constraint->second.relation == CmpFlags::Neq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::Lt)
+						return true;
+					break;
+				case CmpFlags::Gt:
+					if (constraint->second.relation == CmpFlags::Gt)
+						return true;
+					if (constraint->second.relation == CmpFlags::Eq || constraint->second.relation == CmpFlags::Lt || constraint->second.relation == CmpFlags::LtEq)
+						return false;
+					break;
+				case CmpFlags::Lt:
+					if (constraint->second.relation == CmpFlags::Lt)
+						return true;
+					if (constraint->second.relation == CmpFlags::Eq || constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::GtEq)
+						return false;
+					break;
+				case CmpFlags::GtEq:
+					if (constraint->second.relation == CmpFlags::Gt || constraint->second.relation == CmpFlags::GtEq || constraint->second.relation == CmpFlags::Eq)
+						return true;
+					if (constraint->second.relation == CmpFlags::Lt)
+						return false;
+					break;
+				case CmpFlags::LtEq:
+					if (constraint->second.relation == CmpFlags::Lt || constraint->second.relation == CmpFlags::LtEq || constraint->second.relation == CmpFlags::Eq)
+						return true;
+					if (constraint->second.relation == CmpFlags::Gt)
+						return false;
+					break;
+				default:
+					break;
 				}
-			}		
+			}	
 		}
 
 	}
@@ -443,26 +318,18 @@ boost::tribool ValueContainer::IsEq(ValueId first, ValueId second, Type type) co
 	if (first == second)
 		return true;
 
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
-
 	//if both constants but different
-	if (lhs != eqContainer.end() && rhs != eqContainer.end())
-		return ZeroExtend64(type.BitWidth(), lhs->second) == ZeroExtend64(type.BitWidth(), rhs->second);
+	if (IsConstant(first) && IsConstant(second))
+		return RipBits(type.BitWidth(), constantContainer.at(first)) == RipBits(type.BitWidth(), constantContainer.at(second));
 
 	//check for equality in constraint container
 	//------------------------------------------
-	if (second > first)
+	if (first > second)
 		std::swap(first, second);
 
-	auto lhsConstrId = constrIdContainer.find(first);
 
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
-	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
+	//loop through vector of constraintIds of corresponding ValueId
+	for (auto constrId : GetConstraintIdVector(first))
 	{
 		auto constr = constrContainer.find(constrId);
 		if (constr == constrContainer.end())
@@ -477,8 +344,10 @@ boost::tribool ValueContainer::IsEq(ValueId first, ValueId second, Type type) co
 				return true;
 
 			case CmpFlags::Neq:
-			case CmpFlags::Gt:
-			case CmpFlags::Lt:
+			case CmpFlags::SigGt:
+			case CmpFlags::SigLt:
+			case CmpFlags::UnsigGt:
+			case CmpFlags::UnsigLt:
 				return false;
 
 			default:
@@ -495,79 +364,23 @@ boost::tribool ValueContainer::IsEq(ValueId first, ValueId second, Type type) co
 
 boost::tribool ValueContainer::IsNeq(ValueId first, ValueId second, Type type) const //maybe (!IsEq)?
 {
-	if (first == second)
-		return false;
-
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
-
-	//if are different constants, return true
-	if (lhs != eqContainer.end() && rhs != eqContainer.end())
-		return ZeroExtend64(type.BitWidth(), lhs->second) != ZeroExtend64(type.BitWidth(), rhs->second);
-
-	//check for equality in constraint container
-	//------------------------------------------
-	if (second > first)
-		std::swap(first, second);
-
-	auto lhsConstrId = constrIdContainer.find(first);
-
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
-	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
-	{
-		auto constr = constrContainer.find(constrId);
-		if (constr == constrContainer.end())
-			throw std::runtime_error("Referenced constraint does not exist!");
-
-		//check direct relation
-		if (constr->second.Contains(second))
-		{
-			switch (constr->second.relation)
-			{
-			case CmpFlags::Eq:
-				return false;
-			case CmpFlags::Neq:
-			case CmpFlags::Gt:
-			case CmpFlags::Lt:
-				return true;
-			default:
-				break;
-			}
-		}
-
-		//TODO::check intervals
-	}
-
-
-	return boost::indeterminate;
+	return !IsEq(first, second, type);
 }
 
 boost::tribool ValueContainer::IsTrue(ValueId first, Type type) const
 {
-	auto lhs = eqContainer.find(first);
-
 	//is a constant?
-	if (lhs != eqContainer.end())
+	if (IsConstant(first))
 	{
-		uint64_t value = ZeroExtend64(type.BitWidth(), lhs->second);
+		uint64_t value = RipBits(type.BitWidth(), constantContainer.at(first));
 		return value != 0;
 	}
 
 	//checks in constraint container
 	//------------------------------------------
 
-	auto lhsConstrId = constrIdContainer.find(first);
-
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
-	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
+	//loop through vector of constraintIds corresponding to a first ValueId
+	for (auto constrId : GetConstraintIdVector(first))
 	{
 		auto constr = constrContainer.find(constrId);
 		if (constr == constrContainer.end())
@@ -575,12 +388,11 @@ boost::tribool ValueContainer::IsTrue(ValueId first, Type type) const
 
 		//check direct relation
 		ValueId second = constr->second.GetOther(first);
-		auto constant = eqContainer.find(second);
 
 		//do we have constraint with a constant?
-		if (constant != eqContainer.end())
+		if (IsConstant(second))
 		{
-			uint64_t value = ZeroExtend64(type.BitWidth(), constant->second);
+			uint64_t value = RipBits(type.BitWidth(), constantContainer.at(second));
 
 			switch (constr->second.relation)
 			{
@@ -609,98 +421,35 @@ boost::tribool ValueContainer::IsTrue(ValueId first, Type type) const
 
 boost::tribool ValueContainer::IsFalse(ValueId first, Type type) const
 {
-	auto lhs = eqContainer.find(first);
-
-	//is a constant?
-	if (lhs != eqContainer.end())
-	{
-		uint64_t value = ZeroExtend64(type.BitWidth(), lhs->second);
-		return value == 0;
-	}
-
-	//checks in constraint container
-	//------------------------------------------
-
-	auto lhsConstrId = constrIdContainer.find(first);
-
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
-	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
-	{
-		auto constr = constrContainer.find(constrId);
-		if (constr == constrContainer.end())
-			throw std::runtime_error("Referenced constraint does not exist!");
-
-		//check direct relation
-		ValueId second = constr->second.GetOther(first);
-		auto constant = eqContainer.find(second);
-
-		//do we have constraint with a constant?
-		if (constant != eqContainer.end())
-		{
-			uint64_t value = ZeroExtend64(type.BitWidth(), constant->second);
-
-			switch (constr->second.relation)
-			{
-			case CmpFlags::Eq:
-				return value == 0;
-			case CmpFlags::Neq:
-				if (value == 0)
-					return true;
-				break;
-
-				//TODO::check for intervals
-				//NOTE::need to check ValueId swapping
-
-			default:
-				break;
-			}
-
-		}
-
-		//TODO::Check in other layers
-
-	}
-
-	return boost::indeterminate;
+	return !IsTrue(first, type);
 }
 
 boost::tribool ValueContainer::IsBinaryEq(ValueId first, ValueId second) const
 {
 	if (first == second)
 		return true;
-
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
-
+	
 	//if both constants but different, return false
-	if (lhs != eqContainer.end() && rhs != eqContainer.end())
+	if (IsConstant(first) && IsConstant(second))
 		return false;
+
 
 	//check for equality in constraint container
 	//------------------------------------------
-	if (second > first)
+	if (first > second)
 		std::swap(first, second);
 
-	auto lhsConstrId = constrIdContainer.find(first);
 
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
-	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
+	//loop through vector of constraintIds corresponding to the first ValueId
+	for (auto constrId : GetConstraintIdVector(first))
 	{
 		auto constr = constrContainer.find(constrId);
 		if (constr == constrContainer.end())
 			throw std::runtime_error("Referenced constraint does not exist!");
 
-		//check direct relation
 		if (constr->second.Contains(second))
 		{
+			//constraint between both ValueIds
 			switch (constr->second.relation)
 			{
 			case CmpFlags::Eq:
@@ -721,16 +470,16 @@ boost::tribool ValueContainer::IsBinaryEq(ValueId first, ValueId second) const
 
 boost::tribool ValueContainer::IsUnknown(ValueId first) const
 {
-	return eqContainer.find(first) == eqContainer.end();
-	//unknown unknown?
+	return constantContainer.find(first) == constantContainer.end();
+	//TODO::unknown unknown?
 }
 
 boost::tribool ValueContainer::IsZero(ValueId first) const
 {
-	auto lhs = eqContainer.find(first);
+	auto lhs = constantContainer.find(first);
 
 	//is a constant?
-	if (lhs != eqContainer.end())
+	if (lhs != constantContainer.end())
 	{
 		uint64_t value = lhs->second;
 		return value == 0;
@@ -738,15 +487,8 @@ boost::tribool ValueContainer::IsZero(ValueId first) const
 
 	//checks in constraint container
 	//------------------------------------------
-
-	auto lhsConstrId = constrIdContainer.find(first);
-
-	//does first have constraints
-	if (lhsConstrId == constrIdContainer.end())
-		return boost::indeterminate;
-
 	//loop through vector of constraintIds
-	for (auto constrId : lhsConstrId->second)
+	for (const auto constrId : GetConstraintIdVector(first))
 	{
 		auto constr = constrContainer.find(constrId);
 		if (constr == constrContainer.end())
@@ -754,12 +496,11 @@ boost::tribool ValueContainer::IsZero(ValueId first) const
 
 		//check direct relation
 		ValueId second = constr->second.GetOther(first);
-		auto constant = eqContainer.find(second);
-
-		//do we have constraint with a constant?
-		if (constant != eqContainer.end())
+		
+		if(IsConstant(second))
 		{
-			uint64_t value = constant->second;
+			//both first and second are constants
+			uint64_t value = constantContainer.at(second);
 
 			switch (constr->second.relation)
 			{
@@ -778,8 +519,7 @@ boost::tribool ValueContainer::IsZero(ValueId first) const
 
 		}
 
-		//TODO::Check in other layers
-
+		//TODO::Check in other layers, maybe recursion?
 	}
 
 	return boost::indeterminate;
@@ -793,7 +533,7 @@ void ValueContainer::Assume(ValueId first, ValueId second, Type type, CmpFlags f
 void ValueContainer::AssumeTrue(ValueId first)
 {
 	ValueId zero = CreateConstIntVal(0);
-	InsertConstraint(BinaryConstraint(first, zero, CmpFlags::Neq));
+	InsertConstraint(BinaryConstraint(first, zero, CmpFlags::Neq)); ///TODO::not equal 0? or equal to 1?? logical comparation always 1?
 }
 
 void ValueContainer::AssumeFalse(ValueId first)
@@ -805,20 +545,20 @@ void ValueContainer::AssumeFalse(ValueId first)
 
 ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//not constants, return unknown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	//both constants
 	if (CHECK_FLAG(flags, ArithFlags::Unsigned))
 	{
 		//prepare values
-		uint64_t val1 = ZeroExtend64(type.BitWidth() ,lhs->second);
-		uint64_t val2 = ZeroExtend64(type.BitWidth(), rhs->second);
-		uint64_t max = ZeroExtend64(type.BitWidth(), ULLONG_MAX);
+		uint64_t val1 = RipBits(type.BitWidth() ,lhs->second);
+		uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
+		uint64_t max = RipBits(type.BitWidth(), ULLONG_MAX);
 		
 		if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
 		{
@@ -826,7 +566,7 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
 				return CreateVal(type);
 		}
 		
-		uint64_t result = ZeroExtend64(type.BitWidth(), val1 + val2);
+		uint64_t result = RipBits(type.BitWidth(), val1 + val2);
 		return CreateConstIntVal(result, type);
 
 
@@ -837,7 +577,7 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
 		uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
 		uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
 
-		uint64_t max = ZeroExtend64(type.BitWidth() - 1, ULLONG_MAX);
+		uint64_t max = RipBits(type.BitWidth() - 1, ULLONG_MAX);
 		uint64_t min = (1ULL << (type.BitWidth() - 1));
 
 		if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
@@ -859,19 +599,19 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//not constants, return unknown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	//both constants
 	if (CHECK_FLAG(flags, ArithFlags::Unsigned))
 	{
 		//prepare values
-		uint64_t val1 = ZeroExtend64(type.BitWidth(), lhs->second);
-		uint64_t val2 = ZeroExtend64(type.BitWidth(), rhs->second);
+		uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
+		uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
 
 		if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
 		{
@@ -879,7 +619,7 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
 				return CreateVal(type);
 		}
 
-		uint64_t result = ZeroExtend64(type.BitWidth(), val1 - val2);
+		uint64_t result = RipBits(type.BitWidth(), val1 - val2);
 		return CreateConstIntVal(result, type);
 
 
@@ -890,7 +630,7 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
 		uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
 		uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
 
-		uint64_t max = ZeroExtend64(type.BitWidth() - 1, ULLONG_MAX);
+		uint64_t max = RipBits(type.BitWidth() - 1, ULLONG_MAX);
 		uint64_t min = (1ULL << (type.BitWidth() - 1));
 
 		if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
@@ -911,32 +651,32 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//not constants, return unknown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	//both constants
 	if (CHECK_FLAG(flags, ArithFlags::Unsigned))
 	{
 		//prepare values
-		uint64_t val1 = ZeroExtend64(type.BitWidth(), lhs->second);
-		uint64_t val2 = ZeroExtend64(type.BitWidth(), rhs->second);
+		uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
+		uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
 		
 
 		if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
 		{
 			//on how many bits we need to represent the result?
-			uint64_t bitsNeeded = BSD(val1) + BSD(val2);
+			uint64_t bitsNeeded = BSR(val1) + BSR(val2);
 
 			//overflow
 			if (bitsNeeded > type.BitWidth())
 				return CreateVal(type);
 		}
 
-		uint64_t result = ZeroExtend64(type.BitWidth(), val1 * val2);
+		uint64_t result = RipBits(type.BitWidth(), val1 * val2);
 		return CreateConstIntVal(result, type);
 
 
@@ -944,12 +684,12 @@ ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags
 	else
 	{
 		//signed
-		uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
-		uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
+		int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), lhs->second);
+		int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), rhs->second);
 
 		if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
 		{
-			uint64_t bitsNeeded = BSD(val1 < 0 ? -val1 : val1) + BSD(val2 < 0 ? -val2 : val2);
+			uint64_t bitsNeeded = BSR(val1 < 0 ? (uint64_t)(-val1) : (uint64_t)val1) + BSR(val2 < 0 ? (uint64_t)(-val2) : (uint64_t)val2);
 
 			//check overflow
 			if (bitsNeeded > type.BitWidth())
@@ -964,25 +704,25 @@ ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::Div(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//not constants, return unknown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 		
 
 	if (CHECK_FLAG(flags, ArithFlags::Unsigned))
 	{
 		//prepare values
-		uint64_t val1 = ZeroExtend64(type.BitWidth(), lhs->second);
-		uint64_t val2 = ZeroExtend64(type.BitWidth(), rhs->second);
+		uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
+		uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
 		
 		//divide by zero - what to do?
 		if(val2 == 0)
 			return CreateVal(type);
 
-		uint64_t result = ZeroExtend64(type.BitWidth(), val1 / val2);
+		uint64_t result = RipBits(type.BitWidth(), val1 / val2);
 		return CreateConstIntVal(result, type);
 
 	}
@@ -1004,25 +744,25 @@ ValueId ValueContainer::Div(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::Rem(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//not constants, return unknown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 
 	if (CHECK_FLAG(flags, ArithFlags::Unsigned))
 	{
 		//prepare values
-		uint64_t val1 = ZeroExtend64(type.BitWidth(), lhs->second);
-		uint64_t val2 = ZeroExtend64(type.BitWidth(), rhs->second);
+		uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
+		uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
 
 		//divide by zero - what to do?
 		if (val2 == 0)
 			return CreateVal(type);
 
-		uint64_t result = ZeroExtend64(type.BitWidth(), val1 % val2);
+		uint64_t result = RipBits(type.BitWidth(), val1 % val2);
 		return CreateConstIntVal(result, type);
 
 	}
@@ -1044,16 +784,16 @@ ValueId ValueContainer::Rem(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//if both are not constants, return unkown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	size_t numOfBits = type.BitWidth();
-	uint64_t value = ZeroExtend64(numOfBits, lhs->second);
-	uint64_t shiftval = ZeroExtend64(numOfBits, rhs->second);
+	uint64_t value = RipBits(numOfBits, lhs->second);
+	uint64_t shiftval = RipBits(numOfBits, rhs->second);
 
 	value <<= shiftval;
 
@@ -1062,16 +802,16 @@ ValueId ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//if both are not constants, return unkown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	size_t numOfBits = type.BitWidth();
-	uint64_t value = ZeroExtend64(numOfBits, lhs->second);
-	uint64_t shiftval = ZeroExtend64(numOfBits, rhs->second);
+	uint64_t value = RipBits(numOfBits, lhs->second);
+	uint64_t shiftval = RipBits(numOfBits, rhs->second);
 	bool isNegative = (bool)(value & (1ULL << (numOfBits - 1)));
 
 	value >>= shiftval;
@@ -1091,11 +831,11 @@ ValueId ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFlags
 
 ValueId ValueContainer::BitAnd(ValueId first, ValueId second, Type type)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//if one of them is not a constant, return unkown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	uint64_t value = lhs->second & rhs->second;
@@ -1105,11 +845,11 @@ ValueId ValueContainer::BitAnd(ValueId first, ValueId second, Type type)
 
 ValueId ValueContainer::BitOr(ValueId first, ValueId second, Type type)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//if one of them is not a constant, return unkown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	uint64_t value = lhs->second | rhs->second;
@@ -1119,11 +859,11 @@ ValueId ValueContainer::BitOr(ValueId first, ValueId second, Type type)
 
 ValueId ValueContainer::BitXor(ValueId first, ValueId second, Type type)
 {
-	auto lhs = eqContainer.find(first);
-	auto rhs = eqContainer.find(second);
+	auto lhs = constantContainer.find(first);
+	auto rhs = constantContainer.find(second);
 
 	//if one of them is not a constant, return unkown
-	if (lhs == eqContainer.end() || rhs == eqContainer.end())
+	if (lhs == constantContainer.end() || rhs == constantContainer.end())
 		return CreateVal(type);
 
 	uint64_t value = lhs->second ^ rhs->second;
@@ -1133,10 +873,10 @@ ValueId ValueContainer::BitXor(ValueId first, ValueId second, Type type)
 
 ValueId ValueContainer::BitNot(ValueId first, Type type)
 {
-	auto lhs = eqContainer.find(first);
+	auto lhs = constantContainer.find(first);
 
 	//if not a constant, return unkown
-	if (lhs == eqContainer.end())
+	if (lhs == constantContainer.end())
 		return CreateVal(type);
 
 	uint64_t value = ~(lhs->second);
@@ -1150,9 +890,9 @@ ValueId ValueContainer::LogAnd(ValueId first, ValueId second, Type type)
 	if (result == true)
 		CreateConstIntVal(1, type);
 	else if (result == false)
-		CreateConstIntVal(0, type);
+		return CreateConstIntVal(0, type);
 	else
-		CreateVal(type);
+		return CreateVal(type);
 }
 
 ValueId ValueContainer::LogOr(ValueId first, ValueId second, Type type)
@@ -1161,9 +901,9 @@ ValueId ValueContainer::LogOr(ValueId first, ValueId second, Type type)
 	if (result == true)
 		CreateConstIntVal(1, type);
 	else if (result == false)
-		CreateConstIntVal(0, type);
+		return CreateConstIntVal(0, type);
 	else
-		CreateVal(type);
+		return CreateVal(type);
 }
 
 ValueId ValueContainer::LogNot(ValueId first, Type type)
@@ -1172,17 +912,17 @@ ValueId ValueContainer::LogNot(ValueId first, Type type)
 	if (result == true)
 		CreateConstIntVal(1, type);
 	else if (result == false)
-		CreateConstIntVal(0, type);
+		return CreateConstIntVal(0, type);
 	else
-		CreateVal(type);
+		return CreateVal(type);
 }
 
 ValueId ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags)
 {
-	auto val = eqContainer.find(first);
+	auto val = constantContainer.find(first);
 
 	//if unknown return new unkown
-	if (val == eqContainer.end())
+	if (val == constantContainer.end())
 		return CreateVal(targetType);
 
 	uint64_t value = val->second;	
@@ -1191,7 +931,7 @@ ValueId ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetTyp
 	if (CHECK_FLAG(flags, ArithFlags::Signed))
 		value = SignExtend64(sourceType.BitWidth(), value);
 	else
-		value = ZeroExtend64(sourceType.BitWidth(), value);
+		value = RipBits(sourceType.BitWidth(), value);
 
 	//find or create ValueId
 	return CreateConstIntVal(value, targetType);
@@ -1199,10 +939,10 @@ ValueId ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetTyp
 
 ValueId ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetType)
 {
-	auto val = eqContainer.find(first);
+	auto val = constantContainer.find(first);
 
 	//if not already in const container return new unknown
-	if (val == eqContainer.end())
+	if (val == constantContainer.end())
 		return CreateVal(targetType);
 	
 	else
@@ -1212,7 +952,7 @@ ValueId ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetType
 ValueId ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 {
 	//if exists return existing
-	for (auto &item : eqContainer)
+	for (auto &item : constantContainer)
 	{
 		if (item.second == value)
 			return item.first;
@@ -1220,7 +960,7 @@ ValueId ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 
 	//else create new
 	ValueId ret = ValueId::GetNextId();
-	eqContainer[ret] = value;
+	constantContainer[ret] = value;
 
 	return ret;
 }
@@ -1228,7 +968,7 @@ ValueId ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 ValueId ValueContainer::CreateConstIntVal(uint64_t value)
 {
 	//if exists return existing
-	for (auto &item : eqContainer)
+	for (auto &item : constantContainer)
 	{
 		if (item.second == value)
 			return item.first;
@@ -1236,7 +976,7 @@ ValueId ValueContainer::CreateConstIntVal(uint64_t value)
 
 	//else create new
 	ValueId ret = ValueId::GetNextId();
-	eqContainer[ret] = value;
+	constantContainer[ret] = value;
 
 	return ret;
 }
@@ -1250,3 +990,775 @@ ValueId ValueContainer::CreateConstFloatVal(double value, Type type)
 {
 	throw NotSupportedException();
 }
+
+
+/*//
+// Created by Charvin on 17. 10. 2016.
+//
+
+#include "ValueRepImplementation.hh"
+#include <sstream>
+
+static const char *ConstraintTypeRepresentation[] = {"<", ">", "<=", ">=", "==", "!="};
+
+//INTERVAL CONSTRAINT CLASS IMPLEMENTATIONS
+//-----------------------------------------
+
+friend std::ostream& operator<<(std::ostream& stream, IntervalConstraint val)
+{
+stream << ConstraintTypeRepresentation[static_cast<int>(val.type)] << " " << val.data.Integer;
+return stream;
+}
+//-----------------------------------------
+
+
+
+//BINARY CONSTRAINT CLASS IMPLEMENTATIONS
+//-----------------------------------------
+
+BinaryConstraint::constraintIdGenerator = 0;
+friend std::ostream& BinaryConstraint::operator<<(std::ostream& stream, BinaryConstraint val)
+{
+stream << "  #" << val.id << ": #" << val.idVal1 << "  " << ConstraintTypeRepresentation[static_cast<int> (val.type)] << "  #" << val.idVal2 << std::endl;
+return stream;
+}
+//-----------------------------------------
+
+
+
+
+//VALUE REPRESENTATION CLASS IMPLEMENTATIONS
+//-----------------------------------------
+ValueRep::valueIdGenerator = 0;
+
+
+ValueRep::~ValueRep() {
+///TODO::remove constraints from tables
+
+}
+
+
+std::string ValueRep::ToString() const {
+std::stringstream buf;
+
+//interval constraints
+auto intervalIterator = intervalConstraintContainer.find(id);
+
+//check if ValueRep has interval constraints
+if(intervalIterator != intervalConstraintContainer.end())
+{
+//Append data from vector of constraints
+buf << "Interval Constraints for ValueRep " << id << ":\n___________________________________________" << std::endl;
+for(auto const& value : intervalIterator->second)
+{
+buf << " " << value << ", ";
+}
+buf << std::endl << std::endl;
+}
+
+//binary relation constraints
+auto binaryRelationIterator = binaryRelationIterator.find(id);
+
+//check if this ValueRep has binary constraints
+if(binaryRelationIterator != binaryRelationsContainer.end())
+{
+buf << "Binary Relation Constraints for ValueRep #" << id << " of type " << binaryRelationIterator->second.first << ":\n___________________________________________" << std::endl;
+
+for(auto const& value : binaryRelationIterator->second.second)
+{
+//check if constraint with id from binaryRelationContainer exists in binaryConstraintContainer, if not we are in deep sh*t
+auto constraintIterator = binaryConstraintContainer.find(value);
+if(constraintIterator == binaryConstraintContainer.end())
+throw std::logic_error("Binary relation container contains id of non existing constraint");
+
+buf << constraintIterator->second;
+}
+}
+return buf.str();
+}
+
+boost::tribool ValueRep::operator<(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator>(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator<=(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator>=(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::IsEQ(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::IsNEQ(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator<(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer < constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue - 1 )
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  >= constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return true;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return true;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator>(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer > constValue;
+
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return true;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return true;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue + 1)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer <= constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator<=(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer <= constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue + 1)
+return true;
+case ConstraintType::eLTE:
+if(value.data.Integer <= constValue)
+return true;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator>=(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer >= constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue - 1)
+return true;
+case ConstraintType::eGTE:
+if(value.data.Integer  >= constValue)
+return true;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsEQ(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer == constValue;
+
+case ConstraintType::eNEQ:
+if(value.data.Integer == constValue)
+return false;
+break;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsNEQ(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer == constValue;
+
+case ConstraintType::eNEQ:
+if(value.data.Integer == constValue)
+return false;
+break;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsUnknown() const {
+return boost::indeterminate;
+}
+
+void ValueRep::SetConstraint(ConstraintType type, IValueRep &other)
+{
+//new constraint
+BinaryConstraint newConstraint(id, type, static_cast<ValueRep&>(other).id); ///TODO::is this typecast ok with c++???
+
+//register this constraint for IValueRep1
+binaryRelationsContainer[id].second.push_back(newConstraint.id);
+//register this constraint for IValueRep2
+binaryRelationsContainer[static_cast<ValueRep&>(other).id].second.push_back(newConstraint.id);
+
+//insert constraint
+binaryConstraintContainer[newConstraint.id] = newConstraint;
+
+//--> continue and fix all invalid constraints in the interval container...
+}
+
+void ValueRep::SetConstraint(ConstraintType type, int64_t constValue)
+{
+
+auto constraintVector = intervalConstraintContainer[id];
+constraintVector.push_back(IntervalConstraint(type, constValue));
+
+
+//--> continue and fix all invalid constraints in the interval container...
+
+/*
+//get rid of non valid constraints
+for(auto constraintIterator = constraintVector.begin(); constraintIterator != constraintVector.end(); ++constraintIterator)
+{
+//decide what to do with all the different types of interval constraints
+if(constraintIterator->data.Integer == constValue) {
+switch(constraintIterator->type) {
+case ConstraintType::eEQ:
+case ConstraintType::eNEQ:
+constraintVector.erase(constraintIterator);
+break;
+case ConstraintType::eGTE:
+constraintIterator->type = ConstraintType::eGT;
+break;
+case ConstraintType::eLTE:
+constraintIterator->type = ConstraintType::eLT;
+break;
+default:
+break;
+}
+}
+}*/
+
+/*
+//get rid of non valid constraints
+for(auto constraintIterator = constraintVector.begin(); constraintIterator != constraintVector.end(); ++constraintIterator)
+{
+//decide what to do with all the different types of interval constraints
+if(constraintIterator->data.Integer == constValue) {
+switch(constraintIterator->type) {
+case ConstraintType::eEQ:
+constraintVector.erase(constraintIterator);
+break;
+case ConstraintType::eGTE:
+constraintIterator->type = ConstraintType::eGT;
+break;
+case ConstraintType::eLTE:
+constraintIterator->type = ConstraintType::eLT;
+break;
+default:
+break;
+}
+}
+}
+}
+//-----------------------------------------
+
+*/
+
+//
+// Created by Charvin on 17. 10. 2016.
+//
+
+
+/*
+#include <sstream>
+
+static const char *ConstraintTypeRepresentation[] = {"<", ">", "<=", ">=", "==", "!="};
+
+//INTERVAL CONSTRAINT CLASS IMPLEMENTATIONS
+//-----------------------------------------
+
+friend std::ostream& operator<<(std::ostream& stream, IntervalConstraint val)
+{
+stream << ConstraintTypeRepresentation[static_cast<int>(val.type)] << " " << val.data.Integer;
+return stream;
+}
+//-----------------------------------------
+
+
+
+//BINARY CONSTRAINT CLASS IMPLEMENTATIONS
+//-----------------------------------------
+
+BinaryConstraint::constraintIdGenerator = 0;
+friend std::ostream& BinaryConstraint::operator<<(std::ostream& stream, BinaryConstraint val)
+{
+stream << "  #" << val.id << ": #" << val.idVal1 << "  " << ConstraintTypeRepresentation[static_cast<int> (val.type)] << "  #" << val.idVal2 << std::endl;
+return stream;
+}
+//-----------------------------------------
+
+
+
+
+//VALUE REPRESENTATION CLASS IMPLEMENTATIONS
+//-----------------------------------------
+ValueRep::valueIdGenerator = 0;
+
+
+ValueRep::~ValueRep() {
+///TODO::remove constraints from tables
+
+}
+
+
+std::string ValueRep::ToString() const {
+std::stringstream buf;
+
+//interval constraints
+auto intervalIterator = intervalConstraintContainer.find(id);
+
+//check if ValueRep has interval constraints
+if(intervalIterator != intervalConstraintContainer.end())
+{
+//Append data from vector of constraints
+buf << "Interval Constraints for ValueRep " << id << ":\n___________________________________________" << std::endl;
+for(auto const& value : intervalIterator->second)
+{
+buf << " " << value << ", ";
+}
+buf << std::endl << std::endl;
+}
+
+//binary relation constraints
+auto binaryRelationIterator = binaryRelationIterator.find(id);
+
+//check if this ValueRep has binary constraints
+if(binaryRelationIterator != binaryRelationsContainer.end())
+{
+buf << "Binary Relation Constraints for ValueRep #" << id << " of type " << binaryRelationIterator->second.first << ":\n___________________________________________" << std::endl;
+
+for(auto const& value : binaryRelationIterator->second.second)
+{
+//check if constraint with id from binaryRelationContainer exists in binaryConstraintContainer, if not we are in deep sh*t
+auto constraintIterator = binaryConstraintContainer.find(value);
+if(constraintIterator == binaryConstraintContainer.end())
+throw std::logic_error("Binary relation container contains id of non existing constraint");
+
+buf << constraintIterator->second;
+}
+}
+return buf.str();
+}
+
+boost::tribool ValueRep::operator<(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator>(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator<=(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator>=(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::IsEQ(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::IsNEQ(const IValueRep &other) const {
+return nullptr;
+///TODO::finish
+}
+
+boost::tribool ValueRep::operator<(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer < constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue - 1 )
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  >= constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return true;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return true;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator>(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer > constValue;
+
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return true;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return true;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue + 1)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer <= constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator<=(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer <= constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue + 1)
+return true;
+case ConstraintType::eLTE:
+if(value.data.Integer <= constValue)
+return true;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::operator>=(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer >= constValue;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue - 1)
+return true;
+case ConstraintType::eGTE:
+if(value.data.Integer  >= constValue)
+return true;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsEQ(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer == constValue;
+
+case ConstraintType::eNEQ:
+if(value.data.Integer == constValue)
+return false;
+break;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsNEQ(const int64_t constValue) const {
+auto constraintVector = intervalConstraintContainer[id];
+
+for(auto& value : constraintVector)
+{
+switch(value.type)
+{
+case ConstraintType::eEQ:
+return value.data.Integer == constValue;
+
+case ConstraintType::eNEQ:
+if(value.data.Integer == constValue)
+return false;
+break;
+
+case ConstraintType::eGT:
+if(value.data.Integer >= constValue)
+return false;
+case ConstraintType::eGTE:
+if(value.data.Integer  > constValue)
+return false;
+case ConstraintType::eLT:
+if(value.data.Integer <= constValue)
+return false;
+case ConstraintType::eLTE:
+if(value.data.Integer < constValue)
+return false;
+default:
+break;
+}
+
+}
+
+return boost::indeterminate;
+}
+
+boost::tribool ValueRep::IsUnknown() const {
+return boost::indeterminate;
+}
+
+void ValueRep::SetConstraint(ConstraintType type, IValueRep &other)
+{
+//new constraint
+BinaryConstraint newConstraint(id, type, static_cast<ValueRep&>(other).id); ///TODO::is this typecast ok with c++???
+
+//register this constraint for IValueRep1
+binaryRelationsContainer[id].second.push_back(newConstraint.id);
+//register this constraint for IValueRep2
+binaryRelationsContainer[static_cast<ValueRep&>(other).id].second.push_back(newConstraint.id);
+
+//insert constraint
+binaryConstraintContainer[newConstraint.id] = newConstraint;
+
+//--> continue and fix all invalid constraints in the interval container...
+}
+
+void ValueRep::SetConstraint(ConstraintType type, int64_t constValue)
+{
+
+auto constraintVector = intervalConstraintContainer[id];
+constraintVector.push_back(IntervalConstraint(type, constValue));
+
+
+//--> continue and fix all invalid constraints in the interval container...
+
+/*
+//get rid of non valid constraints
+for(auto constraintIterator = constraintVector.begin(); constraintIterator != constraintVector.end(); ++constraintIterator)
+{
+//decide what to do with all the different types of interval constraints
+if(constraintIterator->data.Integer == constValue) {
+switch(constraintIterator->type) {
+case ConstraintType::eEQ:
+case ConstraintType::eNEQ:
+constraintVector.erase(constraintIterator);
+break;
+case ConstraintType::eGTE:
+constraintIterator->type = ConstraintType::eGT;
+break;
+case ConstraintType::eLTE:
+constraintIterator->type = ConstraintType::eLT;
+break;
+default:
+break;
+}
+}
+}*/
+
+/*
+//get rid of non valid constraints
+for(auto constraintIterator = constraintVector.begin(); constraintIterator != constraintVector.end(); ++constraintIterator)
+{
+//decide what to do with all the different types of interval constraints
+if(constraintIterator->data.Integer == constValue) {
+switch(constraintIterator->type) {
+case ConstraintType::eEQ:
+constraintVector.erase(constraintIterator);
+break;
+case ConstraintType::eGTE:
+constraintIterator->type = ConstraintType::eGT;
+break;
+case ConstraintType::eLTE:
+constraintIterator->type = ConstraintType::eLT;
+break;
+default:
+break;
+}
+}
+}
+}
+//-----------------------------------------
+
+*/
