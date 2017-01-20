@@ -9,12 +9,17 @@
 #include <map>
 #include <z3++.h>
 
+//TODO: refactor one-names
+//TODO: lhs, rhs
+
 class Z3ValueContainer : public IValueContainer {
 private:
-  static z3::context c;
+  static z3::context c; //TODO: refactor, con? context?
   static std::map<ValueId, z3::expr> idsToExprs;
-  std::multimap<ValueId, z3::expr> assumptions;
+  std::multimap<ValueId, z3::expr> assumptions; //TODO: contraints?
 
+  z3::expr CreateCmpExpression(ValueId first, ValueId second, Type type, CmpFlags flags) const;
+  void     AddValueInfoToSolver(z3::solver& s, ValueId val) const;
 public:
   virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const override;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const override;
@@ -25,7 +30,6 @@ public:
   virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const override;
   virtual boost::tribool IsUnknown (ValueId first) const override;
   virtual boost::tribool IsZero    (ValueId first) const override;
-
   // Creates new boolean (1bit integer) value expressing the constraint
   virtual ValueId Cmp        (ValueId first, ValueId second, Type type, CmpFlags flags) override;
   // Sets constraint on both values
@@ -53,7 +57,7 @@ public:
   virtual ValueId LogOr (ValueId first, ValueId second, Type type) override;
   virtual ValueId LogNot(ValueId first, Type type) override;
 
-  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) override;
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) override;
 
   //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
@@ -65,4 +69,6 @@ public:
   virtual ValueId CreateConstIntVal  (uint64_t value           ) override; // To be potentially removed
   virtual ValueId CreateConstFloatVal(float    value, Type type) override;
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;
+
+  void PrintValues();
 };
