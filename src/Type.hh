@@ -1,8 +1,5 @@
 #pragma once
 
-// Basic type hierarchy for SMG implementation
-// (c) PP, 2016
-
 #include <string>
 
 namespace llvm
@@ -16,6 +13,8 @@ class LlvmType;
 typedef LlvmType Type;
 
 //TODO: Udelat const type??
+
+//TODO: přidat Get k accesum
 
 // Type -- reference to type representation (copyable, assignable)
 // Might be later changed to interaface(fully abstraact class) when multiple frontends are in mind

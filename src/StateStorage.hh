@@ -8,8 +8,8 @@ using namespace ::std;
 
 class NewStateCfgNodePair {
 public:
-  uptr<IState> c; //newly created program state
-  ICfgNode& l; //next node/operation to apply
+  uptr<IState> c; // newly created program state
+  ICfgNode& l; // next node/operation to apply
 
   /*ctr*/ NewStateCfgNodePair(uptr<IState> c, ICfgNode& l) : c{move(c)}, l{l} {}
 };
@@ -20,7 +20,7 @@ enum class WorklistPriority {
 
 class StateManger {
   static vector<uptr<IState>> statePool;
-  static ref_list<IState> worklist;
+  static ref_deque<IState> worklist;
 
   ref_vector<IState> states;
 private:
@@ -31,26 +31,40 @@ public:
     WorklistPriority prioroty = WorklistPriority::Standard
   )
   {
-    if (false) //is state equal to to other states here == equality check
+    //TODO: Somehow, handle the priority (and add them!)
+
+    if (false) // is state equal to to other states here == equality check
     {
-      //throw it out completely
+      // throw it out completely
       return;
     }
-    if (false) //we are able to join something?
+    if (false) // we are able to join something?
     {
-      //for all intersted states in join
-      //set them to AbstractedOut
-      //and add the result of join operation
+      // for all states that took part in the join:
+      // set them to AbstractedOut
+
+      // and add the result of join operation
     }
 
-    //else -> just add it
+    // else -> just add it
     {
       IState& state = *statePtr;
       statePool.push_back(move(statePtr));
       states.push_back(state);
 
-      //here we should utilize priorities
+      // here we should utilize priorities
       worklist.push_back(state);
     }
+  }
+
+  static ref_wr<IState> WorklistDequeue()
+  {
+    auto& ret = worklist.front();
+    worklist.pop_front();
+    return ret;
+  }
+  static bool IsWorklistEmpty()
+  {
+    return worklist.empty();
   }
 };

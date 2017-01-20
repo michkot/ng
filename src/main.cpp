@@ -44,21 +44,20 @@ using namespace ::std;
 #include "DummyOperations.hh"
 #include "FrontendLlvm.hh"
 
-//fronta stavů ke zpracování
+// fronta stavů ke zpracování
 ref_queue<IState> toProcess{};
 
 void VerificationLoop()
 {
-  //smyčka
-  while (!toProcess.empty())
+  // smyčka
+  while (!StateManger::IsWorklistEmpty())
   {
-    //načti stav
-    IState& state = toProcess.front();
-    toProcess.pop();
+    // načti stav
+    IState& state = StateManger::WorklistDequeue();
 
-    //zpracuj stav
+    // zpracuj stav
     {
-      //vypočet nových stavů
+      // vypočet nových stavů
       if (!state.IsNew())
         continue;
 
@@ -96,14 +95,20 @@ int main()
 #endif
 
   //this is a debugging code for experimenting
-  Z3ValueContainer vc;
-  vc.CreateVal(Type{0});
-  vc.CreateConstIntVal(0);
-  vc.CreateConstIntVal(1);
-  vc.CreateConstIntVal(2);
+  //vc.CreateVal(Type{0});
+  for (int i = 0; i < 32; i++)
+  {
+    vc.CreateConstIntVal(i);
+  }
+  for (int i = 1; i < 33; i++)
+  {
+    vc.CreateConstIntVal(-i);
+  }
   //this is end of experimental code
 
   Verify();
+
+  vc.PrintValues();
 
   getchar();
   return 0;

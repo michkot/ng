@@ -178,3 +178,6 @@ protected:
 //  // ---------------------- for dev needs only ---------------------------- //
 };
 
+//TODO: Place for code comments of this ICfgNode block
+// add / check virtual destructors need
+// add mass deleter for Cfg? (mem leaks)

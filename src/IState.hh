@@ -25,6 +25,8 @@ public:
 
   ref_vector<IState> prevStates; //optional
 
+  virtual ~IState() {}
+
   virtual void SetExplored() { condition = StateCondition::Explored; }
   virtual bool IsNew() { return condition == StateCondition::New; }
 
