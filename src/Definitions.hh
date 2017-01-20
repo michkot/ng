@@ -18,6 +18,8 @@ using ref_vector = ::std::vector<::std::reference_wrapper<T>>;
 template<class T>
 using ref_queue = ::std::queue<::std::reference_wrapper<T>>;
 template<class T>
+using ref_deque = ::std::deque<::std::reference_wrapper<T>>;
+template<class T>
 using ref_list = ::std::list<::std::reference_wrapper<T>>;
 template<class T>
 using ref_set = ::std::set<::std::reference_wrapper<T>>;
