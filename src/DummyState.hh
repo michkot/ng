@@ -15,6 +15,8 @@ private:
   std::map<FrontendValueId, ValueId> varMapping;
 
 public:
+  virtual ~DummyState() override {}
+
   virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
   {
     globalVarMapping.insert_or_assign(var.id, ValueId{});
