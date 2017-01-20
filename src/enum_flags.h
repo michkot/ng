@@ -35,14 +35,14 @@ enum class foo_t
 	,a				= 0x01
 	,b				= 0x02
 	};
-	
+
 ENUM_FLAGS(foo2_t)
 enum class foo2_t
 	{
 	 none			= 0x00
 	,d				= 0x01
 	,e				= 0x02
-	};	
+	};
 
 int _tmain(int argc, _TCHAR* argv[])
 	{
@@ -73,7 +73,8 @@ inline constexpr T operator ^ (T x, T y) { return static_cast<T> (static_cast<IN
 inline constexpr T operator ~ (T x)      { return static_cast<T> (~static_cast<INT_T>(x)); }; \
 inline T& operator &= (T& x, T y)  { x = x & y; return x; }; \
 inline T& operator |= (T& x, T y)  { x = x | y; return x; }; \
-inline T& operator ^= (T& x, T y)  { x = x ^ y; return x; };
+inline T& operator ^= (T& x, T y)  { x = x ^ y; return x; }; \
+inline constexpr bool has_flag (T x, T y) { return static_cast<T>(static_cast<INT_T>(x) | static_cast<INT_T>(y)) == y; };
 
 #if(USE_ENUM_FLAGS_FUNCTION)
 
@@ -82,7 +83,7 @@ inline T& operator ^= (T& x, T y)  { x = x ^ y; return x; };
 
 #else
 
- #define ENUM_FLAGS(T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>) 
+ #define ENUM_FLAGS(T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>)
 
 #endif
 #endif
