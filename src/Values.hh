@@ -7,6 +7,7 @@
 
 #include <boost/logic/tribool.hpp>
 
+//TODO: doplnit hlavicku -> jedna se o zapouzdreni integru pro typovou kontrolu
 class ValueId {
   // Fields
 private:
@@ -28,6 +29,7 @@ public:
   ValueId operator++()    { id++; return *this; } // prefix
   ValueId operator++(int) { auto copy = *this; id++; return copy; } // postfix
 
+  //TODO: zredukovat pocet operatoru podle STD
   bool operator==(const ValueId& other) const { return this->id == other.id; }
   bool operator!=(const ValueId& other) const { return this->id != other.id; }
   bool operator< (const ValueId& other) const { return this->id < other.id; }
@@ -55,7 +57,7 @@ enum class ArithFlags {
 ENUM_FLAGS(CmpFlags)
 enum class CmpFlags {
   Default   = 0x0000,
-  Signed    = CmpFlags::Default,
+  //Signed    = CmpFlags::Default, // we can not mask 0x00!
   Unsigned  = 0x0001,
   Eq        = 0x0002,
   Neq       = 0x0004,
@@ -66,15 +68,17 @@ enum class CmpFlags {
   Float     = 0x0020,
   Ordered   = CmpFlags::Default,
   Unordered = 0x0040,
-  SigGt     = CmpFlags::Signed   | CmpFlags::Gt,
-  SigGtEq   = CmpFlags::Signed   | CmpFlags::GtEq,
-  SigLt     = CmpFlags::Signed   | CmpFlags::Lt,
-  SigLtEq   = CmpFlags::Signed   | CmpFlags::LtEq,
+  SigGt     = CmpFlags::Default  | CmpFlags::Gt,
+  SigGtEq   = CmpFlags::Default  | CmpFlags::GtEq,
+  SigLt     = CmpFlags::Default  | CmpFlags::Lt,
+  SigLtEq   = CmpFlags::Default  | CmpFlags::LtEq,
   UnsigGt   = CmpFlags::Unsigned | CmpFlags::Gt,
   UnsigGtEq = CmpFlags::Unsigned | CmpFlags::GtEq,
   UnsigLt   = CmpFlags::Unsigned | CmpFlags::Lt,
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
+
+//TODO: některé operace implementovat
 
 /// <summary>
 /// Class holding a set of values / their constraint based representations.
@@ -94,6 +98,7 @@ public:
   virtual boost::tribool IsTrue    (ValueId first, Type type) const = 0; // !=0
   virtual boost::tribool IsFalse   (ValueId first, Type type) const = 0; // ==0
 
+  //TODO: komentář - vhodně okomentovat; možná přejmenovat BitwiseEq nebo InternalRepEq
   virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const = 0;
   virtual boost::tribool IsUnknown (ValueId first) const = 0;
   virtual boost::tribool IsZero    (ValueId first) const = 0;
@@ -125,7 +130,8 @@ public:
   virtual ValueId LogOr (ValueId first, ValueId second, Type type) = 0;
   virtual ValueId LogNot(ValueId first, Type type) = 0;
 
-  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType) = 0;
+  //TODO: možná Truncate?
+  virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) = 0;
   virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) = 0;
 
   //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) = 0;
@@ -133,6 +139,7 @@ public:
 
   virtual ValueId CreateVal(Type type) = 0;
 
+  //TODO: opět - implementovat jako NotImplemented
   virtual ValueId CreateConstIntVal  (uint64_t value, Type type) = 0;
   virtual ValueId CreateConstIntVal  (uint64_t value           ) = 0; // To be potentially removed
   virtual ValueId CreateConstFloatVal(float    value, Type type) = 0;
