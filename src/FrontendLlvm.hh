@@ -19,12 +19,13 @@ namespace llvm
 
 class LlvmCfgParser {
   IOperationFactory& opFactory;
+  IValueContainer& vc;
 
   map<const llvm::BasicBlock*, LlvmCfgNode*> copyMapping;
   queue<tuple<const llvm::BasicBlock*, LlvmCfgNode*, unsigned int>> parseAndLinkTogether;
 
 public:
-  LlvmCfgParser(IOperationFactory& opFactory) : opFactory{opFactory} {}
+  LlvmCfgParser(IOperationFactory& opFactory, IValueContainer& vc) : opFactory{opFactory},vc{vc} {}
 
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;

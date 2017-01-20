@@ -1,7 +1,6 @@
 #include "FrontendLlvm.hh"
 
 #include "ICfgNode.hh"
-#include "ValuesZ3.hh"
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
@@ -288,7 +287,8 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   {
     auto& typedInstr = static_cast<const llvm::ICmpInst&>(instr);
     CmpFlags flags = CmpFlags::Default;
-    flags |= typedInstr.isSigned()        ? CmpFlags::Signed   : CmpFlags::Default;
+    // Signed is by default
+    //flags |= typedInstr.isSigned()        ? CmpFlags::Default   : CmpFlags::Default;
     flags |= typedInstr.isUnsigned()      ? CmpFlags::Unsigned : CmpFlags::Default;
     flags |= typedInstr.isTrueWhenEqual() ? CmpFlags::Eq       : CmpFlags::Default;
 
@@ -474,8 +474,6 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
 
 void LlvmCfgParser::DealWithConstants()
 {
-  IValueContainer& vc = *new Z3ValueContainer();
-
   for (auto x : constantValuesToBeCreated)
   {
     /**/ if (auto constInt = llvm::dyn_cast<llvm::ConstantInt>(x))

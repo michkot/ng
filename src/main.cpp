@@ -68,21 +68,22 @@ void VerificationLoop()
   }
 }
 
+#include "ValuesZ3.hh"
 
+Z3ValueContainer vc;
 void Verify()
 {
   auto f = DummyOperationFactory{};
-  LlvmCfgParser parser{f};
+  LlvmCfgParser parser{f, vc};
   auto& firstNode = parser.ParseAndOpenIrFile("input-int-conv.ll");
 
   auto emptyStateUPtr = make_unique<DummyState>(firstNode.GetPrevs()[0], firstNode);
 
-  toProcess.push(*emptyStateUPtr);
+  //emptyStateUPtr->get
 
   VerificationLoop();
 }
 
-#include "ValuesZ3.hh"
 
 #ifdef _WIN32
 #include <Windows.h>
