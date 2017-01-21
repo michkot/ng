@@ -424,7 +424,7 @@ boost::tribool ValueContainer::IsFalse(ValueId first, Type type) const
   return !IsTrue(first, type);
 }
 
-boost::tribool ValueContainer::IsBinaryEq(ValueId first, ValueId second) const
+boost::tribool ValueContainer::IsInternalRepEq(ValueId first, ValueId second) const
 {
   if (first == second)
     return true;
@@ -466,12 +466,6 @@ boost::tribool ValueContainer::IsBinaryEq(ValueId first, ValueId second) const
 
 
   return boost::indeterminate;
-}
-
-boost::tribool ValueContainer::IsUnknown(ValueId first) const
-{
-  return constantContainer.find(first) == constantContainer.end();
-  //TODO::unknown unknown?
 }
 
 boost::tribool ValueContainer::IsZero(ValueId first) const
@@ -524,6 +518,13 @@ boost::tribool ValueContainer::IsZero(ValueId first) const
 
   return boost::indeterminate;
 }
+
+bool ValueContainer::IsUnknown(ValueId first) const
+{
+  return constantContainer.find(first) == constantContainer.end();
+  //TODO::unknown unknown?
+}
+
 
 void ValueContainer::Assume(ValueId first, ValueId second, Type type, CmpFlags flags)
 {
@@ -937,7 +938,7 @@ ValueId ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetTyp
   return CreateConstIntVal(value, targetType);
 }
 
-ValueId ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetType)
+ValueId ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targetType)
 {
   auto val = constantContainer.find(first);
 

@@ -67,6 +67,7 @@ void VerificationLoop()
   }
 }
 
+//#define USE_Z3
 #if defined(USE_Z3)
 #include "ValuesZ3.hh"
 

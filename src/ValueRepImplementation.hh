@@ -65,9 +65,9 @@ public:
   boost::tribool IsTrue(ValueId first, Type type) const override; // !=0
   boost::tribool IsFalse(ValueId first, Type type) const override; // ==0
 
-  boost::tribool IsBinaryEq(ValueId first, ValueId second) const override;
-  boost::tribool IsUnknown(ValueId first) const override;
-  boost::tribool IsZero(ValueId first) const override;
+  boost::tribool IsInternalRepEq(ValueId first, ValueId second) const override;
+  boost::tribool IsZero   (ValueId first) const override;
+  bool           IsUnknown(ValueId first) const override;
 
   void    Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
   void    AssumeTrue(ValueId first) override; // Sets contraint: first != 0 ( == true )
@@ -94,7 +94,7 @@ public:
   ValueId LogNot(ValueId first, Type type) override;
 
   ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
-  ValueId TruncInt(ValueId first, Type sourceType, Type targetType) override;
+  ValueId TruncateInt(ValueId first, Type sourceType, Type targetType) override;
 
   //ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
   //ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
@@ -105,6 +105,10 @@ public:
   ValueId CreateConstIntVal(uint64_t value) override; // To be potentially removed
   ValueId CreateConstFloatVal(float    value, Type type) override;
   ValueId CreateConstFloatVal(double   value, Type type) override;
+
+protected:
+
+  virtual ValueId GetZero(Type type) const override { throw NotImplementedException(); }
 
 };
 

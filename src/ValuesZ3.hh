@@ -27,9 +27,9 @@ public:
   virtual boost::tribool IsTrue    (ValueId first, Type type) const override; // !=0
   virtual boost::tribool IsFalse   (ValueId first, Type type) const override; // ==0
 
-  virtual boost::tribool IsBinaryEq(ValueId first, ValueId second) const override;
-  virtual boost::tribool IsUnknown (ValueId first) const override;
-  virtual boost::tribool IsZero    (ValueId first) const override;
+  virtual boost::tribool IsInternalRepEq(ValueId first, ValueId second) const override;
+  virtual boost::tribool IsZero   (ValueId first) const override;
+  virtual bool           IsUnknown(ValueId first) const override;
   // Creates new boolean (1bit integer) value expressing the constraint
   virtual ValueId Cmp        (ValueId first, ValueId second, Type type, CmpFlags flags) override;
   // Sets constraint on both values
@@ -58,7 +58,7 @@ public:
   virtual ValueId LogNot(ValueId first, Type type) override;
 
   virtual ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
-  virtual ValueId TruncInt (ValueId first, Type sourceType, Type targetType) override;
+  virtual ValueId TruncateInt (ValueId first, Type sourceType, Type targetType) override;
 
   //virtual ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
   //virtual ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
@@ -71,4 +71,8 @@ public:
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;
 
   virtual void PrintDebug() override;
+
+protected:
+
+  virtual ValueId GetZero(Type type) const override { throw NotImplementedException(); }
 };

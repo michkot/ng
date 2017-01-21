@@ -180,12 +180,12 @@ boost::tribool Z3ValueContainer::IsFalse(ValueId first, Type type) const
   return Z3ResultToTribool(s.check());
 }
 
-boost::tribool Z3ValueContainer::IsBinaryEq(ValueId first, ValueId second) const
+boost::tribool Z3ValueContainer::IsInternalRepEq(ValueId first, ValueId second) const
 {
   throw NotImplementedException();
 }
 
-boost::tribool Z3ValueContainer::IsUnknown(ValueId first) const
+bool Z3ValueContainer::IsUnknown(ValueId first) const
 {
   throw NotImplementedException();
 }
@@ -330,7 +330,7 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
   return id;
 }
 
-ValueId Z3ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetType)
+ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targetType)
 {
   auto id = ValueId::GetNextId();
   const auto& a = idsToExprs.at(first);
