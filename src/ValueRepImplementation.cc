@@ -168,10 +168,10 @@ boost::tribool ValueContainer::IsCmp(ValueId first, ValueId second, Type type, C
   if (IsConstant(first) && IsConstant(second))
   {
     //both are constants
-    int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(first));
-    int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(second));
-    uint64_t uval1 = RipBits(type.BitWidth(), constantContainer.at(first));
-    uint64_t uval2 = RipBits(type.BitWidth(), constantContainer.at(second));
+    int64_t val1 = (int64_t)SignExtend64(type.GetBitWidth(), constantContainer.at(first));
+    int64_t val2 = (int64_t)SignExtend64(type.GetBitWidth(), constantContainer.at(second));
+    uint64_t uval1 = RipBits(type.GetBitWidth(), constantContainer.at(first));
+    uint64_t uval2 = RipBits(type.GetBitWidth(), constantContainer.at(second));
 
     switch (flags)
     {
@@ -210,8 +210,8 @@ boost::tribool ValueContainer::IsCmp(ValueId first, ValueId second, Type type, C
       std::swap(first, second);
 
     //first is a constant
-    int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(first));
-    uint64_t uval1 = RipBits(type.BitWidth(), constantContainer.at(first));
+    int64_t val1 = (int64_t)SignExtend64(type.GetBitWidth(), constantContainer.at(first));
+    uint64_t uval1 = RipBits(type.GetBitWidth(), constantContainer.at(first));
 
     //go through constraints of second ValueId and check for constraints with other constants
     for (auto constraintId : GetConstraintIdVector(second))
@@ -221,8 +221,8 @@ boost::tribool ValueContainer::IsCmp(ValueId first, ValueId second, Type type, C
       if (IsConstant(other))
       {
         //constaint with a constant
-        int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), constantContainer.at(other));
-        uint64_t uval2 = RipBits(type.BitWidth(), constantContainer.at(other));
+        int64_t val2 = (int64_t)SignExtend64(type.GetBitWidth(), constantContainer.at(other));
+        uint64_t uval2 = RipBits(type.GetBitWidth(), constantContainer.at(other));
 
         switch (flags)
         {
@@ -320,7 +320,7 @@ boost::tribool ValueContainer::IsEq(ValueId first, ValueId second, Type type) co
 
   //if both constants but different
   if (IsConstant(first) && IsConstant(second))
-    return RipBits(type.BitWidth(), constantContainer.at(first)) == RipBits(type.BitWidth(), constantContainer.at(second));
+    return RipBits(type.GetBitWidth(), constantContainer.at(first)) == RipBits(type.GetBitWidth(), constantContainer.at(second));
 
   //check for equality in constraint container
   //------------------------------------------
@@ -372,7 +372,7 @@ boost::tribool ValueContainer::IsTrue(ValueId first, Type type) const
   //is a constant?
   if (IsConstant(first))
   {
-    uint64_t value = RipBits(type.BitWidth(), constantContainer.at(first));
+    uint64_t value = RipBits(type.GetBitWidth(), constantContainer.at(first));
     return value != 0;
   }
 
@@ -392,7 +392,7 @@ boost::tribool ValueContainer::IsTrue(ValueId first, Type type) const
     //do we have constraint with a constant?
     if (IsConstant(second))
     {
-      uint64_t value = RipBits(type.BitWidth(), constantContainer.at(second));
+      uint64_t value = RipBits(type.GetBitWidth(), constantContainer.at(second));
 
       switch (constr->second.relation)
       {
@@ -556,9 +556,9 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
   if (CHECK_FLAG(flags, ArithFlags::Unsigned))
   {
     //prepare values
-    uint64_t val1 = RipBits(type.BitWidth() ,lhs->second);
-    uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
-    uint64_t max = RipBits(type.BitWidth(), ULLONG_MAX);
+    uint64_t val1 = RipBits(type.GetBitWidth() ,lhs->second);
+    uint64_t val2 = RipBits(type.GetBitWidth(), rhs->second);
+    uint64_t max = RipBits(type.GetBitWidth(), ULLONG_MAX);
     
     if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
     {
@@ -566,7 +566,7 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
         return CreateVal(type);
     }
     
-    uint64_t result = RipBits(type.BitWidth(), val1 + val2);
+    uint64_t result = RipBits(type.GetBitWidth(), val1 + val2);
     return CreateConstIntVal(result, type);
 
 
@@ -574,11 +574,11 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
   else
   {
     //signed
-    uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
-    uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
+    uint64_t val1 = SignExtend64(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = SignExtend64(type.GetBitWidth(), rhs->second);
 
-    uint64_t max = RipBits(type.BitWidth() - 1, ULLONG_MAX);
-    uint64_t min = (1ULL << (type.BitWidth() - 1));
+    uint64_t max = RipBits(type.GetBitWidth() - 1, ULLONG_MAX);
+    uint64_t min = (1ULL << (type.GetBitWidth() - 1));
 
     if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
     {
@@ -590,7 +590,7 @@ ValueId ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags
         return CreateVal(type);
     }
 
-    uint64_t result = SignExtend64(type.BitWidth(), val1 + val2);
+    uint64_t result = SignExtend64(type.GetBitWidth(), val1 + val2);
     return CreateConstIntVal(result, type);
     
   }
@@ -610,8 +610,8 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
   if (CHECK_FLAG(flags, ArithFlags::Unsigned))
   {
     //prepare values
-    uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
-    uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
+    uint64_t val1 = RipBits(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = RipBits(type.GetBitWidth(), rhs->second);
 
     if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
     {
@@ -619,7 +619,7 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
         return CreateVal(type);
     }
 
-    uint64_t result = RipBits(type.BitWidth(), val1 - val2);
+    uint64_t result = RipBits(type.GetBitWidth(), val1 - val2);
     return CreateConstIntVal(result, type);
 
 
@@ -627,11 +627,11 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
   else
   {
     //signed
-    uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
-    uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
+    uint64_t val1 = SignExtend64(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = SignExtend64(type.GetBitWidth(), rhs->second);
 
-    uint64_t max = RipBits(type.BitWidth() - 1, ULLONG_MAX);
-    uint64_t min = (1ULL << (type.BitWidth() - 1));
+    uint64_t max = RipBits(type.GetBitWidth() - 1, ULLONG_MAX);
+    uint64_t min = (1ULL << (type.GetBitWidth() - 1));
 
     if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
     {
@@ -643,7 +643,7 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
         return CreateVal(type);
     }
 
-    uint64_t result = SignExtend64(type.BitWidth(), val1 - val2);
+    uint64_t result = SignExtend64(type.GetBitWidth(), val1 - val2);
     return CreateConstIntVal(result, type);
 
   }
@@ -662,8 +662,8 @@ ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags
   if (CHECK_FLAG(flags, ArithFlags::Unsigned))
   {
     //prepare values
-    uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
-    uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
+    uint64_t val1 = RipBits(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = RipBits(type.GetBitWidth(), rhs->second);
     
 
     if (CHECK_FLAG(flags, ArithFlags::NoUnsignedWrap))
@@ -672,11 +672,11 @@ ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags
       uint64_t bitsNeeded = BSR(val1) + BSR(val2);
 
       //overflow
-      if (bitsNeeded > type.BitWidth())
+      if (bitsNeeded > type.GetBitWidth())
         return CreateVal(type);
     }
 
-    uint64_t result = RipBits(type.BitWidth(), val1 * val2);
+    uint64_t result = RipBits(type.GetBitWidth(), val1 * val2);
     return CreateConstIntVal(result, type);
 
 
@@ -684,19 +684,19 @@ ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags
   else
   {
     //signed
-    int64_t val1 = (int64_t)SignExtend64(type.BitWidth(), lhs->second);
-    int64_t val2 = (int64_t)SignExtend64(type.BitWidth(), rhs->second);
+    int64_t val1 = (int64_t)SignExtend64(type.GetBitWidth(), lhs->second);
+    int64_t val2 = (int64_t)SignExtend64(type.GetBitWidth(), rhs->second);
 
     if (CHECK_FLAG(flags, ArithFlags::NoSignedWrap))
     {
       uint64_t bitsNeeded = BSR(val1 < 0 ? (uint64_t)(-val1) : (uint64_t)val1) + BSR(val2 < 0 ? (uint64_t)(-val2) : (uint64_t)val2);
 
       //check overflow
-      if (bitsNeeded > type.BitWidth())
+      if (bitsNeeded > type.GetBitWidth())
         return CreateVal(type);
     }
 
-    uint64_t result = SignExtend64(type.BitWidth(), val1 * val2);
+    uint64_t result = SignExtend64(type.GetBitWidth(), val1 * val2);
     return CreateConstIntVal(result, type);
 
   }
@@ -715,28 +715,28 @@ ValueId ValueContainer::Div(ValueId first, ValueId second, Type type, ArithFlags
   if (CHECK_FLAG(flags, ArithFlags::Unsigned))
   {
     //prepare values
-    uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
-    uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
+    uint64_t val1 = RipBits(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = RipBits(type.GetBitWidth(), rhs->second);
     
     //divide by zero - what to do?
     if(val2 == 0)
       return CreateVal(type);
 
-    uint64_t result = RipBits(type.BitWidth(), val1 / val2);
+    uint64_t result = RipBits(type.GetBitWidth(), val1 / val2);
     return CreateConstIntVal(result, type);
 
   }
   else
   {
     //signed
-    uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
-    uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
+    uint64_t val1 = SignExtend64(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = SignExtend64(type.GetBitWidth(), rhs->second);
 
     //divide by zero - what to do?
     if (val2 == 0)
       return CreateVal(type);
 
-    uint64_t result = SignExtend64(type.BitWidth(), val1 / val2);
+    uint64_t result = SignExtend64(type.GetBitWidth(), val1 / val2);
     return CreateConstIntVal(result, type);
 
   }
@@ -755,28 +755,28 @@ ValueId ValueContainer::Rem(ValueId first, ValueId second, Type type, ArithFlags
   if (CHECK_FLAG(flags, ArithFlags::Unsigned))
   {
     //prepare values
-    uint64_t val1 = RipBits(type.BitWidth(), lhs->second);
-    uint64_t val2 = RipBits(type.BitWidth(), rhs->second);
+    uint64_t val1 = RipBits(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = RipBits(type.GetBitWidth(), rhs->second);
 
     //divide by zero - what to do?
     if (val2 == 0)
       return CreateVal(type);
 
-    uint64_t result = RipBits(type.BitWidth(), val1 % val2);
+    uint64_t result = RipBits(type.GetBitWidth(), val1 % val2);
     return CreateConstIntVal(result, type);
 
   }
   else
   {
     //signed
-    uint64_t val1 = SignExtend64(type.BitWidth(), lhs->second);
-    uint64_t val2 = SignExtend64(type.BitWidth(), rhs->second);
+    uint64_t val1 = SignExtend64(type.GetBitWidth(), lhs->second);
+    uint64_t val2 = SignExtend64(type.GetBitWidth(), rhs->second);
 
     //divide by zero - what to do?
     if (val2 == 0)
       return CreateVal(type);
 
-    uint64_t result = SignExtend64(type.BitWidth(), val1 % val2);
+    uint64_t result = SignExtend64(type.GetBitWidth(), val1 % val2);
     return CreateConstIntVal(result, type);
 
   }
@@ -791,7 +791,7 @@ ValueId ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags
   if (lhs == constantContainer.end() || rhs == constantContainer.end())
     return CreateVal(type);
 
-  size_t numOfBits = type.BitWidth();
+  size_t numOfBits = type.GetBitWidth();
   uint64_t value = RipBits(numOfBits, lhs->second);
   uint64_t shiftval = RipBits(numOfBits, rhs->second);
 
@@ -809,7 +809,7 @@ ValueId ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFlags
   if (lhs == constantContainer.end() || rhs == constantContainer.end())
     return CreateVal(type);
 
-  size_t numOfBits = type.BitWidth();
+  size_t numOfBits = type.GetBitWidth();
   uint64_t value = RipBits(numOfBits, lhs->second);
   uint64_t shiftval = RipBits(numOfBits, rhs->second);
   bool isNegative = (bool)(value & (1ULL << (numOfBits - 1)));
@@ -929,9 +929,9 @@ ValueId ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetTyp
 
   //if signed flag perform sign extention
   if (CHECK_FLAG(flags, ArithFlags::Signed))
-    value = SignExtend64(sourceType.BitWidth(), value);
+    value = SignExtend64(sourceType.GetBitWidth(), value);
   else
-    value = RipBits(sourceType.BitWidth(), value);
+    value = RipBits(sourceType.GetBitWidth(), value);
 
   //find or create ValueId
   return CreateConstIntVal(value, targetType);

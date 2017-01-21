@@ -14,8 +14,6 @@ typedef LlvmType Type;
 
 //TODO: Udelat const type??
 
-//TODO: přidat Get k accesum
-
 // Type -- reference to type representation (copyable, assignable)
 // Might be later changed to interaface(fully abstraact class) when multiple frontends are in mind
 class LlvmType {
@@ -36,8 +34,8 @@ public:
   void        ToString(std::string& str) const;
   std::string ToString() const { std::string s{}; ToString(s); return s; }
 
-  size_t SizeOf() const; // Returns type's allocation size
-  size_t BitWidth() const; // Returns type's bit size
+  size_t GetSizeOf() const; // Returns type's allocation size
+  size_t GetBitWidth() const; // Returns type's bit size
 
   bool IsInteger() const;
   bool IsInteger(unsigned bitwidth) const;

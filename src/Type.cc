@@ -23,14 +23,14 @@ void LlvmType::ToString(std::string& str) const
   return;
 }
 
-size_t LlvmType::SizeOf() const
+size_t LlvmType::GetSizeOf() const
 {
   // assert on getting size of not-sized object is included in DataLayout method
 
   return llvmDataLayout.getTypeAllocSize(GetFrontendId());
 }
 
-size_t LlvmType::BitWidth() const
+size_t LlvmType::GetBitWidth() const
 {
   // assert on getting size of not-sized object is included in DataLayout method
 

@@ -47,7 +47,7 @@ z3::expr Z3ValueContainer::CreateCmpExpression(ValueId first, ValueId second, Ty
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
   assert(a.get_sort().bv_size() == b.get_sort().bv_size());
-  assert(a.get_sort().bv_size() == type.BitWidth());
+  assert(a.get_sort().bv_size() == type.GetBitWidth());
 
   // Based on >= operator :
 #if 0
@@ -149,7 +149,7 @@ boost::tribool Z3ValueContainer::IsTrue(ValueId first, Type type) const
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == type.BitWidth());
+  assert(a.get_sort().bv_size() == type.GetBitWidth());
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
@@ -168,7 +168,7 @@ boost::tribool Z3ValueContainer::IsFalse(ValueId first, Type type) const
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == type.BitWidth());
+  assert(a.get_sort().bv_size() == type.GetBitWidth());
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
@@ -241,7 +241,7 @@ ValueId Z3ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFla
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
   assert(a.get_sort().bv_size() == b.get_sort().bv_size());
-  assert(a.get_sort().bv_size() == type.BitWidth());
+  assert(a.get_sort().bv_size() == type.GetBitWidth());
 
   expr ex = a + b;
   idsToExprs.insert({id, ex});
@@ -320,11 +320,11 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
   auto id = ValueId::GetNextId();
   const auto& a = idsToExprs.at(first);
 
-  assert(a.get_sort().bv_size() == sourceType.BitWidth());
+  assert(a.get_sort().bv_size() == sourceType.GetBitWidth());
 
   expr ex = has_flag(flags, ArithFlags::Signed) ?
-    sext(a, targetType.BitWidth()) :
-    zext(a, targetType.BitWidth());
+    sext(a, targetType.GetBitWidth()) :
+    zext(a, targetType.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -335,9 +335,9 @@ ValueId Z3ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetTy
   auto id = ValueId::GetNextId();
   const auto& a = idsToExprs.at(first);
 
-  assert(a.get_sort().bv_size() == sourceType.BitWidth());
+  assert(a.get_sort().bv_size() == sourceType.GetBitWidth());
 
-  expr ex = a.extract(targetType.BitWidth(), 0);
+  expr ex = a.extract(targetType.GetBitWidth(), 0);
   idsToExprs.insert({id, ex});
 
   return id;
@@ -346,7 +346,7 @@ ValueId Z3ValueContainer::TruncInt(ValueId first, Type sourceType, Type targetTy
 ValueId Z3ValueContainer::CreateVal(Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = c.constant(c.int_symbol(static_cast<uint64_t>(id)), c.bv_sort(type.BitWidth()));
+  auto ex = c.constant(c.int_symbol(static_cast<uint64_t>(id)), c.bv_sort(type.GetBitWidth()));
   idsToExprs.insert({id, ex});
 
   return id;
@@ -357,7 +357,7 @@ ValueId Z3ValueContainer::CreateVal(Type type)
     std::cout << "find_model_example1\n";
     context c;
 
-    expr x = c.constant(c.int_symbol(0), c.bv_sort(64)); //type.BitWidth()
+    expr x = c.constant(c.int_symbol(0), c.bv_sort(64)); //type.GetBitWidth()
     expr y = c.constant(c.int_symbol(1), c.bv_sort(64));
     expr vyraz1 = x >= 1;
     expr vyraz2 = y < x + 3;
@@ -390,7 +390,7 @@ ValueId Z3ValueContainer::CreateVal(Type type)
 ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = c.bv_val(value, type.BitWidth());
+  auto ex = c.bv_val(value, type.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
