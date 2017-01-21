@@ -260,7 +260,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   case llvm::Instruction::Call:
   {
     auto& typedInstr = static_cast<const llvm::CallInst&>(instr);
-    //First, parse the call target
+    // First, parse the call target
     auto func = typedInstr.getCalledFunction();
     if (func != nullptr)
     { // call target is a function value
@@ -272,13 +272,17 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       args.push_back(ToOperArg(val));
     }
 
-    //Then, parse operands
+    // Then, parse operands
+    // Same code in default: branch
     unsigned imax = typedInstr.getNumArgOperands();
     for (unsigned i = 0; i < imax; ++i)
     {
-      const auto argument = typedInstr.getArgOperand(i);
-      //TODO: constants!!! like in default part of select
-      args.push_back(ToOperArg(argument));
+      const auto& operand = *typedInstr.getArgOperand(i);
+      if (llvm::isa<llvm::Constant>(operand))
+      {
+        constantValuesToBeCreated.insert(&static_cast<const llvm::Constant&>(operand));
+      }
+      args.emplace_back(ToOperArg(operand));
     }
 
     break;
@@ -359,6 +363,8 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       args.push_back(GetEmptyOperArg());
     }
 
+    // Then, parse operands
+    // Same code in "call": branch
     for (unsigned i = 0; i < num; ++i)
     {
       const auto& operand = *instr.getOperand(i);
