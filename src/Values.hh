@@ -7,7 +7,9 @@
 
 #include <boost/logic/tribool.hpp>
 
-//TODO: doplnit hlavicku -> jedna se o zapouzdreni integru pro typovou kontrolu
+/// <summary>
+/// ValueId class is an type-safe encapsulation of integer-based IDs for values
+/// </summary>
 class ValueId {
   // Fields
 private:
@@ -29,10 +31,11 @@ public:
   ValueId operator++()    { id++; return *this; } // prefix
   ValueId operator++(int) { auto copy = *this; id++; return copy; } // postfix
 
-  //TODO: zredukovat pocet operatoru podle STD
-  bool operator==(const ValueId& other) const { return this->id == other.id; }
+  // Implementation of all comparsion operators (only the operator< is needed for most STD functionality) 
+  //REVIEW: to use or not use the canonical way to implement the rest of operators
+  bool operator==(const ValueId& other) const { return this->id == other.id; } // canonicaly implemented
   bool operator!=(const ValueId& other) const { return this->id != other.id; }
-  bool operator< (const ValueId& other) const { return this->id < other.id; }
+  bool operator< (const ValueId& other) const { return this->id < other.id; }  // canonicaly implemented
   bool operator> (const ValueId& other) const { return this->id > other.id; }
   bool operator<=(const ValueId& other) const { return this->id <= other.id; }
   bool operator>=(const ValueId& other) const { return this->id >= other.id; }
