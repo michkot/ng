@@ -9,14 +9,11 @@
 #include <map>
 #include <z3++.h>
 
-//TODO: refactor one-names
-//TODO: lhs, rhs
-
 class Z3ValueContainer : public IValueContainer {
 private:
-  static z3::context c; //TODO: refactor, con? context?
+  static z3::context ctx;
   static std::map<ValueId, z3::expr> idsToExprs;
-  std::multimap<ValueId, z3::expr> assumptions; //TODO: contraints?
+  std::multimap<ValueId, z3::expr> constraints;
 
   z3::expr CreateCmpExpression(ValueId first, ValueId second, Type type, CmpFlags flags) const;
   void     AddValueInfoToSolver(z3::solver& s, ValueId val) const;

@@ -4,7 +4,7 @@
 
 using namespace z3;
 
-z3::context                 Z3ValueContainer::c;
+z3::context                 Z3ValueContainer::ctx;
 std::map<ValueId, z3::expr> Z3ValueContainer::idsToExprs;
 
 boost::tribool Z3ResultToTribool(z3::check_result result)
@@ -29,7 +29,7 @@ void Z3ValueContainer::AddValueInfoToSolver(z3::solver& s, ValueId val) const
   s.add(idsToExprs.at(val));
   // add all constraints
   for (
-    auto it = assumptions.find(val), end = assumptions.cend();
+    auto it = constraints.find(val), end = constraints.cend();
     it != end;
     ++it)
   {
@@ -41,68 +41,68 @@ void Z3ValueContainer::AddValueInfoToSolver(z3::solver& s, ValueId val) const
 
 z3::expr Z3ValueContainer::CreateCmpExpression(ValueId first, ValueId second, Type type, CmpFlags flags) const
 {
-  const auto& a = idsToExprs.at(first);
-  const auto& b = idsToExprs.at(second);
+  const auto& lhs = idsToExprs.at(first);
+  const auto& rhs = idsToExprs.at(second);
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == b.get_sort().bv_size());
-  assert(a.get_sort().bv_size() == type.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == rhs.get_sort().bv_size());
+  assert(lhs.get_sort().bv_size() == type.GetBitWidth());
 
   // Based on >= operator :
 #if 0
-  check_context(a, b);
+  check_context(lhs, rhs);
   Z3_ast r = 0;
-  if (a.is_arith() && b.is_arith()) {
-    r = Z3_mk_ge(a.ctx(), a, b);
+  if (lhs.is_arith() && rhs.is_arith()) {
+    r = Z3_mk_ge(lhs.ctx(), lhs, rhs);
   }
-  else if (a.is_bv() && b.is_bv()) {
-    r = Z3_mk_bvsge(a.ctx(), a, b);
+  else if (lhs.is_bv() && rhs.is_bv()) {
+    r = Z3_mk_bvsge(lhs.ctx(), lhs, rhs);
   }
   else {
     // operator is not supported by given arguments.
     assert(false);
   }
-  a.check_error();
-  return expr(a.ctx(), r);
+  lhs.check_error();
+  return expr(lhs.ctx(), r);
 #endif
 
-  check_context(a, b);
+  check_context(lhs, rhs);
   Z3_ast r;
   switch (flags)
   {
   case CmpFlags::Eq:
-    r = Z3_mk_eq(c, a, b);
+    r = Z3_mk_eq(ctx, lhs, rhs);
     break;
   case CmpFlags::Neq:
   {
-    Z3_ast args[2] = {a, b};
-    r = Z3_mk_distinct(c, 2, args);
+    Z3_ast args[2] = {lhs, rhs};
+    r = Z3_mk_distinct(ctx, 2, args);
     break;
   }
   case CmpFlags::UnsigGt:
-    r = Z3_mk_bvugt(c, a, b);
+    r = Z3_mk_bvugt(ctx, lhs, rhs);
     break;
   case CmpFlags::UnsigGtEq:
-    r = Z3_mk_bvugt(c, a, b);
+    r = Z3_mk_bvugt(ctx, lhs, rhs);
     break;
   case CmpFlags::UnsigLt:
-    r = Z3_mk_bvugt(c, a, b);
+    r = Z3_mk_bvugt(ctx, lhs, rhs);
     break;
   case CmpFlags::UnsigLtEq:
-    r = Z3_mk_bvugt(c, a, b);
+    r = Z3_mk_bvugt(ctx, lhs, rhs);
     break;
   case CmpFlags::SigGt:
-    r = Z3_mk_bvsgt(c, a, b);
+    r = Z3_mk_bvsgt(ctx, lhs, rhs);
     break;
   case CmpFlags::SigGtEq:
-    r = Z3_mk_bvsgt(c, a, b);
+    r = Z3_mk_bvsgt(ctx, lhs, rhs);
     break;
   case CmpFlags::SigLt:
-    r = Z3_mk_bvsgt(c, a, b);
+    r = Z3_mk_bvsgt(ctx, lhs, rhs);
     break;
   case CmpFlags::SigLtEq:
-    r = Z3_mk_bvsgt(c, a, b);
+    r = Z3_mk_bvsgt(ctx, lhs, rhs);
     break;
   case CmpFlags::Default:
     throw exception("spatna hodnota"); //TODO: create new exception class?
@@ -111,15 +111,15 @@ z3::expr Z3ValueContainer::CreateCmpExpression(ValueId first, ValueId second, Ty
     throw NotSupportedException();
     break;
   }
-  c.check_error();
-  return expr{c, r};
+  ctx.check_error();
+  return expr{ctx, r};
 }
 
 
 
 boost::tribool Z3ValueContainer::IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const
 {
-  solver s{c};
+  solver s{ctx};
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
@@ -144,18 +144,18 @@ boost::tribool Z3ValueContainer::IsNeq(ValueId first, ValueId second, Type type)
 
 boost::tribool Z3ValueContainer::IsTrue(ValueId first, Type type) const
 {
-  solver s{c};
-  const auto& a = idsToExprs.at(first);
+  solver s{ctx};
+  const auto& lhs = idsToExprs.at(first);
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == type.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == type.GetBitWidth());
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
 
   // IsZero opposite
-  s.add(a != 0);
+  s.add(lhs != 0);
 
   // get result
   return Z3ResultToTribool(s.check());
@@ -163,18 +163,18 @@ boost::tribool Z3ValueContainer::IsTrue(ValueId first, Type type) const
 
 boost::tribool Z3ValueContainer::IsFalse(ValueId first, Type type) const
 {
-  solver s{c};
-  const auto& a = idsToExprs.at(first);
+  solver s{ctx};
+  const auto& lhs = idsToExprs.at(first);
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == type.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == type.GetBitWidth());
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
 
   // IsZero equivalent
-  s.add(a == 0);
+  s.add(lhs == 0);
 
   // get result
   return Z3ResultToTribool(s.check());
@@ -192,7 +192,7 @@ bool Z3ValueContainer::IsUnknown(ValueId first) const
 
 boost::tribool Z3ValueContainer::IsZero(ValueId first) const
 {
-  solver s{c};
+  solver s{ctx};
 
   // add value's info / expression (AST, constraints)
   AddValueInfoToSolver(s, first);
@@ -214,36 +214,36 @@ ValueId Z3ValueContainer::Cmp(ValueId first, ValueId second, Type type, CmpFlags
 }
 void Z3ValueContainer::Assume(ValueId first, ValueId second, Type type, CmpFlags flags)
 {
-  expr e = CreateCmpExpression(first, second, type, flags);
+  expr ex = CreateCmpExpression(first, second, type, flags);
 
-  assumptions.insert({first, e});
-  assumptions.insert({second, e});
+  constraints.insert({first, ex});
+  constraints.insert({second, ex});
 }
 
 void Z3ValueContainer::AssumeTrue(ValueId first)
 {
-  const auto& a = idsToExprs.at(first);
-  assumptions.insert({first, a != 0});
+  const auto& lhs = idsToExprs.at(first);
+  constraints.insert({first, lhs != 0});
 }
 
 void Z3ValueContainer::AssumeFalse(ValueId first)
 {
-  const auto& a = idsToExprs.at(first);
-  assumptions.insert({first, a == 0});
+  const auto& lhs = idsToExprs.at(first);
+  constraints.insert({first, lhs == 0});
 }
 
 ValueId Z3ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
   auto id = ValueId::GetNextId();
-  const auto& a = idsToExprs.at(first);
-  const auto& b = idsToExprs.at(second);
+  const auto& lhs = idsToExprs.at(first);
+  const auto& rhs = idsToExprs.at(second);
 
   // check that the size I assume the value/expression have
   // psedo-code: sizeof(first) == sizeof(second) == type.size
-  assert(a.get_sort().bv_size() == b.get_sort().bv_size());
-  assert(a.get_sort().bv_size() == type.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == rhs.get_sort().bv_size());
+  assert(lhs.get_sort().bv_size() == type.GetBitWidth());
 
-  expr ex = a + b;
+  expr ex = lhs + rhs;
   idsToExprs.insert({id, ex});
   //TODO: dále podle NSW a NUW (a signed) flagů je třeba přidat ještě no_under* a no_over* predikaty
 
@@ -318,13 +318,13 @@ ValueId Z3ValueContainer::BitNot(ValueId first, Type type)
 ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags)
 {
   auto id = ValueId::GetNextId();
-  const auto& a = idsToExprs.at(first);
+  const auto& lhs = idsToExprs.at(first);
 
-  assert(a.get_sort().bv_size() == sourceType.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
   expr ex = has_flag(flags, ArithFlags::Signed) ?
-    sext(a, targetType.GetBitWidth()) :
-    zext(a, targetType.GetBitWidth());
+    sext(lhs, targetType.GetBitWidth()) :
+    zext(lhs, targetType.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -333,11 +333,11 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
 ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targetType)
 {
   auto id = ValueId::GetNextId();
-  const auto& a = idsToExprs.at(first);
+  const auto& lhs = idsToExprs.at(first);
 
-  assert(a.get_sort().bv_size() == sourceType.GetBitWidth());
+  assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
-  expr ex = a.extract(targetType.GetBitWidth(), 0);
+  expr ex = lhs.extract(targetType.GetBitWidth(), 0);
   idsToExprs.insert({id, ex});
 
   return id;
@@ -346,23 +346,23 @@ ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targe
 ValueId Z3ValueContainer::CreateVal(Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = c.constant(c.int_symbol(static_cast<uint64_t>(id)), c.bv_sort(type.GetBitWidth()));
+  auto ex = ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort(type.GetBitWidth()));
   idsToExprs.insert({id, ex});
 
   return id;
 
 #if 0
-  //c.constant(c.int_symbol(static_cast<uint64_t>(id)), c.bv_sort(64));
+  //ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort(64));
   try {
     std::cout << "find_model_example1\n";
-    context c;
+    context ctx;
 
-    expr x = c.constant(c.int_symbol(0), c.bv_sort(64)); //type.GetBitWidth()
-    expr y = c.constant(c.int_symbol(1), c.bv_sort(64));
+    expr x = ctx.constant(ctx.int_symbol(0), ctx.bv_sort(64)); //type.GetBitWidth()
+    expr y = ctx.constant(ctx.int_symbol(1), ctx.bv_sort(64));
     expr vyraz1 = x >= 1;
     expr vyraz2 = y < x + 3;
 
-    solver s(c);
+    solver s(ctx);
 
     s.add(vyraz1);
     s.add(vyraz2);
@@ -390,7 +390,7 @@ ValueId Z3ValueContainer::CreateVal(Type type)
 ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = c.bv_val(value, type.GetBitWidth());
+  auto ex = ctx.bv_val(value, type.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -399,7 +399,7 @@ ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value)
 {
   auto id = ValueId::GetNextId();
-  auto ex = c.bv_val(value, 64u);
+  auto ex = ctx.bv_val(value, 64u);
   idsToExprs.insert({id, ex});
 
   return id;
