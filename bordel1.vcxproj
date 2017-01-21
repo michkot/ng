@@ -27,11 +27,12 @@
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
     <ClCompile Include="src\ValueRepImplementation.cc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Values.cc" />
-    <ClCompile Include="src\ValuesZ3.cc" />
+    <ClCompile Include="src\ValuesZ3.cc">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Definitions.hh" />
@@ -47,12 +48,13 @@
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
     <ClInclude Include="src\ValueRepImplementation.hh">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
-    <ClInclude Include="src\ValuesZ3.hh" />
+    <ClInclude Include="src\ValuesZ3.hh">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="clang.natvis" />
@@ -110,9 +112,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)src;C:\Apps\devroot\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Apps\devroot\lib;$(LibraryPath)</LibraryPath>
-    <ExecutablePath>C:\Apps\devroot\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>E:\Program Files\devroot\include;$(ProjectDir)src;C:\Apps\devroot\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Program Files\devroot\lib;C:\Apps\devroot\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>E:\Program Files\devroot\bin;C:\Apps\devroot\bin;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

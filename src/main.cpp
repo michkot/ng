@@ -104,7 +104,6 @@ int main()
   {
     vc.CreateConstIntVal(-i);
   }
-  //this is end of experimental code
 
   Verify();
 
