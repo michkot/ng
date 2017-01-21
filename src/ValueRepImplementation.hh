@@ -17,9 +17,16 @@ public:
 	CmpFlags relation;
 
 	BinaryConstraint() : BinaryConstraint(ValueId(0), ValueId(0), CmpFlags::Default) {}
-	BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
-	bool Contains(ValueId id) const { return id == first || id == second; }
-	ValueId GetOther(ValueId id) const { if (id == first) return second; else if (id == second) return first; else throw std::runtime_error("Constraint does not contain ValueId it should"); }
+	        BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
+	bool    Contains        (ValueId id) const { return id == first || id == second; }
+	ValueId GetOther        (ValueId id) const
+  {
+    if (id == first) 
+      return second; 
+    else if (id == second) 
+      return first; 
+    else throw std::runtime_error("Constraint does not contain ValueId it should");
+  }
 };
 
 

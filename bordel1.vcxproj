@@ -27,12 +27,11 @@
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
     <ClCompile Include="src\ValueRepImplementation.cc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Values.cc" />
     <ClCompile Include="src\ValuesZ3.cc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,13 +48,12 @@
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
     <ClInclude Include="src\ValueRepImplementation.hh">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
     <ClInclude Include="src\ValuesZ3.hh">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -95,12 +95,12 @@ int main()
 #endif
 
   //this is a debugging code for experimenting
-  /*Z3ValueContainer vc;
-  vc.CreateVal(Type{0});
+  //Z3ValueContainer vc;
+  /*vc.CreateVal(Type{0});
   vc.CreateConstIntVal(0);
   vc.CreateConstIntVal(1);
   vc.CreateConstIntVal(2);*/
-  //this is end of experimental code
+  *///this is end of experimental code
 
   Verify();
 
