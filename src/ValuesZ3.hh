@@ -70,5 +70,5 @@ public:
   virtual ValueId CreateConstFloatVal(float    value, Type type) override;
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;
 
-  void PrintValues();
+  virtual void PrintDebug() override;
 };

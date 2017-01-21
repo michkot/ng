@@ -245,7 +245,7 @@ ValueId Z3ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFla
 
   expr ex = a + b;
   idsToExprs.insert({id, ex});
-  //TODO: dále podle NSW a NUW (a signed) flagù je tøeba pøidat ještì no_under* a no_over* predikaty
+  //TODO: dÃ¡le podle NSW a NUW (a signed) flagÅ¯ je tÅ™eba pÅ™idat jeÅ¡tÄ› no_under* a no_over* predikaty
 
   return id;
 }
@@ -415,7 +415,7 @@ ValueId Z3ValueContainer::CreateConstFloatVal(double value, Type type)
   throw NotImplementedException();
 }
 
-void Z3ValueContainer::PrintValues()
+void Z3ValueContainer::PrintDebug()
 {
   for (auto& pair : idsToExprs)
   {

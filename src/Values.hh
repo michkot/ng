@@ -144,4 +144,6 @@ public:
   virtual ValueId CreateConstIntVal  (uint64_t value           ) = 0; // To be potentially removed
   virtual ValueId CreateConstFloatVal(float    value, Type type) = 0;
   virtual ValueId CreateConstFloatVal(double   value, Type type) = 0;
+
+  virtual void PrintDebug() { throw NotImplementedException(); }
 };

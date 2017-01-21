@@ -67,9 +67,15 @@ void VerificationLoop()
   }
 }
 
+#if defined(USE_Z3)
 #include "ValuesZ3.hh"
 
 Z3ValueContainer vc;
+#else
+#include "ValueRepImplementation.hh"
+
+ValueContainer vc;
+#endif
 void Verify()
 {
   auto f = DummyOperationFactory{};
@@ -104,10 +110,11 @@ int main()
   {
     vc.CreateConstIntVal(-i);
   }
+  //this is end of experimental code
 
   Verify();
 
-  vc.PrintValues();
+  vc.PrintDebug();
 
   getchar();
   return 0;

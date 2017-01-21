@@ -53,6 +53,12 @@ public:
   ValueContainer(const ValueContainer &c) : constantContainer(c.constantContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer) {}
   bool IsConstant(ValueId first) const { auto res = constantContainer.find(first); return res != constantContainer.end(); }
 
+  // Creates new boolean (1bit integer) value expressing the constraint
+  ValueId Cmp(ValueId first, ValueId second, Type type, CmpFlags flags) override
+  {
+    throw NotImplementedException();
+  }
+  // Sets constraint on both values
   boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
   boost::tribool IsEq(ValueId first, ValueId second, Type type) const override;
   boost::tribool IsNeq(ValueId first, ValueId second, Type type) const override;
