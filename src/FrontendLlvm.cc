@@ -335,7 +335,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       ArithFlags flags = ArithFlags::Default;
       flags |= typedInstr.hasNoSignedWrap()   ? ArithFlags::NoSignedWrap   : ArithFlags::Default;
       flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default;
-      //TODO: Add more?
+      //TODO@nobody: Add more? - probably not
 
       switch (instr.getOpcode())
       {
@@ -443,10 +443,11 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
   //last BB instruction
   {
     // If the instruction is terminator, links go to the next block
-    // @TODO Supports only ret and br (conditional and unconditional)
+    //TODO@michkot: Supports only Br instr. (conditional and unconditional)
 
-    //get matching op
+    // get matching op
     auto& op = GetOperationFor(*instrPtr);
+    // and op's arguments
     auto args = GetOperArgsForInstr(*instrPtr);
 
     switch (instrPtr->getOpcode())
