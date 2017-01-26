@@ -81,6 +81,8 @@ enum class CmpFlags {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
+//TODO@michkot: Document a way one should implement the following interface/abstract class
+
 /// <summary>
 /// Class holding a set of values / their constraint based representations.
 /// Internaly everything is a string of bits.
@@ -100,8 +102,7 @@ public:
   // The first method is an universal method for comparison of two values
   // The others are just helper / convenient methods
 
-  virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags
-  ) const = 0;
+  virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
   virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const 
                                        { return IsCmp(first, second, type, CmpFlags::Eq); }
   virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const 
