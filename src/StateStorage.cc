@@ -1,4 +1,4 @@
 #include "StateStorage.hh"
 
-vector<uptr<IState>> StateManger::statePool{};
-ref_deque<IState> StateManger::worklist{};
+vector<uptr<IState>> StatesManger::statePool{};
+ref_deque<IState> StatesManger::worklist{};

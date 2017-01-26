@@ -36,8 +36,8 @@ public:
   virtual ICfgNode& GetNextFalse() const = 0;
   virtual const ref_vector<ICfgNode>& GetPrevs() const = 0;
 
-  virtual StateManger GetStates() = 0;
-  virtual void GetDebugInfo() const = 0;
+  virtual StatesManger GetStatesManager() = 0;
+  virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
   virtual vector<OperArg> GetArguments() const = 0;
 
   void Execute(IState& s, const vector<OperArg>& args) override = 0;
@@ -77,7 +77,7 @@ public:
   ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
   const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
 
-  StateManger GetStates() override { throw NotSupportedException{}; }
+  StatesManger GetStatesManager() override { throw NotSupportedException{}; }
   void GetDebugInfo() const override { throw NotSupportedException{}; }
   vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
@@ -101,7 +101,7 @@ public:
   ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
   const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  StateManger GetStates() override { throw NotSupportedException{}; }
+  StatesManger GetStatesManager() override { throw NotSupportedException{}; }
   void GetDebugInfo() const override { throw NotSupportedException{}; }
   vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
@@ -121,7 +121,7 @@ class CfgNode : public ICfgNode {
 private:
   vector<OperArg> args;
   IOperation& op;
-  StateManger states;
+  StatesManger states;
 
 public:
   bool HasTwoNext() override { return nextFalse != nullptr; }
@@ -145,7 +145,7 @@ public:
   {
     return op.Execute(s, args);
   }
-  StateManger GetStates() override { return states; }
+  StatesManger GetStatesManager() override { return states; }
   vector<OperArg> GetArguments() const override { return args; }
 
 protected:

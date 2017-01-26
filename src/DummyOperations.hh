@@ -18,7 +18,7 @@ class BaseOperation : public IOperation {
 
   void Execute(IState& s, const vector<OperArg>& args) override
   {
-    s.nextCfgNode.GetStates().InsertAndEnqueue(
+    s.nextCfgNode.GetStatesManager().InsertAndEnqueue(
       ExecuteSimple(s, args)
     );
 
@@ -33,16 +33,16 @@ public:
   {
     if (s.nextCfgNode.HasTwoNext())
     {
-      s.nextCfgNode.GetStates().InsertAndEnqueue(
+      s.nextCfgNode.GetStatesManager().InsertAndEnqueue(
         make_unique<DummyState>(s.nextCfgNode, s.nextCfgNode.GetNextTrue())
       );
-      s.nextCfgNode.GetStates().InsertAndEnqueue(
+      s.nextCfgNode.GetStatesManager().InsertAndEnqueue(
         make_unique<DummyState>(s.nextCfgNode, s.nextCfgNode.GetNextFalse())
       );
     }
     else
     {
-      s.nextCfgNode.GetStates().InsertAndEnqueue(
+      s.nextCfgNode.GetStatesManager().InsertAndEnqueue(
         make_unique<DummyState>(s.nextCfgNode, s.nextCfgNode.GetNext())
       );
     }

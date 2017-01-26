@@ -17,17 +17,17 @@ private:
 public:
   virtual ~DummyState() override {}
 
-  virtual void AddGlobalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void AddGlobalVar(OperArg var) override
   {
     globalVarMapping.insert_or_assign(var.id, ValueId{});
   }
 
-  virtual void AddLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void AddLocalVar(OperArg var) override
   {
     varMapping.insert_or_assign(var.id, ValueId{});
   }
 
-  virtual void DelLocalVar(OperArg var, VariableDebugInfo info = VariableDebugInfo{}) override
+  virtual void DelLocalVar(OperArg var) override
   {
     throw NotImplementedException{"DelLocalVar"};
   }

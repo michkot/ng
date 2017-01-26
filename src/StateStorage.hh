@@ -18,11 +18,11 @@ enum class WorklistPriority {
   Standard = 0
 };
 
-class StateManger {
+class StatesManger {
   static vector<uptr<IState>> statePool;
   static ref_deque<IState> worklist;
 
-  ref_vector<IState> states;
+  ref_vector<IState> localStates;
 private:
 
 public:
@@ -50,7 +50,7 @@ public:
     {
       IState& state = *statePtr;
       statePool.push_back(move(statePtr));
-      states.push_back(state);
+      localStates.push_back(state);
 
       // here we should utilize priorities
       worklist.push_back(state);

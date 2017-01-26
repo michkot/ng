@@ -50,10 +50,10 @@ ref_queue<IState> toProcess{};
 void VerificationLoop()
 {
   // smyčka
-  while (!StateManger::IsWorklistEmpty())
+  while (!StatesManger::IsWorklistEmpty())
   {
     // načti stav
-    IState& state = StateManger::WorklistDequeue();
+    IState& state = StatesManger::WorklistDequeue();
 
     // zpracuj stav
     {
