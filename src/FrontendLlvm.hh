@@ -4,6 +4,8 @@
 #include "IOperation.hh"
 #include "Values.hh"
 
+#include "FrontedValueMapper.hh"
+
 #include <map>
 
 class LlvmCfgNode;
@@ -20,12 +22,13 @@ namespace llvm
 class LlvmCfgParser {
   IOperationFactory& opFactory;
   IValueContainer& vc;
+  Mapper& mapper;
 
   map<const llvm::BasicBlock*, LlvmCfgNode*> copyMapping;
   queue<tuple<const llvm::BasicBlock*, LlvmCfgNode*, unsigned int>> parseAndLinkTogether;
 
 public:
-  LlvmCfgParser(IOperationFactory& opFactory, IValueContainer& vc) : opFactory{opFactory},vc{vc} {}
+  LlvmCfgParser(IOperationFactory& opFactory, IValueContainer& vc, Mapper& mapper) : opFactory{opFactory}, vc{vc}, mapper{mapper} {}
 
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;
@@ -41,6 +44,7 @@ private:
   static OperArg GetEmptyOperArg();
   static OperArg GetFlagsOperArg(CmpFlags flags);
   static OperArg GetFlagsOperArg(ArithFlags flags);
+  static OperArg GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags);
 
   static vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
 

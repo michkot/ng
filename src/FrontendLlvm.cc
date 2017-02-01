@@ -1,6 +1,7 @@
 #include "FrontendLlvm.hh"
 
 #include "ICfgNode.hh"
+#include "LlvmGlobals.hh"
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
@@ -32,8 +33,7 @@ private:
 
 public:
 
-  virtual void GetDebugInfo() const override { throw NotImplementedException{}; }
-  virtual vector<OperArg> GetArguments() const override { return vector<OperArg>(); }
+  virtual void GetDebugInfo() const override { throw NotImplementedException(); }
 
   static LlvmCfgNode& CreateNode(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
   {
@@ -151,11 +151,20 @@ OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
   };
 }
 
+OperArg LlvmCfgParser::GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags)
+{
+  return OperArg{GetValueId( 
+      (static_cast<uint64_t>(kind) << 48ull) & (static_cast<uint64_t>(flags))),
+      Type::CreateVoidType()
+      };
+}
+
 IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction) const
 {
   // Create correct operation
   IOperation* op;
-  switch (instruction.getOpcode())
+  auto opcode = instruction.getOpcode();
+  switch (opcode)
   {
     // Terminator instructions
   case llvm::Instruction::Ret:
@@ -222,14 +231,38 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
     op = &opFactory.Cmp();
     break;
 
+  case llvm::Instruction::Call:
+    op = &opFactory.Call();
+    break;
+  case llvm::Instruction::Invoke:
+    op = &opFactory.Invoke();
+    break;
+
   default:
-    op = &opFactory.NotSupportedInstr();
+    // Cast operations
+    if(llvm::Instruction::CastOpsBegin <= opcode &&
+       llvm::Instruction::CastOpsEnd   >= opcode)
+    {
+      op = &opFactory.Cast();
+    }
+    else
+    {
+      op = &opFactory.NotSupportedInstr();
+    }
+    break; // default:
+
   }
+
 
   return *op;
 }
 //non null!!
 std::set<const llvm::Constant*> constantValuesToBeCreated;
+
+// Structrure of the created vector:
+// 0: return value | empty arg if it its void-type
+// 1: function call target | operation's cmp or arithmetic flags | empty 
+// 2+: operands
 
 vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
@@ -329,7 +362,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   } // case llvm::Instruction::ICmp:
   default:
   {
-    if (llvm::isa<llvm::BinaryOperator>(instr))
+    /**/ if (llvm::isa<llvm::BinaryOperator>(instr))
     {
       auto& typedInstr = static_cast<const llvm::BinaryOperator&>(instr);
       ArithFlags flags = ArithFlags::Default;
@@ -357,6 +390,33 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
         break;
       }
       args.push_back(GetFlagsOperArg(flags));
+    }
+    else if (llvm::isa<llvm::CastInst>(instr))
+    {
+      CastOpsEnum opKind = CastOpsEnum::Default;
+      ArithFlags  flags  = ArithFlags::Default;
+
+      switch (static_cast<llvm::Instruction::CastOps>(instr.getOpcode()))
+      {
+      case llvm::Instruction::CastOps::Trunc:
+        opKind = CastOpsEnum::Truncate;
+        break;
+      case llvm::Instruction::CastOps::ZExt:
+        flags  = ArithFlags ::Unsigned;
+        opKind = CastOpsEnum::Extend;
+        break;
+      case llvm::Instruction::CastOps::SExt:
+        flags  = ArithFlags ::Signed;
+        opKind = CastOpsEnum::Extend;
+        break;
+      case llvm::Instruction::CastOps::FPExt:
+        opKind = CastOpsEnum::Extend;
+        break;
+      case llvm::Instruction::CastOps::BitCast:
+        opKind = CastOpsEnum::BitCast;
+        break;
+      }
+      args.push_back(GetFlagsOperArg(opKind, flags));
     }
     else // add empty operand placeholder for flags/function target
     {
@@ -483,25 +543,33 @@ void LlvmCfgParser::DealWithConstants()
 {
   for (auto x : constantValuesToBeCreated)
   {
+    ValueId id;
     /**/ if (auto constInt = llvm::dyn_cast<llvm::ConstantInt>(x))
     {
-      vc.CreateConstIntVal(constInt->getValue().getZExtValue(), Type{constInt->getType()});
+        id = vc.CreateConstIntVal(constInt->getValue().getZExtValue(), Type{constInt->getType()});
     }
     else if (auto constFp = llvm::dyn_cast<llvm::ConstantFP>(x))
     {
       if (&constFp->getValueAPF().getSemantics() == &llvm::APFloat::IEEEdouble)
       {
-        vc.CreateConstFloatVal(constFp->getValueAPF().convertToDouble(), Type{constFp->getType()});
+        id = vc.CreateConstFloatVal(constFp->getValueAPF().convertToDouble(), Type{constFp->getType()});
       }
       else if (&constFp->getValueAPF().getSemantics() == &llvm::APFloat::IEEEsingle)
       {
-        vc.CreateConstFloatVal(constFp->getValueAPF().convertToFloat(), Type{constFp->getType()});
+        id = vc.CreateConstFloatVal(constFp->getValueAPF().convertToFloat(), Type{constFp->getType()});
       }
       else
         throw NotImplementedException();
     }
+    else if (auto constNullPtr = llvm::dyn_cast<llvm::ConstantPointerNull>(x))
+    {
+      //TODO maybe different value than 0 for nullptr?
+      id = vc.CreateConstIntVal(0, Type{constNullPtr->getType()});
+    }
     else
       throw NotImplementedException();
+
+    mapper.LinkToValueId(GetValueId(x), id);
   }
 }
 
@@ -548,5 +616,6 @@ uptr<llvm::Module> moduleHandle;
 ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(string fileName)
 {
   moduleHandle = OpenIrFile(fileName);
+  setLlvmGlobalVars(&*moduleHandle);
   return ParseModule(*moduleHandle);
 }

@@ -25,3 +25,4 @@ template<class T>
 using ref_set = ::std::set<::std::reference_wrapper<T>>;
 
 #define STL_UNWRAP(stl_obj) decltype(stl_obj)::value_type::type
+#define STL_ITEM_T(stl_obj) decltype(stl_obj)::value_type

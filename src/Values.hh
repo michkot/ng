@@ -45,11 +45,11 @@ public:
 ENUM_FLAGS(ArithFlags)
 enum class ArithFlags {
   Default        = 0x0000,
-  Signed         = 0x0001,
-  Unsigned       = 0x0002,
+  Signed         = 0x0001, // Needed for divison and remainder
+  Unsigned       = 0x0002, // Needed for divison and remainder
   Exact          = 0x0004,
-  NoSignedWrap   = 0x0008,
-  NoUnsignedWrap = 0x0010,
+  NoSignedWrap   = 0x0008, // Undefined behaviour on signed overflow
+  NoUnsignedWrap = 0x0010, // Undefined behaviour on unsigned overflow
   FmfFlag1       = 0x0020,
   FmfFlag2       = 0x0040,
   FmfFlag3       = 0x0080,

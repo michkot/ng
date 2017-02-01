@@ -40,7 +40,7 @@ public:
   virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
   virtual vector<OperArg> GetArguments() const = 0;
 
-  void Execute(IState& s, const vector<OperArg>& args) override = 0;
+  virtual void Execute(IState& s, const vector<OperArg>& args) override = 0;
   void Execute(IState& s)
   {
     return Execute(s, GetArguments());
@@ -72,18 +72,18 @@ class StartCfgNode : public ICfgNode {
   friend CfgNode;
   friend LlvmCfgNode;
 public:
-  ICfgNode& GetNext() const override { return *next; }
-  ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
-  ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
-  const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
+  virtual ICfgNode& GetNext() const override { return *next; }
+  virtual ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
+  virtual ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
+  virtual const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
 
-  StatesManger GetStatesManager() override { throw NotSupportedException{}; }
-  void GetDebugInfo() const override { throw NotSupportedException{}; }
-  vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
+  virtual StatesManger GetStatesManager() override { throw NotSupportedException{}; }
+  virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
+  virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
-  bool IsStartNode() override { return true; }
+  virtual bool IsStartNode() override { return true; }
 
-  void Execute(IState& s, const vector<OperArg>& args) override
+  virtual void Execute(IState& s, const vector<OperArg>& args) override
   {
     throw NotSupportedException{};
   }
@@ -96,18 +96,18 @@ class TerminalCfgNode : public ICfgNode {
   friend CfgNode;
   friend LlvmCfgNode;
 public:
-  ICfgNode& GetNext() const override { throw NotSupportedException{}; }
-  ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
-  ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
-  const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
+  virtual ICfgNode& GetNext() const override { throw NotSupportedException{}; }
+  virtual ICfgNode& GetNextTrue() const override { throw NotSupportedException{}; }
+  virtual ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
+  virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  StatesManger GetStatesManager() override { throw NotSupportedException{}; }
-  void GetDebugInfo() const override { throw NotSupportedException{}; }
-  vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
+  virtual StatesManger GetStatesManager() override { throw NotSupportedException{}; }
+  virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
+  virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
-  bool IsTerminalNode() override { return true; }
+  virtual bool IsTerminalNode() override { return true; }
 
-  void Execute(IState& s, const vector<OperArg>& args) override
+  virtual void Execute(IState& s, const vector<OperArg>& args) override
   {
     throw NotSupportedException{};
   }
@@ -124,29 +124,29 @@ private:
   StatesManger states;
 
 public:
-  bool HasTwoNext() override { return nextFalse != nullptr; }
-  ICfgNode& GetNext() const override { return *next; }
-  ICfgNode& GetNextTrue() const override
+  virtual bool HasTwoNext() override { return nextFalse != nullptr; }
+  virtual ICfgNode& GetNext() const override { return *next; }
+  virtual ICfgNode& GetNextTrue() const override
   {
     if (nextFalse == nullptr)
       throw runtime_error("not branch");
     return *next;
   }
-  ICfgNode& GetNextFalse() const override
+  virtual ICfgNode& GetNextFalse() const override
   {
     if (nextFalse == nullptr)
       throw runtime_error("not branch");
     return *nextFalse;
   }
 
-  const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
+  virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  void Execute(IState& s, const vector<OperArg>& args) override
+  virtual void Execute(IState& s, const vector<OperArg>& args) override
   {
     return op.Execute(s, args);
   }
-  StatesManger GetStatesManager() override { return states; }
-  vector<OperArg> GetArguments() const override { return args; }
+  virtual StatesManger GetStatesManager() override { return states; }
+  virtual vector<OperArg> GetArguments() const override { return args; }
 
 protected:
   /*ctr*/ CfgNode(IOperation& op, vector<OperArg> args, ICfgNode& prev, ICfgNode& next) :

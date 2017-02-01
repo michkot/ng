@@ -15,4 +15,10 @@
   > 
 * Vybrat vhodou C++ knihovnu pro strem-api, lazy evaluation a ranges
 * Otestovat binding C# na C++ (STL i boost)
-* 
+
+* Vyrobit kontejner pro mapování FrontedValueId na ValueId
+* Projít materialy k statické analýze
+* vyhodnotit vývoj FNA analýzy
+* přejmenovat některá místa z verifikace na anlýzu
+* je tento framework určen (ze všech statických analýz) konkrétně na abstraktní interpretaci?
+* probrat některý tyto věci @TomášVojnar

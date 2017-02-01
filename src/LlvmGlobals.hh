@@ -9,3 +9,5 @@ namespace llvm {
 extern thread_local const llvm::Module* llvmModule;
 extern thread_local       llvm::DataLayout llvmDataLayout;
 extern thread_local const llvm::LLVMContext* llvmContext;
+
+void setLlvmGlobalVars(llvm::Module* module);

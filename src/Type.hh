@@ -25,6 +25,7 @@ public:
   explicit /*ctr*/ LlvmType(FrontendTypeId frontedId) : frontedId{frontedId} {}
 
   static Type CreateVoidType();
+  static Type CreateCharPointerType();
 
   bool operator==(const Type& rhs)
   {

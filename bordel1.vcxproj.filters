@@ -21,9 +21,6 @@
     <ClCompile Include="src\LlvmGlobals.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DummyOperations.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Exceptions.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,6 +90,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ValuesZ3.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OperationArgs.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FrontedValueMapper.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ForwardNullAnalysis.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

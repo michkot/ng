@@ -10,8 +10,43 @@ using namespace ::std;
 class IOperation {
 public:
   //vektor kontext po provedeni, pristi instrukce
-  virtual void Execute(IState& s, const vector<OperArg>& args) = 0;
-  //virtual bool IsConditionalBranch();
+  virtual void Execute(IState& originalState, const vector<OperArg>& args) = 0;
+};
+
+class OperationNotSupportedOperation : public IOperation {
+public:
+  virtual void Execute(IState& originalState, const vector<OperArg>& args) override 
+  {
+    throw NotSupportedException();
+  }
+};
+
+#include "enum_flags.h"
+ENUM_FLAGS(BinaryOpsEnum)
+enum class BinaryOpsEnum {
+  Default  = 0x0000,
+  Add      = 0x0001,
+  Sub      = 0x0002,
+  Mul      = 0x0003,
+  Div      = 0x0004,
+  Rem      = 0x0005,
+  Shl      = 0x0006,
+  Shr      = 0x0007,
+  Or       = 0x0008,
+  Xor      = 0x0009,
+};
+
+ENUM_FLAGS(CastOpsEnum)
+enum class CastOpsEnum {
+  Default       = 0x0000,
+  Truncate      = 0x0001, // Right now, both integer and floating point, might change in time
+  Extend        = 0x0002,
+  FpToInt       = 0x0003,
+  IntToFp       = 0x0004,
+  PtrToInt      = 0x0005,
+  IntToPtr      = 0x0006,
+  BitCast       = 0x0007, // same size, different meaning (vectors -> integers, pointers -> pointers
+  AddrSpaceCast = 0x0008,
 };
 
 //not a true factory, shares one instance
@@ -21,6 +56,10 @@ public:
   // Terminator operations
   virtual IOperation& Ret() = 0;
   virtual IOperation& Br() = 0;
+
+  // Call instructions
+  virtual IOperation& Call() = 0;
+  virtual IOperation& Invoke() = 0;
 
   // Binary integers operations
   virtual IOperation& Add() = 0;
@@ -35,6 +74,9 @@ public:
   virtual IOperation& And() = 0;
   virtual IOperation& Or() = 0;
   virtual IOperation& Xor() = 0;
+
+  // Conversion operations
+  virtual IOperation& Cast() = 0;
 
   // Memory access operations
   virtual IOperation& Alloca() = 0;

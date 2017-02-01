@@ -1,5 +1,9 @@
 #include "Exceptions.hh"
 
+#if ! defined(NDEBUG)
+
+#else
+
 NotImplementedException::NotImplementedException(const char* name) :
   logic_error(
     std::string{"Method "}
@@ -7,6 +11,8 @@ NotImplementedException::NotImplementedException(const char* name) :
     .append("is not implemented.")
     )
   {}
+
+#endif
 
 NotSupportedException::NotSupportedException(const char* name, const char* type) :
   logic_error(

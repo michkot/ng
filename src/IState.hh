@@ -3,6 +3,8 @@
 #include "Definitions.hh"
 #include "General.hh"
 
+#include "Values.hh"
+
 class ICfgNode; //forward delcaration -- include colision ICfgNode vs IState
 //#include "ICfgNode.hh"
 
@@ -14,7 +16,7 @@ enum class StateCondition {
   AbstractedOut = 2
 };
 
-//TODO: probably rename lastCfgNode, nextCfgNode, previousStates
+//TODO: probably rename lastCfgNode - associatedCfgNode?, nextCfgNode, previousStates
 
 class IState {
 public:
@@ -34,20 +36,26 @@ public:
 
   virtual ~IState() {}
 
+  // meaning: All paths(states) leading from this state were prepared for processing or already processed
   virtual void SetExplored() { condition = StateCondition::Explored; }
+  // meaning: Succesors of this state are un-processed
   virtual bool IsNew() { return condition == StateCondition::New; }
-
-  virtual void AddGlobalVar(OperArg var) = 0;
-  virtual void AddLocalVar(OperArg var) = 0;
+  
+  virtual ValueId GetOrCreateGlobalVar(OperArg var) = 0;
+  virtual ValueId GetOrCreateLocalVar (OperArg var) = 0;
+  virtual ValueId GetAnyOrCreateLocalVar (OperArg var) = 0;
+  virtual void LinkGlobalVar(OperArg var, ValueId value) = 0;
+  virtual void LinkLocalVar (OperArg var, ValueId value) = 0;
   // pro dead value analysis / memory leaks:
   // momentálně pro toto nevidím use-case, neboť nemám jak zjistit že je proměná (resp její SSA následník)
   // již out of scope.
-  virtual void DelLocalVar(OperArg var) = 0; 
+  virtual void DelLocalVar(OperArg var) { throw NotImplementedException(); }
 
   //předávané argumenty, návratový typ, návratová lokace/instrukce
-  virtual void PushFrame(FunctionCallInfo info) = 0;
+  virtual void PushFrame(FunctionCallInfo info) { throw NotImplementedException(); }
   //pozn lokace návratu musí být uložena ve stavu, na adekvátní urovni, přilepena na stack frame
-  virtual void PopFrame(OperArg retVar) = 0;
+  virtual void PopFrame(OperArg retVar) { throw NotImplementedException(); }
+
 
 protected:
   /*ctr*/ IState(ICfgNode& lastNode, ICfgNode& nextNode) :

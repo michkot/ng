@@ -255,9 +255,23 @@ ValueId Z3ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFla
   return CreateVal(type);
 }
 
+// kopie ValueId Z3ValueContainer::Add(ValueId first, ValueId second, Type type, ArithFlags flags)
 ValueId Z3ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
-  return CreateVal(type);
+  auto id = ValueId::GetNextId();
+  const auto& lhs = idsToExprs.at(first);
+  const auto& rhs = idsToExprs.at(second);
+
+  // check that the size I assume the value/expression have
+  // psedo-code: sizeof(first) == sizeof(second) == type.size
+  assert(lhs.get_sort().bv_size() == rhs.get_sort().bv_size());
+  assert(lhs.get_sort().bv_size() == type.GetBitWidth());
+
+  expr ex = lhs * rhs;
+  idsToExprs.insert({id, ex});
+  //TODO: dále podle NSW a NUW (a signed) flagů je třeba přidat ještě no_under* a no_over* predikaty
+
+  return id;
 }
 
 ValueId Z3ValueContainer::Div(ValueId first, ValueId second, Type type, ArithFlags flags)
@@ -323,8 +337,8 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
   assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
   expr ex = has_flag(flags, ArithFlags::Signed) ?
-    sext(lhs, targetType.GetBitWidth()) :
-    zext(lhs, targetType.GetBitWidth());
+    sext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size()) :
+    zext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size());
   idsToExprs.insert({id, ex});
 
   return id;

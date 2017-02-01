@@ -41,7 +41,7 @@ using namespace ::std;
 #include "IState.hh"
 #include "IOperation.hh"
 #include "ICfgNode.hh"
-#include "DummyOperations.hh"
+#include "ForwardNullAnalysis.hh"
 #include "FrontendLlvm.hh"
 
 // fronta stavů ke zpracování
@@ -77,15 +77,19 @@ Z3ValueContainer vc;
 
 ValueContainer vc;
 #endif
+
+#include "FrontedValueMapper.hh"
+Mapper mapper{vc};
+
 void Verify()
 {
-  auto f = DummyOperationFactory{};
-  LlvmCfgParser parser{f, vc};
-  auto& firstNode = parser.ParseAndOpenIrFile("input-int-conv.ll");
+  auto f = FnaOperationFactory{};
+  LlvmCfgParser parser{f, vc, mapper};
+  auto& firstNode = parser.ParseAndOpenIrFile("examples/01_minimal_case.ll");//("input-int-conv.ll");
 
-  auto emptyStateUPtr = make_unique<DummyState>(firstNode.GetPrevs()[0], firstNode);
+  auto emptyStateUPtr = make_unique<ForwardNullAnalysisState>(firstNode.GetPrevs()[0], firstNode, vc, mapper);
 
-  //emptyStateUPtr->get
+  firstNode.GetStatesManager().InsertAndEnqueue(move(emptyStateUPtr));
 
   VerificationLoop();
 }

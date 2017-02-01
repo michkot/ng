@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\DummyOperations.cc" />
     <ClCompile Include="src\Exceptions.cc" />
     <ClCompile Include="src\FrontendLlvm.cc" />
     <ClCompile Include="src\main.cpp" />
@@ -40,11 +39,14 @@
     <ClInclude Include="src\DummyState.hh" />
     <ClInclude Include="src\enum_flags.h" />
     <ClInclude Include="src\Exceptions.hh" />
+    <ClInclude Include="src\ForwardNullAnalysis.hh" />
+    <ClInclude Include="src\FrontedValueMapper.hh" />
     <ClInclude Include="src\FrontendLlvm.hh" />
     <ClInclude Include="src\General.hh" />
     <ClInclude Include="src\ICfgNode.hh" />
     <ClInclude Include="src\IOperation.hh" />
     <ClInclude Include="src\IState.hh" />
+    <ClInclude Include="src\OperationArgs.hh" />
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
     <ClInclude Include="src\ValueRepImplementation.hh">

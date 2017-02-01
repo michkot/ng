@@ -74,7 +74,7 @@ inline constexpr T operator ~ (T x)      { return static_cast<T> (~static_cast<I
 inline T& operator &= (T& x, T y)  { x = x & y; return x; }; \
 inline T& operator |= (T& x, T y)  { x = x | y; return x; }; \
 inline T& operator ^= (T& x, T y)  { x = x ^ y; return x; }; \
-inline constexpr bool has_flag (T x, T y) { return static_cast<T>(static_cast<INT_T>(x) | static_cast<INT_T>(y)) == y; };
+inline constexpr bool has_flag (T x, T y) { return static_cast<T>(static_cast<INT_T>(x) & static_cast<INT_T>(y)) == y; };
 
 #if(USE_ENUM_FLAGS_FUNCTION)
 

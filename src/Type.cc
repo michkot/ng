@@ -2,18 +2,25 @@
 
 #include "LlvmGlobals.hh"
 
-//#include <map>
+//#include <innerMap>
 //#include <vector>
 //#include <memory>
 //#include <iostream>
 
 #include <llvm/IR/Type.h>
+#include <llvm/IR/Module.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Support/raw_ostream.h>
 
 Type LlvmType::CreateVoidType()
 {
   return Type(nullptr);
+}
+
+Type LlvmType::CreateCharPointerType()
+{
+  static auto ptrTy = llvm::Type::getInt8PtrTy(llvmModule->getContext());
+  return Type{ptrTy};
 }
 
 void LlvmType::ToString(std::string& str) const
