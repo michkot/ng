@@ -13,6 +13,7 @@ struct main_struct_s
 
 void nastav_strukturu(main_struct* ptr)
 {
+  // predelat na ->
   ptr[0].vnorena.a = (char)'a';
   ptr[0].vnorena.b = (char)'b';
 }

@@ -157,7 +157,7 @@ private:
       move(succesor)
     );
 
-    succesor = CreateSuccesorTrue(originalState);
+    succesor = CreateSuccesorFalse(originalState);
     ExecuteOnNewState(*succesor, args);
     originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(
       move(succesor)
