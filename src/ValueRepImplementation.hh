@@ -19,7 +19,10 @@ public:
   BinaryConstraint() : BinaryConstraint(ValueId(0), ValueId(0), CmpFlags::Default) {}
   BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
 
+  //checks if certain ValueId is in this binary constraint
   bool    Contains        (ValueId id) const { return id == first || id == second; }
+
+  //for ValueId returns other ValueId in the constraint
   ValueId GetOther        (ValueId id) const
   {
     if (id == first) 
@@ -36,7 +39,7 @@ typedef uint64_t ConstraintId;
 class ValueContainer : public IValueContainer
 {
 private:
-  std::map<ValueId, uint64_t> constantContainer; //boost bimap?				//contains mapping from ValueId to constant
+  std::map<ValueId, uint64_t> constantContainer; //boost bimap?		//contains mapping from ValueId to constant
   std::map<ConstraintId, BinaryConstraint> constrContainer;			//contains mapping from ConstraintId to Constraint
   std::map< ValueId, std::vector<ConstraintId>> constrIdContainer;	//contains mapping from ValueId to all used ConstraintIds
 
@@ -114,8 +117,9 @@ protected:
 
 inline uint64_t RipBits(size_t numOfBits, uint64_t in)
 {
-  in &= (1ULL << numOfBits) - 1;
-  return in;
+	if(numOfBits < sizeof(uint64_t))
+		in &= (1ULL << numOfBits) - 1;
+	return in;
 }
 
 inline uint64_t SignExtend64(size_t numOfBits, uint64_t in)
