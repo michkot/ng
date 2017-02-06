@@ -12,7 +12,7 @@
 #include <map>
 #include <cassert>
 
-#include <range/v3/all.hpp>
+//#include <range/v3/all.hpp>
 
 
 class Mapper {
@@ -35,7 +35,7 @@ public:
   
   auto GetFrontendIds(ValueId id)
   {
-    return innerMap | ranges::view::remove_if([=](STL_ITEM_T(innerMap) pair){ return pair.second == id; });
+    return nullptr;//innerMap | ranges::view::remove_if([=](STL_ITEM_T(innerMap) pair){ return pair.second == id; });
   }
 
   void LinkToValueId(FrontendValueId id, ValueId value)
