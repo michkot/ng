@@ -651,7 +651,7 @@ ValueId ValueContainer::Sub(ValueId first, ValueId second, Type type, ArithFlags
 }
 
 ValueId ValueContainer::Mul(ValueId first, ValueId second, Type type, ArithFlags flags)
- {
+{
   auto lhs = constantContainer.find(first);
   auto rhs = constantContainer.find(second);
 

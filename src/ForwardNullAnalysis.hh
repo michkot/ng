@@ -226,7 +226,7 @@ class FnaOperationAnd : public FnaOperationBinary {
 class FnaOperationGetElementPtr : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
-    //newstate
+
     throw NotImplementedException();
   }
 };
@@ -253,7 +253,23 @@ class FnaOperationAlloca : public BaseForwardNullAnalysisOperation {
 class FnaOperationCall : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
-    //newstate
+    auto callTargetId = args[1].id;
+    auto callTargetType = args[1].type;
+
+    // ne need to do several thinks in here
+    // A) prepare new stack frame 
+    // B) bind argument values to formal parameters in called function
+    // C) prepare "return info" which will bind the returned value to FrontendId of returned value in caller
+    // D) plan execution of the first node in the function with state prepared according to previous points
+
+    // for that, we need:
+    // support for stack frames with "return info"
+    // a system which binds FunctionPointers (of all kinds) to functions
+    
+    // for variable adressing of function, I propose the same idea I originaly had for stack:
+    // that is, "base adress", here base address of function, beeing in unknown (abstract) value
+    // and other addresses somehow based on this address
+
     throw NotImplementedException();
   }
 };
@@ -261,7 +277,12 @@ class FnaOperationCall : public BaseForwardNullAnalysisOperation {
 class FnaOperationLoad : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
-    //newstate
+
+    // this operation should somehow load a value from memory to register
+    // as registers are "direct values",
+    // it in fact means just to bind an existing value to another FrontendValueId
+    // which value is to be loaded is but entirely up to the specific analysis
+
     throw NotImplementedException();
   }
 };
@@ -269,7 +290,10 @@ class FnaOperationLoad : public BaseForwardNullAnalysisOperation {
 class FnaOperationStore : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
-    //newstate
+
+    // this operation should somehow Store a value in register to certain address in memory
+    // the way for the operation to handle such a "write" is completely analysis specific
+
     throw NotImplementedException();
   }
 };
@@ -277,7 +301,9 @@ class FnaOperationStore : public BaseForwardNullAnalysisOperation {
 class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
-    //newstate
+
+    // this operation should 
+
     throw NotImplementedException();
   }
 };

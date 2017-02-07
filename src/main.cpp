@@ -85,7 +85,7 @@ void Verify()
 {
   auto f = FnaOperationFactory{};
   LlvmCfgParser parser{f, vc, mapper};
-  auto& firstNode = parser.ParseAndOpenIrFile("examples/01_minimal_case.ll");//("input-int-conv.ll");
+  auto& firstNode = parser.ParseAndOpenIrFile("examples/01_mincase_01_nullptr_dereference[dead].ll");//("input-int-conv.ll");
 
   auto emptyStateUPtr = make_unique<ForwardNullAnalysisState>(firstNode.GetPrevs()[0], firstNode, vc, mapper);
 
