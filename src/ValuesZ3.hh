@@ -40,8 +40,8 @@ public:
   virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
 
-  virtual ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  virtual ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
+  virtual ValueId ShL   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
+  virtual ValueId ShR   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
 
   virtual ValueId BitAnd(ValueId first, ValueId second, Type type) override;
   virtual ValueId BitOr (ValueId first, ValueId second, Type type) override;

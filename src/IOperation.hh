@@ -21,21 +21,6 @@ public:
   }
 };
 
-#include "enum_flags.h"
-ENUM_FLAGS(BinaryOpsEnum)
-enum class BinaryOpsEnum {
-  Default  = 0x0000,
-  Add      = 0x0001,
-  Sub      = 0x0002,
-  Mul      = 0x0003,
-  Div      = 0x0004,
-  Rem      = 0x0005,
-  Shl      = 0x0006,
-  Shr      = 0x0007,
-  Or       = 0x0008,
-  Xor      = 0x0009,
-};
-
 ENUM_FLAGS(CastOpsEnum)
 enum class CastOpsEnum {
   Default       = 0x0000,

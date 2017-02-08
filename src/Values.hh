@@ -42,19 +42,39 @@ public:
 
 };
 
+#include "enum_flags.h"
+ENUM_FLAGS(BinaryOpKind)
+enum class BinaryOpKind {
+  Default  = 0x0000, // Is an error
+
+  Add      = 0x0001, // Standard two's complement operation
+  Sub      = 0x0002, // Standard two's complement operation
+  Mul      = 0x0003, // Standard two's complement operation
+
+  Div      = 0x0004,
+  Rem      = 0x0005,
+
+  Shl      = 0x0006, // Bitshift left
+  Shr      = 0x0007, // Bitshift right, unsigned(logical) or signed(arithmetic) 
+
+  And      = 0x0008, // Bitwise AND
+  Or       = 0x0009, // Bitwise OR
+  Xor      = 0x000A, // Bitwise XOR
+};
+
 ENUM_FLAGS(ArithFlags)
 enum class ArithFlags {
-  Default        = 0x0000,
-  Signed         = 0x0001, // Needed for divison and remainder
-  Unsigned       = 0x0002, // Needed for divison and remainder
-  Exact          = 0x0004,
-  NoSignedWrap   = 0x0008, // Undefined behaviour on signed overflow
-  NoUnsignedWrap = 0x0010, // Undefined behaviour on unsigned overflow
-  FmfFlag1       = 0x0020,
-  FmfFlag2       = 0x0040,
-  FmfFlag3       = 0x0080,
-  FmfFlag4       = 0x0100,
-  FmfFlag5       = 0x0200,
+  Default        = 0x0000, // Defaults to "C unsigned behaviour"; Error for div/rem/shr operations
+  Signed         = 0x0001, // Needed for div, rem, shr
+  Unsigned       = 0x0002, // Needed for div, rem, shr
+  Exact          = 0x0004, // Undefined if operation would not return exact result (loss of digits/precision)
+  NoSignedWrap   = 0x0008, // Undefined on signed overflow
+  NoUnsignedWrap = 0x0010, // Undefined on unsigned overflow
+  FmfFlag1       = 0x0020, // Reserved for floats
+  FmfFlag2       = 0x0040, // Reserved for floats
+  FmfFlag3       = 0x0080, // Reserved for floats
+  FmfFlag4       = 0x0100, // Reserved for floats
+  FmfFlag5       = 0x0200, // Reserved for floats
 };
 
 ENUM_FLAGS(CmpFlags)
@@ -81,6 +101,11 @@ enum class CmpFlags {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
+struct BinaryOpOptions {
+  BinaryOpKind opKind;
+  ArithFlags   flags;
+};
+
 //TODO@michkot: Document a way one should implement the following interface/abstract class
 
 /// <summary>
@@ -96,31 +121,41 @@ enum class CmpFlags {
 class IValueContainer {
 public:
 
+  // General note for implementor of this abstract class / interface:
+  // Methods need implementing for compiling:
+  // IsCmp, IsInternalRepEq, IsZero, IsUnknown, 
+  // Assume, Cmp, BinOp, BitNot, 
+  // ExtendInt, TruncateInt, CreateVal, CreateConstIntVal, 
+  // GetZero,
+  // PrintDebug
+  // Other methods which analysis is probably going to use (and might be changed from NIE to pure virtual):
+  // AssumeTrue, AssumeFalse,
+
   // --------------------------------------------------------------------------
   // Section A - constant methods, comparison queries
   
   // The first method is an universal method for comparison of two values
-  // The others are just helper / convenient methods
+  // The others are specialzed helper / convenient methods
 
-  virtual boost::tribool IsCmp     (ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
-  virtual boost::tribool IsEq      (ValueId first, ValueId second, Type type) const 
-                                       { return IsCmp(first, second, type, CmpFlags::Eq); }
-  virtual boost::tribool IsNeq     (ValueId first, ValueId second, Type type) const 
-                                       { return IsCmp(first, second, type, CmpFlags::Neq); }
-  virtual boost::tribool IsTrue    (ValueId first, Type type) const 
-                                       { return IsCmp(first, GetZero(type), type, CmpFlags::Neq); } // !=0
-  virtual boost::tribool IsFalse   (ValueId first, Type type) const 
-                                       { return IsCmp(first, GetZero(type), type, CmpFlags::Eq); }  // ==0
+  virtual boost::tribool IsCmp  (ValueId first, ValueId second, Type type, CmpFlags flags) const = 0;
+  virtual boost::tribool IsEq   (ValueId first, ValueId second, Type type) const 
+                                    { return IsCmp(first, second, type, CmpFlags::Eq); }
+  virtual boost::tribool IsNeq  (ValueId first, ValueId second, Type type) const 
+                                    { return IsCmp(first, second, type, CmpFlags::Neq); }
+  virtual boost::tribool IsTrue (ValueId first, Type type) const 
+                                    { return IsCmp(first, GetZero(type), type, CmpFlags::Neq); } // !=0
+  virtual boost::tribool IsFalse(ValueId first, Type type) const 
+                                    { return IsCmp(first, GetZero(type), type, CmpFlags::Eq); }  // ==0
   
   // Compares values' internal representations - typically a bitwise comparison of fixed-length integers
   virtual boost::tribool IsInternalRepEq(ValueId first, ValueId second) const = 0;
   // The value is zero in all possible interpretations 
-  virtual boost::tribool IsZero    (ValueId first) const = 0;
+  virtual boost::tribool IsZero   (ValueId first) const = 0;
   // There are no informations regarding this value
   virtual bool           IsUnknown(ValueId first) const = 0;
 
   // --------------------------------------------------------------------------
-  // Section B - modifying methods, assumptions addition 
+  // Section B - modifying methods, constraint addition 
 
   // Creates new boolean (1bit integer) value expressing the constraint
   virtual ValueId Cmp        (ValueId first, ValueId second, Type type, CmpFlags flags) = 0;
@@ -134,24 +169,29 @@ public:
   virtual void    AssumeFalse(ValueId first) { throw NotImplementedException(); }
 
   // --------------------------------------------------------------------------
-  // Section C - modifying methods, math/logic/bitwise binary and unary operations
+  // Section C - modifying methods, math/bitwise binary and unary operations
 
-  // In following methods, the representation of result of specific operation is assigned to returned value 
+  // In following methods, the representation of result of the operation is assigned to the returned value 
   // (need not be a newly created one, e.g. typically in case of constants)
 
-  virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  // Universal arithmetic/bitwise binary operation, configured by struct param  
+  virtual ValueId BinOp (ValueId first, ValueId second, Type type, BinaryOpOptions options) = 0;
+  virtual ValueId BinOp (ValueId first, ValueId second, Type type, BinaryOpKind kind, ArithFlags flags)
+                            { return BinOp(first, second, type, {kind, flags}); }
 
-  virtual ValueId LSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
-  virtual ValueId RSh   (ValueId first, ValueId second, Type type, ArithFlags flags) = 0;
+  virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
 
-  virtual ValueId BitAnd(ValueId first, ValueId second, Type type) = 0;
-  virtual ValueId BitOr (ValueId first, ValueId second, Type type) = 0;
-  virtual ValueId BitXor(ValueId first, ValueId second, Type type) = 0;
-  virtual ValueId BitNot(ValueId first, Type type) = 0;
+  virtual ValueId ShL   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId ShR   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+
+  virtual ValueId BitAnd(ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
+  virtual ValueId BitOr (ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
+  virtual ValueId BitXor(ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
+  virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!!
 
   // --------------------------------------------------------------------------
   // Section D - modifying methods, others
@@ -195,6 +235,6 @@ protected:
 
   // Zero in all possible interpretations 
   virtual ValueId GetZero() { throw NotImplementedException(); }
-  // Zero of specific type
+  // Zero of specific type/size
   virtual ValueId GetZero(Type type) const = 0;
 };

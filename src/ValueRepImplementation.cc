@@ -783,7 +783,7 @@ ValueId ValueContainer::Rem(ValueId first, ValueId second, Type type, ArithFlags
   }
 }
 
-ValueId ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId ValueContainer::ShL(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
   auto lhs = constantContainer.find(first);
   auto rhs = constantContainer.find(second);
@@ -801,7 +801,7 @@ ValueId ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags
   return CreateConstIntVal(value, type);
 }
 
-ValueId ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId ValueContainer::ShR(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
   auto lhs = constantContainer.find(first);
   auto rhs = constantContainer.find(second);

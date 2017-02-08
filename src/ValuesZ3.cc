@@ -284,12 +284,12 @@ ValueId Z3ValueContainer::Rem(ValueId first, ValueId second, Type type, ArithFla
   return CreateVal(type);
 }
 
-ValueId Z3ValueContainer::LSh(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId Z3ValueContainer::ShL(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
   return CreateVal(type);
 }
 
-ValueId Z3ValueContainer::RSh(ValueId first, ValueId second, Type type, ArithFlags flags)
+ValueId Z3ValueContainer::ShR(ValueId first, ValueId second, Type type, ArithFlags flags)
 {
   return CreateVal(type);
 }

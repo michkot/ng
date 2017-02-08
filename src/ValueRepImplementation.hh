@@ -82,8 +82,8 @@ public:
   ValueId Div(ValueId first, ValueId second, Type type, ArithFlags flags) override;
   ValueId Rem(ValueId first, ValueId second, Type type, ArithFlags flags) override;
 
-  ValueId LSh(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId RSh(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+  ValueId ShL(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+  ValueId ShR(ValueId first, ValueId second, Type type, ArithFlags flags) override;
 
   ValueId BitAnd(ValueId first, ValueId second, Type type) override;
   ValueId BitOr(ValueId first, ValueId second, Type type) override;
