@@ -83,11 +83,11 @@ ValueContainer vc;
 #include "FrontedValueMapper.hh"
 Mapper mapper{vc};
 
-void Verify()
+void Verify(boost::string_view fileName)
 {
   auto f = FnaOperationFactory{};
   LlvmCfgParser parser{f, vc, mapper};
-  auto& firstNode = parser.ParseAndOpenIrFile("examples/01_mincase_01_nullptr_dereference[dead].ll");//("input-int-conv.ll");
+  auto& firstNode = parser.ParseAndOpenIrFile(fileName);//("input-int-conv.ll");
 
   auto emptyStateUPtr = make_unique<ForwardNullAnalysisState>(firstNode.GetPrevs()[0], firstNode, vc, mapper);
 
@@ -96,16 +96,20 @@ void Verify()
   VerificationLoop();
 }
 
-
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+
+extern void lab_main();
+extern std::vector<std::string> GetExamples();
 
 int main()
 {
 #ifdef _WIN32
   SetConsoleTitle("NextGen");
 #endif
+
+  //lab_main();
 
   //this is a debugging code for experimenting
   //vc.CreateVal(Type{0});
@@ -119,7 +123,13 @@ int main()
   }
   //this is end of experimental code
 
-  Verify();
+  //Verify("examples/01_mincase_01_nullptr_dereference[dead].ll");
+  for (auto& file : GetExamples())
+  {
+    Verify(file);
+  }
+
+
 
   vc.PrintDebug();
 
