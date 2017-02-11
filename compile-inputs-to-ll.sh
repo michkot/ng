@@ -13,8 +13,8 @@ clang++ -S -g -emit-llvm input3.cpp -o - | opt -lowerswitch -mem2reg -S -o input
 clang++ -S -g -emit-llvm input-logop.cpp -o - | opt -lowerswitch -S -o input-logop.ll
 
 # the following set-up skips -mem2reg and -simplecfg for retaining switch-less, phi-less output
-passes_normal="-lowerswitch -globalopt -demanded-bits -branch-prob -inferattrs -ipsccp -dse -loop-simplify -scoped-noalias -barrier -adce -memdep -licm -globals-aa -rpo-functionattrs -basiccg -loop-idiom -forceattrs -early-cse -instcombine -sccp "
-passes_leave_deadcode="-lowerswitch -globalopt -demanded-bits -branch-prob -inferattrs -ipsccp -loop-simplify -scoped-noalias -barrier -memdep -licm -globals-aa -rpo-functionattrs -basiccg -loop-idiom -forceattrs -sccp "
+        passes_normal="-lowerswitch -globalopt -demanded-bits -branch-prob -inferattrs -ipsccp -dse -loop-simplify -scoped-noalias -barrier -adce -memdep -licm -globals-aa -rpo-functionattrs -basiccg -loop-idiom -forceattrs -early-cse -instcombine -sccp "
+passes_leave_deadcode="-lowerswitch -globalopt -demanded-bits -branch-prob -inferattrs -ipsccp      -loop-simplify -scoped-noalias -barrier       -memdep -licm -globals-aa -rpo-functionattrs -basiccg -loop-idiom -forceattrs                         -sccp "
 
 directory=examples
 ext=.c
@@ -28,7 +28,9 @@ do
     then
         passes=$passes_leave_deadcode
     else
-        passes=$passes_normal
+        # because some of the extra passes introduce ConstExpr into code, temporarily disable them
+        # passes=$passes_normal
+        passes=$passes_leave_deadcode
     fi
     echo "clang -S -g -emit-llvm $dirn/$filen.c -o - | opt $passes -S -o $dirn/$filen.ll"
     clang -S -g -emit-llvm $dirn/$filen.c -o - | opt $passes -S -o $dirn/$filen.ll
