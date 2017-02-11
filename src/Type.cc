@@ -93,6 +93,11 @@ bool LlvmType::IsVoid() const
   return GetFrontendId() == nullptr;
 }
 
+Type LlvmType::GetPointerToType() const
+{
+  return LlvmType{static_cast<const llvm::Type*>(GetFrontendId())->getPointerTo()};
+}
+
 LlvmType LlvmType::GetPointerElementType() const
 {
   assert(GetFrontendId()->isPointerTy() && "Is not a pointer type");
@@ -105,4 +110,13 @@ LlvmType LlvmType::GetStructElementType(unsigned index) const
   assert(GetFrontendId()->isStructTy() && "Is not a struct type");
 
   return LlvmType{static_cast<const llvm::StructType*>(GetFrontendId())->getElementType(index)};
+}
+
+size_t LlvmType::GetStructElementOffset(unsigned index) const
+{
+  assert(GetFrontendId()->isStructTy() && "Is not a struct type");
+  auto structType = static_cast<llvm::StructType*>(GetFrontendId());
+  auto layout = llvmDataLayout.getStructLayout(structType);
+
+  return layout->getElementOffset(index);
 }

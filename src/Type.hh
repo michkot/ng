@@ -51,7 +51,8 @@ public:
   // bool IsUnion() const; // LLVM does not support Union type
   bool IsVoid() const;
 
-
+  Type GetPointerToType() const;
   Type GetPointerElementType() const;
   Type GetStructElementType(unsigned index) const;
+  size_t GetStructElementOffset(unsigned index) const;
 };
