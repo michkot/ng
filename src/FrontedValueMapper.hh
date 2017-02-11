@@ -46,9 +46,8 @@ public:
   ValueId CreateOrGetValueId(OperArg arg) 
   {
     // src: http://stackoverflow.com/a/101980
-    typedef std::map<FrontendValueId, ValueId> MapType;   // Your innerMap type may vary, just change the typedef
 
-    MapType::iterator lb = innerMap.lower_bound(arg.id);
+    decltype(innerMap)::iterator lb = innerMap.lower_bound(arg.id);
 
     if (lb != innerMap.end() && !(innerMap.key_comp()(arg.id, lb->first)))
     {
@@ -61,8 +60,8 @@ public:
       // the key does not exist in the innerMap
       // add it to the innerMap
       auto newValue = vc->CreateVal(arg.type);
-      innerMap.insert(lb, MapType::value_type(arg.id, newValue));    // Use lb as a hint to insert,
-                                                                     // so it can avoid another lookup
+      innerMap.insert(lb, decltype(innerMap)::value_type{arg.id, newValue}); // Use lb as a hint to insert,
+                                                                             // so it can avoid extra lookup
       return newValue;
     }
   }
