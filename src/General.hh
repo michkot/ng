@@ -42,6 +42,3 @@ public:
 
 //předávané argumenty, návratový typ, návratová lokace/instrukce
 typedef int FunctionCallInfo;
-typedef int FunctionInfo;
-
-typedef int VariableDebugInfo;

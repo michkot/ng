@@ -73,6 +73,12 @@ public:
   //llvm::CmpInst::Predicate
   virtual IOperation& Cmp() = 0;
 
+  virtual IOperation& Memset() = 0;
+  virtual IOperation& Memcpy() = 0;
+  virtual IOperation& Memmove() = 0;
+  virtual IOperation& Malloc() = 0;
+  virtual IOperation& Free() = 0;
+
   // Not a supported instruction
   virtual IOperation& NotSupportedInstr() = 0;
 

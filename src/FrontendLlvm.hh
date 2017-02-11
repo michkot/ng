@@ -7,6 +7,7 @@
 #include "FrontedValueMapper.hh"
 
 #include <map>
+#include <boost/utility/string_view.hpp>
 
 class LlvmCfgNode;
 
@@ -17,6 +18,7 @@ namespace llvm
   class Instruction;
   class Value;
   class Type;
+  class Constant;
 }
 
 class LlvmCfgParser {
@@ -33,6 +35,10 @@ public:
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;
 
+  //non null!!
+  std::vector<const llvm::Constant*> constantValuesToBeCreated;
+  void constantValuesToBeCreatedInsert(const llvm::Constant* c);
+
   static Type GetValueType(llvm::Type* type);
 
   static FrontendValueId GetValueId(uint64_t id);
@@ -46,7 +52,7 @@ private:
   static OperArg GetFlagsOperArg(ArithFlags flags);
   static OperArg GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags);
 
-  static vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
+  vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
 
   bool TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode);
 
@@ -65,5 +71,6 @@ public:
 
   uptr<llvm::Module> OpenIrFile(string fileName);
 
-  ICfgNode& ParseAndOpenIrFile(string fileName);
+  ICfgNode& ParseAndOpenIrFile(boost::string_view fileName);
+
 };

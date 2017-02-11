@@ -14,6 +14,8 @@
 
 #include <llvm/IR/Constants.h>
 
+#include <boost/utility/string_view.hpp>
+
 //std::string dbgstr;
 //llvm::raw_string_ostream dbgstr_rso(dbgstr);
 
@@ -155,16 +157,19 @@ OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
 OperArg LlvmCfgParser::GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags)
 {
   return OperArg{GetValueId( 
-      (static_cast<uint64_t>(kind) << 48ull) & (static_cast<uint64_t>(flags))),
+      (static_cast<uint64_t>(kind) << 32ull) | (static_cast<uint64_t>(flags))),
       Type::CreateVoidType()
       };
 }
 
-IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction) const
+IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
 {
+  //instr.print(llvm::errs()/*, true*/);
+  //llvm::errs() << "\n";
+
   // Create correct operation
   IOperation* op;
-  auto opcode = instruction.getOpcode();
+  auto opcode = instr.getOpcode();
   switch (opcode)
   {
     // Terminator instructions
@@ -233,15 +238,27 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
     break;
 
   case llvm::Instruction::Call:
+  {
+    auto& typedInstr = static_cast<const llvm::CallInst&>(instr);
+    auto func = typedInstr.getCalledFunction();
+    if (func && FunctionInfo(*func).IsIntrinsic())
+    {
+      if (FunctionInfo(*func).GetName().starts_with("llvm.memset"))
+      {
+        op = &opFactory.Memset();
+        break;
+      }
+    }
     op = &opFactory.Call();
     break;
+  }
   case llvm::Instruction::Invoke:
     op = &opFactory.Invoke();
     break;
 
   default:
     // Cast operations
-    if(llvm::Instruction::CastOpsBegin <= opcode &&
+    /**/ if(llvm::Instruction::CastOpsBegin <= opcode &&
        llvm::Instruction::CastOpsEnd   >= opcode)
     {
       op = &opFactory.Cast();
@@ -257,8 +274,13 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instruction)
 
   return *op;
 }
-//non null!!
-std::set<const llvm::Constant*> constantValuesToBeCreated;
+
+
+void LlvmCfgParser::constantValuesToBeCreatedInsert(const llvm::Constant* c)
+{
+  auto size = constantValuesToBeCreated.size();
+  constantValuesToBeCreated.push_back(c);
+}
 
 // Structrure of the created vector:
 // 0: return value | empty arg if it its void-type
@@ -274,9 +296,6 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   //{
   //  return args;
   //}
-
-  instr.print(llvm::errs()/*, true*/);
-  llvm::errs() << "\n";
 
   //add result value, if it is not void
   if (instr.getType()->isVoidTy())
@@ -314,7 +333,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       const auto& operand = *typedInstr.getArgOperand(i);
       if (llvm::isa<llvm::Constant>(operand))
       {
-        constantValuesToBeCreated.insert(&static_cast<const llvm::Constant&>(operand));
+        constantValuesToBeCreatedInsert(&static_cast<const llvm::Constant&>(operand));
       }
       args.emplace_back(ToOperArg(operand));
     }
@@ -348,6 +367,17 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     }
 
     args.push_back(GetFlagsOperArg(flags));
+    // Then, parse operands
+    // Same code in "call": branch
+    for (unsigned i = 0; i < num; ++i)
+    {
+      const auto& operand = *instr.getOperand(i);
+      if (llvm::isa<llvm::Constant>(operand))
+      {
+        constantValuesToBeCreatedInsert(&static_cast<const llvm::Constant&>(operand));
+      }
+      args.emplace_back(ToOperArg(operand));
+    }
     break;
   } // case llvm::Instruction::ICmp:
   case llvm::Instruction::FCmp:
@@ -359,8 +389,45 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     throw NotImplementedException();
 
     args.push_back(GetFlagsOperArg(flags));
+    // Then, parse operands
+    // Same code in "call": branch
+    for (unsigned i = 0; i < num; ++i)
+    {
+      const auto& operand = *instr.getOperand(i);
+      if (llvm::isa<llvm::Constant>(operand))
+      {
+        constantValuesToBeCreatedInsert(&static_cast<const llvm::Constant&>(operand));
+      }
+      args.emplace_back(ToOperArg(operand));
+    }
     break;
   } // case llvm::Instruction::ICmp:
+  case llvm::Instruction::GetElementPtr:
+  {
+    auto& typedInstr = static_cast<const llvm::GetElementPtrInst&>(instr);
+    llvm::APInt constantOffset{64, 0};
+    if (typedInstr.accumulateConstantOffset(llvmDataLayout, constantOffset))
+    {      
+      args.push_back(OperArg{FrontendValueId{constantOffset.getZExtValue()}, Type::CreateVoidType()});
+    }
+    else
+    {
+      args.push_back(GetEmptyOperArg());
+    }
+    // Then, parse operands
+    // Same code in "call": branch
+    for (unsigned i = 0; i < num; ++i)
+    {
+      const auto& operand = *instr.getOperand(i);
+      if (llvm::isa<llvm::Constant>(operand))
+      {
+        constantValuesToBeCreatedInsert(&static_cast<const llvm::Constant&>(operand));
+      }
+      args.emplace_back(ToOperArg(operand));
+    }
+
+    break;
+  } //  case llvm::Instruction::GetElementPtr:
   default:
   {
     /**/ if (llvm::isa<llvm::BinaryOperator>(instr))
@@ -435,7 +502,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       const auto& operand = *instr.getOperand(i);
       if (llvm::isa<llvm::Constant>(operand))
       {
-        constantValuesToBeCreated.insert(&static_cast<const llvm::Constant&>(operand));
+        constantValuesToBeCreatedInsert(&static_cast<const llvm::Constant&>(operand));
       }
       args.emplace_back(ToOperArg(operand));
     }
@@ -524,7 +591,10 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
       if (branchIsntrPtr->isUnconditional())
       {
         // Unconditional branch - next is first instruction of target basic block
-        currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
+
+        // just skip its
+        // currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
+
         LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
       }
       else //if (branchIsntrPtr->isConditional())
@@ -618,9 +688,9 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
 }
 
 uptr<llvm::Module> moduleHandle;
-ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(string fileName)
+ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(boost::string_view fileName)
 {
-  moduleHandle = OpenIrFile(fileName);
+  moduleHandle = OpenIrFile(fileName.to_string());
   setLlvmGlobalVars(&*moduleHandle);
   return ParseModule(*moduleHandle);
 }

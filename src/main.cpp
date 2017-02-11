@@ -11,6 +11,7 @@
 
 #include <boost/range.hpp>
 #include <boost/logic/tribool.hpp>
+#include <boost/utility/string_view.hpp>
 //KISS!!!
 
 //Q:
@@ -61,6 +62,7 @@ void VerificationLoop()
       if (!state.IsNew())
         continue;
 
+      state.nextCfgNode.GetDebugInfo();
       state.nextCfgNode.Execute(state);
     }
 
