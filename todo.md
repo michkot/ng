@@ -22,3 +22,7 @@
 * přejmenovat některá místa z verifikace na anlýzu
 * je tento framework určen (ze všech statických analýz) konkrétně na abstraktní interpretaci?
 * probrat některý tyto věci @TomášVojnar
+
+* umoznit null-assigned hook v ValueContainer
+* implementovat něco jeko počítadlo generací ve stavu, aby bylo možné organizovat BFS/DFS atp
+*
