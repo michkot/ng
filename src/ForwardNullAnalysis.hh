@@ -447,7 +447,8 @@ class FnaOperationStore : public BaseForwardNullAnalysisOperation {
     // this operation should somehow Store a value in register to certain address in memory
     // the way for the operation to handle such a "write" is completely analysis specific
     
-    auto value  = newState.GetAnyOrCreateLocalVar(args[2]);
+    //! HACK!!! this fixes the problem of main() arguments, which are defined at instr #0 without any instruction which would produce them
+    auto value  = newState.GetAnyOrCreateLocalVar(args[2]); //TODO fix this dircty hack kand maybe remove the GetAnyOrCreateLocalVar
     auto target = newState.GetAnyVar(args[3]);
 
     newState.Store(value, target);
