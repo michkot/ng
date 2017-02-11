@@ -41,6 +41,7 @@ public:
   // meaning: Succesors of this state are un-processed
   virtual bool IsNew() { return condition == StateCondition::New; }
   
+  virtual ValueId GetAnyVar(OperArg var) = 0;
   virtual ValueId GetOrCreateGlobalVar(OperArg var) = 0;
   virtual ValueId GetOrCreateLocalVar (OperArg var) = 0;
   virtual ValueId GetAnyOrCreateLocalVar (OperArg var) = 0;

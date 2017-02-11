@@ -68,6 +68,11 @@ public:
   //TODO: same algo as in method bellow
   //TODO: rename
   
+  virtual ValueId GetAnyVar(OperArg var) override
+  {
+    try { return globalMapping.GetValueId(var.id); }
+    catch (exception e) { return localMapping.GetValueId(var.id); }
+  }
   virtual ValueId GetOrCreateGlobalVar(OperArg var) override
   {
     return globalMapping.CreateOrGetValueId(var);
