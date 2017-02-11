@@ -59,7 +59,13 @@ public:
   // Creates new boolean (1bit integer) value expressing the constraint
   ValueId Cmp(ValueId first, ValueId second, Type type, CmpFlags flags) override
   {
-    throw NotImplementedException();
+    auto result = IsCmp(first, second, type, flags);
+    if (result.value == boost::tribool::indeterminate_value)
+      return this->CreateVal(Type::CreateCharPointerType()); //TODO :FIX!!!!!
+    else if (result)
+      return ValueId(1);
+    else
+      return ValueId(0);
   }
   // Sets constraint on both values
   boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
@@ -112,6 +118,10 @@ public:
 protected:
 
   virtual ValueId GetZero(Type type) const override { throw NotImplementedException(); }
+
+
+  // Inherited via IValueContainer
+  virtual ValueId BinOp(ValueId first, ValueId second, Type type, BinaryOpOptions options) override { throw NotImplementedException(); }
 
 };
 
