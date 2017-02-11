@@ -179,18 +179,28 @@ public:
   virtual ValueId BinOp (ValueId first, ValueId second, Type type, BinaryOpKind kind, ArithFlags flags)
                             { return BinOp(first, second, type, {kind, flags}); }
 
-  virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
-  virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
-  virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
-  virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
-  virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) 
+                            { return BinOp(first, second, type, {BinaryOpKind::Add, flags}); }
+  virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Sub, flags}); }
+  virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Mul, flags}); }
+  virtual ValueId Div   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Div, flags}); }
+  virtual ValueId Rem   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Rem, flags}); }
 
-  virtual ValueId ShL   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
-  virtual ValueId ShR   (ValueId first, ValueId second, Type type, ArithFlags flags) { throw NotImplementedException(); }
+  virtual ValueId ShL   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Shl, flags}); }
+  virtual ValueId ShR   (ValueId first, ValueId second, Type type, ArithFlags flags)
+                            { return BinOp(first, second, type, {BinaryOpKind::Shr, flags}); }
 
-  virtual ValueId BitAnd(ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
-  virtual ValueId BitOr (ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
-  virtual ValueId BitXor(ValueId first, ValueId second, Type type) { throw NotImplementedException(); }
+  virtual ValueId BitAnd(ValueId first, ValueId second, Type type)
+                            { return BinOp(first, second, type, {BinaryOpKind::And, ArithFlags::Default}); }
+  virtual ValueId BitOr (ValueId first, ValueId second, Type type)
+                            { return BinOp(first, second, type, {BinaryOpKind::Or,  ArithFlags::Default}); }
+  virtual ValueId BitXor(ValueId first, ValueId second, Type type)
+                            { return BinOp(first, second, type, {BinaryOpKind::Xor, ArithFlags::Default}); }
   virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!!
 
   // --------------------------------------------------------------------------
