@@ -47,7 +47,7 @@ private:
   static ConstraintId GetNextConstraintId() { return nextConstraintIdToGive++; }
   void InsertConstraint(BinaryConstraint);
   void DeleteConstraint(ConstraintId constrId);
-  const std::vector<ConstraintId> &GetConstraintIdVector(const ValueId id) const;
+  const std::vector<ConstraintId> GetConstraintIdVector(const ValueId id) const;
 
 
 public:

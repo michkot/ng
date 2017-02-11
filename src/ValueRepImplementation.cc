@@ -148,7 +148,7 @@ void ValueContainer::DeleteConstraint(ConstraintId constrId)
   constrContainer.erase(constrId);
 }
 
-const std::vector<ConstraintId>& ValueContainer::GetConstraintIdVector(const ValueId id) const
+const std::vector<ConstraintId> ValueContainer::GetConstraintIdVector(const ValueId id) const
 {
   auto lhsConstrId = constrIdContainer.find(id);
 
