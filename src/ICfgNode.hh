@@ -83,10 +83,7 @@ public:
 
   virtual bool IsStartNode() override { return true; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override
-  {
-    throw NotSupportedException{};
-  }
+  virtual void Execute(IState& s, const vector<OperArg>& args) override  { throw NotSupportedException{}; }
 
 private:
   /*ctr*/ StartCfgNode() {}
@@ -102,15 +99,15 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
   virtual StatesManger GetStatesManager() override { throw NotSupportedException{}; }
-  virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
-  virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
+  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  virtual void GetDebugInfo() const override { return; }
+  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  virtual vector<OperArg> GetArguments() const override { return vector<OperArg>{}; }
 
   virtual bool IsTerminalNode() override { return true; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override
-  {
-    throw NotSupportedException{};
-  }
+  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  virtual void Execute(IState& s, const vector<OperArg>& args) override { return; }
 
 private:
   /*ctr*/ TerminalCfgNode() {}

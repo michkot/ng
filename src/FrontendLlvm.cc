@@ -36,7 +36,7 @@ private:
 
 public:
 
-  virtual void GetDebugInfo() const override { throw NotImplementedException(); }
+  virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
 
   static LlvmCfgNode& CreateNode(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
   {
