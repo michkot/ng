@@ -36,7 +36,7 @@ public:
   virtual ICfgNode& GetNextFalse() const = 0;
   virtual const ref_vector<ICfgNode>& GetPrevs() const = 0;
 
-  virtual StatesManger GetStatesManager() = 0;
+  virtual StatesManager GetStatesManager() = 0;
   virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
   virtual vector<OperArg> GetArguments() const = 0;
 
@@ -77,7 +77,7 @@ public:
   virtual ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
 
-  virtual StatesManger GetStatesManager() override { throw NotSupportedException{}; }
+  virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
   virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
   virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
@@ -98,7 +98,7 @@ public:
   virtual ICfgNode& GetNextFalse() const override { throw NotSupportedException{}; }
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  virtual StatesManger GetStatesManager() override { throw NotSupportedException{}; }
+  virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
   virtual void GetDebugInfo() const override { return; }
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
@@ -118,7 +118,7 @@ class CfgNode : public ICfgNode {
 private:
   vector<OperArg> args;
   IOperation& op;
-  StatesManger states;
+  StatesManager states;
 
 public:
   virtual bool HasTwoNext() override { return nextFalse != nullptr; }
@@ -142,7 +142,7 @@ public:
   {
     return op.Execute(s, args);
   }
-  virtual StatesManger GetStatesManager() override { return states; }
+  virtual StatesManager GetStatesManager() override { return states; }
   virtual vector<OperArg> GetArguments() const override { return args; }
 
 protected:

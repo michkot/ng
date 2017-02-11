@@ -18,7 +18,7 @@ enum class WorklistPriority {
   Standard = 0
 };
 
-class StatesManger {
+class StatesManager {
   static vector<uptr<IState>> statePool;
   static ref_deque<IState> worklist;
 
