@@ -26,9 +26,7 @@
     <ClCompile Include="src\StateStorage.cc" />
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
-    <ClCompile Include="src\ValueRepImplementation.cc">
-      <ExcludedFromBuild>false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\ValueContainerV1.cc" />
     <ClCompile Include="src\Values.cc" />
     <ClCompile Include="src\ValuesZ3.cc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -50,9 +48,7 @@
     <ClInclude Include="src\OperationArgs.hh" />
     <ClInclude Include="src\StateStorage.hh" />
     <ClInclude Include="src\Type.hh" />
-    <ClInclude Include="src\ValueRepImplementation.hh">
-      <ExcludedFromBuild>false</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="src\ValueContainerV1.hh" />
     <ClInclude Include="src\Values.hh" />
     <ClInclude Include="src\LlvmGlobals.hh" />
     <ClInclude Include="src\ValuesZ3.hh">

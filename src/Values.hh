@@ -239,12 +239,12 @@ public:
   virtual ValueId CreateConstFloatVal(double   value, Type type) { throw NotImplementedException(); }
 
   // Prints current state of the container onto console
-  virtual void PrintDebug() { throw NotImplementedException(); }
+  virtual void PrintDebug() const { throw NotImplementedException(); }
 
 protected:
 
   // Zero in all possible interpretations 
-  virtual ValueId GetZero() { throw NotImplementedException(); }
+  virtual ValueId GetZero() const { throw NotImplementedException(); }
   // Zero of specific type/size
   virtual ValueId GetZero(Type type) const = 0;
 };
