@@ -40,6 +40,8 @@ set(SOURCE_FILES
 
 add_executable(bordel1 ${SOURCE_FILES})
 
+include_directories(${LLVM_INCLUDE_DIRS})
+
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
 llvm_map_components_to_libnames(LLVM_LIBS core irreader)
