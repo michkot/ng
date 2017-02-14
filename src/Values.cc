@@ -1,3 +1,3 @@
 #include "Values.hh"
 
-ValueId ValueId::nextIdToGive = 1;
+ValueId ValueId::nextIdToGive;
