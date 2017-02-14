@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 project(bordel1)
 
 find_package(LLVM REQUIRED CONFIG)
+message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
 find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
