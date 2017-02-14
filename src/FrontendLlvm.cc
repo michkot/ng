@@ -241,9 +241,9 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
   {
     auto& typedInstr = static_cast<const llvm::CallInst&>(instr);
     auto func = typedInstr.getCalledFunction();
-    if (func && FunctionInfo(*func).IsIntrinsic())
+    if (func && func->isIntrinsic())
     {
-      if (FunctionInfo(*func).GetName().starts_with("llvm.memset"))
+      if (func->getName().startswith("llvm.memset"))
       {
         op = &opFactory.Memset();
         break;
