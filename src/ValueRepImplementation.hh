@@ -1,149 +1,103 @@
-//
-// Created by Charvin on 11. 11. 2016.
-//
 #pragma once
 
 #include "Values.hh"
 #include "Exceptions.hh"
-#include <unordered_map>
+
 #include <map>
 #include <vector>
 
 
+//BinaryConstraint class representing binary constraint between two Value Representations
+//--------------------------------------------------------------
 class BinaryConstraint {
 public:
-  ValueId first;
-  ValueId second;
-  CmpFlags relation;
+	ValueId first;
+	ValueId second;
+	CmpFlags relation;
 
-  BinaryConstraint() : BinaryConstraint(ValueId(0), ValueId(0), CmpFlags::Default) {}
-  BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
+	BinaryConstraint() : BinaryConstraint(ValueId(0), ValueId(0), CmpFlags::Default) {}
+	BinaryConstraint(ValueId _first, ValueId _second, CmpFlags _relation);
 
-  //checks if certain ValueId is in this binary constraint
-  bool    Contains        (ValueId id) const { return id == first || id == second; }
+	//checks if certain ValueId is in this binary constraint
+	bool    Contains(ValueId id) const { return id == first || id == second; }
 
-  //for ValueId returns other ValueId in the constraint
-  ValueId GetOther        (ValueId id) const
-  {
-    if (id == first) 
-      return second; 
-    else if (id == second) 
-      return first; 
-    else throw std::runtime_error("Constraint does not contain ValueId it should");
-  }
+	//for ValueId returns other ValueId in the constraint
+	ValueId GetOther(ValueId id) const
+	{
+		if (id == first)
+			return second;
+		else if (id == second)
+			return first;
+		else throw std::runtime_error("Constraint does not contain ValueId it should");
+	}
 };
+//--------------------------------------------------------------
 
+
+//ValueContainer class representing storage of value constraints
+//--------------------------------------------------------------
 
 typedef uint64_t ConstraintId;
 
 class ValueContainer : public IValueContainer
 {
+	//fields
 private:
-  std::map<ValueId, uint64_t> constantContainer; //boost bimap?		//contains mapping from ValueId to constant
-  std::map<ConstraintId, BinaryConstraint> constrContainer;			//contains mapping from ConstraintId to Constraint
-  std::map< ValueId, std::vector<ConstraintId>> constrIdContainer;	//contains mapping from ValueId to all used ConstraintIds
+	static ConstraintId nextConstraintIdToGive;
+	ValueId Zero; //used very often, precached ValueId of 0, simplifies code
 
-  static ConstraintId nextConstraintIdToGive; //can be static?
-  static ConstraintId GetNextConstraintId() { return nextConstraintIdToGive++; }
-  void InsertConstraint(BinaryConstraint);
-  void DeleteConstraint(ConstraintId constrId);
-  const std::vector<ConstraintId> GetConstraintIdVector(const ValueId id) const;
+	//containers
+	std::map<ValueId, uint64_t>						constantContainer;		//contains mapping from ValueId to constant
+	std::map<ConstraintId, BinaryConstraint>		constrContainer;		//contains mapping from ConstraintId to Constraint
+	std::map< ValueId, std::vector<ConstraintId>>	constrIdContainer;		//contains mapping from ValueId to all used ConstraintIds
 
+	//methods
+	static ConstraintId GetNextConstraintId() { return nextConstraintIdToGive++; }
+	
+	void InsertConstraint(BinaryConstraint);
+	void DeleteConstraint(ConstraintId constrId);
+	const std::vector<ConstraintId> &GetConstraintIdVector(ValueId id) const;
+	bool IsConstant(ValueId first) const { auto res = constantContainer.find(first); return res != constantContainer.end(); }
+	inline uint64_t RipBits(size_t numOfBits, uint64_t in) const;
+	inline int64_t SignExtend64(size_t numOfBits, uint64_t in) const;
+	inline uint64_t BSR(uint64_t val) const; //bit scan reverse - returns position of first set bit from the left side
 
 public:
+	//constructors
+	ValueContainer() : constantContainer(), constrContainer(), constrIdContainer() { Zero = CreateConstIntVal(0ULL); }
+	ValueContainer(const ValueContainer &c) : constantContainer(c.constantContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer), Zero(c.Zero) {}
 
-  ValueContainer() : constantContainer(), constrContainer(), constrIdContainer() {}
-  ValueContainer(const ValueContainer &c) : constantContainer(c.constantContainer), constrContainer(c.constrContainer), constrIdContainer(c.constrIdContainer) {}
-  bool IsConstant(ValueId first) const { auto res = constantContainer.find(first); return res != constantContainer.end(); }
+	// Sets constraint on both values
+	boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
 
-  // Creates new boolean (1bit integer) value expressing the constraint
-  ValueId Cmp(ValueId first, ValueId second, Type type, CmpFlags flags) override
-  {
-    auto result = IsCmp(first, second, type, flags);
-    if (result.value == boost::tribool::indeterminate_value)
-      return this->CreateVal(Type::CreateCharPointerType()); //TODO :FIX!!!!!
-    else if (result)
-      return ValueId(1);
-    else
-      return ValueId(0);
-  }
-  // Sets constraint on both values
-  boost::tribool IsCmp(ValueId first, ValueId second, Type type, CmpFlags flags) const override;
-  boost::tribool IsEq(ValueId first, ValueId second, Type type) const override;
-  boost::tribool IsNeq(ValueId first, ValueId second, Type type) const override;
-  boost::tribool IsTrue(ValueId first, Type type) const override; // !=0
-  boost::tribool IsFalse(ValueId first, Type type) const override; // ==0
+	boost::tribool IsInternalRepEq(ValueId first, ValueId second) const override;
+	boost::tribool IsZero(ValueId first) const override;
+	bool           IsUnknown(ValueId first) const override;
 
-  boost::tribool IsInternalRepEq(ValueId first, ValueId second) const override;
-  boost::tribool IsZero   (ValueId first) const override;
-  bool           IsUnknown(ValueId first) const override;
+	// Creates new boolean(1bit integer) value expressing the constraint
+	ValueId Cmp(ValueId first, ValueId second, Type type, CmpFlags flags) override;
 
-  void    Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
-  void    AssumeTrue(ValueId first) override; // Sets contraint: first != 0 ( == true )
-  void    AssumeFalse(ValueId first) override; // Sets contraint: first == 0 ( == false)
+	void    Assume(ValueId first, ValueId second, Type type, CmpFlags flags) override;
+	void    AssumeTrue(ValueId first) override; // Sets contraint: first != 0 ( == true )
+	void    AssumeFalse(ValueId first) override; // Sets contraint: first == 0 ( == false)
+	
+	//operations
+	ValueId BinOp(ValueId first, ValueId second, Type type, BinaryOpOptions options) override;
+	ValueId BitNot(ValueId first, Type type) override;
 
-  ValueId Add(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId Sub(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId Mul(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId Div(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId Rem(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
+	ValueId TruncateInt(ValueId first, Type sourceType, Type targetType) override;
 
-  ValueId ShL(ValueId first, ValueId second, Type type, ArithFlags flags) override;
-  ValueId ShR(ValueId first, ValueId second, Type type, ArithFlags flags) override;
+	ValueId CreateVal(Type type) override { return ValueId::GetNextId(); }
+	ValueId CreateConstIntVal(uint64_t value, Type type) override { return CreateConstIntVal(value); }
+	ValueId CreateConstIntVal(uint64_t value) override;
 
-  ValueId BitAnd(ValueId first, ValueId second, Type type) override;
-  ValueId BitOr(ValueId first, ValueId second, Type type) override;
-  ValueId BitXor(ValueId first, ValueId second, Type type) override;
-  ValueId BitNot(ValueId first, Type type) override;
-
-  //following are not an LLVM operations
-  //when C/C++ is compiled in LLVM, everything is series of !override tests and branch/phi instructions
-  ValueId LogAnd(ValueId first, ValueId second, Type type) override;
-  ValueId LogOr(ValueId first, ValueId second, Type type) override;
-  ValueId LogNot(ValueId first, Type type) override;
-
-  ValueId ExtendInt(ValueId first, Type sourceType, Type targetType, ArithFlags flags) override;
-  ValueId TruncateInt(ValueId first, Type sourceType, Type targetType) override;
-
-  //ValueId ConvIntToFloat(ValueId first, uint32_t flags) override;
-  //ValueId ConvFloatToInt(ValueId first, uint32_t flags) override;
-
-  ValueId CreateVal(Type type) override { return ValueId::GetNextId(); }
-
-  ValueId CreateConstIntVal(uint64_t value, Type type) override;
-  ValueId CreateConstIntVal(uint64_t value) override; // To be potentially removed
-  ValueId CreateConstFloatVal(float    value, Type type) override;
-  ValueId CreateConstFloatVal(double   value, Type type) override;
+	void PrintDebug() const override;
 
 protected:
 
-  virtual ValueId GetZero(Type type) const override { throw NotImplementedException(); }
-
-
-  // Inherited via IValueContainer
-  virtual ValueId BinOp(ValueId first, ValueId second, Type type, BinaryOpOptions options) override { throw NotImplementedException(); }
-
+	ValueId GetZero() const override { return Zero; };
+	ValueId GetZero(Type type) const override { return Zero; }
 };
 
-inline uint64_t RipBits(size_t numOfBits, uint64_t in)
-{
-	if(numOfBits < sizeof(uint64_t))
-		in &= (1ULL << numOfBits) - 1;
-	return in;
-}
-
-inline uint64_t SignExtend64(size_t numOfBits, uint64_t in)
-{
-  in = RipBits(numOfBits, in);
-  uint64_t mask = (1ULL << (numOfBits - 1));
-  return  (uint64_t)(-((int64_t)(in & mask))) | in;
-}
-
-//bit scan reverse - returns position of first set bit from the left side
-inline uint64_t BSR(uint64_t val)
-{
-  uint64_t pos = 0;
-  while (val >>= 1)
-    pos++;
-  return pos;
-}
+//--------------------------------------------------------------
