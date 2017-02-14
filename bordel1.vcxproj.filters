@@ -33,13 +33,16 @@
     <ClCompile Include="src\StateStorage.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ValueRepImplementation.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ValuesZ3.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Values.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\laboratory.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ValueContainerV1.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,9 +86,6 @@
     <ClInclude Include="src\Values.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ValueRepImplementation.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\enum_flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ForwardNullAnalysis.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ValueContainerV1.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

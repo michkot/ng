@@ -75,7 +75,7 @@ void VerificationLoop()
 
 Z3ValueContainer vc;
 #else
-#include "ValueRepImplementation.hh"
+#include "ValueContainerV1.hh"
 
 ValueContainer vc;
 #endif

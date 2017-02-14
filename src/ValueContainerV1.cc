@@ -1,4 +1,4 @@
-#include "ValueRepImplementation.hh"
+#include "ValueContainerV1.hh"
 
 #include <iostream>
 #define CHECK_FLAG(var, flag) ((var & flag) == flag)
