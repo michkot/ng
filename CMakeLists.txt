@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.4)
 project(bordel1)
 
 find_package(LLVM REQUIRED CONFIG)
-find_package(BOOST REQUIRED)
+message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
+find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 
@@ -39,6 +40,8 @@ set(SOURCE_FILES
 )
 
 add_executable(bordel1 ${SOURCE_FILES})
+
+include_directories(${LLVM_INCLUDE_DIRS})
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
