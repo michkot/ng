@@ -1,5 +1,6 @@
 #include "ValueContainerV1.hh"
 
+#include <climits>
 #include <iostream>
 #define CHECK_FLAG(var, flag) ((var & flag) == flag)
 
