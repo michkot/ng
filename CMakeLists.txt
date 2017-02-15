@@ -17,8 +17,11 @@ set(SOURCE_FILES
     src/DummyOperations.cc
     src/DummyOperations.hh
     src/DummyState.hh
+    src/enum_flags.h
     src/Exceptions.cc
     src/Exceptions.hh
+    src/ForwardNullAnalysis.hh
+    src/FrontedValueMapper.hh
     src/FrontendLlvm.cc
     src/FrontendLlvm.hh
     src/General.hh
@@ -27,21 +30,24 @@ set(SOURCE_FILES
     src/IState.hh
     src/LlvmGlobals.cc
     src/LlvmGlobals.hh
+    src/main.cpp
+    src/OperationArgs.hh
     src/StateStorage.cc
     src/StateStorage.hh
     src/Type.cc
     src/Type.hh
-    #src/ValueRepImplementation.cc
-    #src/ValueRepImplementation.hh
+    src/ValueContainerV1.cc
+    src/ValueContainerV1.hh
     src/Values.cc
     src/Values.hh
-    src/enum_flags.h
-    src/main.cpp
+    #src/ValuesZ3.cc
+    #src/ValuesZ3.hh
 )
 
 add_executable(bordel1 ${SOURCE_FILES})
 
 include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use

@@ -550,7 +550,7 @@ class FnaOperationFactory : public IOperationFactory {
   IOperation* callop = new FnaOperationCall();
   IOperation* trunc = new FnaOperationTrunc();
   IOperation* extend = new FnaOperationExtend();
-  IOperation* and = new FnaOperationAnd();
+  IOperation* andd = new FnaOperationAnd();
   IOperation* load = new FnaOperationLoad();
   IOperation* store = new FnaOperationStore();
   IOperation* cast = new FnaOperationCast();
@@ -571,7 +571,7 @@ public:
   virtual IOperation & Rem() override { return *notSupported; }
   virtual IOperation & Shl() override { return *notSupported; }
   virtual IOperation & Shr() override { return *notSupported; }
-  virtual IOperation & And() override { return *and; }
+  virtual IOperation & And() override { return *andd; }
   virtual IOperation & Or()  override { return *notSupported; }
   virtual IOperation & Xor() override { return *notSupported; }
 
