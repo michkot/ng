@@ -37,6 +37,8 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const = 0;
 
   virtual StatesManager GetStatesManager() = 0;
+  virtual void PrintInstruction() const = 0;
+  virtual void PrintLocation() const = 0;
   virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
   virtual vector<OperArg> GetArguments() const = 0;
 
@@ -78,6 +80,8 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { throw NotSupportedException{}; }
 
   virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
+  virtual void PrintInstruction() const override { throw NotSupportedException{}; }
+  virtual void PrintLocation() const override { throw NotSupportedException{}; }
   virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
   virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
 
@@ -99,6 +103,10 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
   virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
+  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  virtual void PrintInstruction() const override  { return; }
+  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  virtual void PrintLocation() const override { return; }
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
   virtual void GetDebugInfo() const override { return; }
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis

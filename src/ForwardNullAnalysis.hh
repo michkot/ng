@@ -199,6 +199,7 @@ private:
     }
     catch (AnalysisErrorException e)
     {
+      originalState.nextCfgNode.PrintLocation();
       printf("%s\n",e.what());
     }
     
