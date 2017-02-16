@@ -429,7 +429,7 @@ ValueId Z3ValueContainer::CreateConstFloatVal(double value, Type type)
   throw NotImplementedException();
 }
 
-void Z3ValueContainer::PrintDebug()
+void Z3ValueContainer::PrintDebug() const
 {
   for (auto& pair : idsToExprs)
   {

@@ -34,6 +34,8 @@ public:
   virtual void    AssumeTrue (ValueId first) override; // Sets contraint: first != 0 ( == true )
   virtual void    AssumeFalse(ValueId first) override; // Sets contraint: first == 0 ( == false)
 
+  virtual ValueId BinOp (ValueId first, ValueId second, Type type, BinaryOpOptions options) { throw NotImplementedException(); }
+
   virtual ValueId Add   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId Sub   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
   virtual ValueId Mul   (ValueId first, ValueId second, Type type, ArithFlags flags) override;
@@ -67,7 +69,7 @@ public:
   virtual ValueId CreateConstFloatVal(float    value, Type type) override;
   virtual ValueId CreateConstFloatVal(double   value, Type type) override;
 
-  virtual void PrintDebug() override;
+  virtual void PrintDebug() const override;
 
 protected:
 
