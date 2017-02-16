@@ -1,11 +1,21 @@
-cmake_minimum_required(VERSION 3.4)
-project(bordel1)
+cmake_minimum_required(VERSION 3.2)
+project(ng)
 
+# for ValuesZ3 Z3prover
+set(Z3 0)
+
+# packages
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
 find_package(Boost REQUIRED)
+find_package(GTest)
+if(Z3)
+    # find_package(Z3)
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+# compiler directives
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++1z)
 
 #file(GLOB SOURCE_FILES
 #    *.hh
@@ -40,17 +50,33 @@ set(SOURCE_FILES
     src/ValueContainerV1.hh
     src/Values.cc
     src/Values.hh
-    #src/ValuesZ3.cc
-    #src/ValuesZ3.hh
 )
 
-add_executable(bordel1 ${SOURCE_FILES})
+if(Z3)
+    add_definitions(-DUSE_Z3)
+    set(SOURCE_FILES
+        ${SOURCE_FILES}
+        src/ValuesZ3.hh
+        src/ValuesZ3.cc
+    )
+endif()
+
+# targets
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+
+# includes
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Z3_INCLUDE_DIRS})
+
+# libs linking
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
 llvm_map_components_to_libnames(LLVM_LIBS core irreader)
 
-target_link_libraries(bordel1 ${LLVM_LIBS})
+target_link_libraries(${PROJECT_NAME} ${LLVM_LIBS} ${Z3_LIBS})
+
+# end

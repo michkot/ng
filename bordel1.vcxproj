@@ -65,6 +65,9 @@
     <None Include="regex_cheat_sheet.md" />
     <None Include="todo.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3AE65D4C-C54E-4BF4-B067-D170D68AA8E7}</ProjectGuid>
     <RootNamespace>bordel1</RootNamespace>
