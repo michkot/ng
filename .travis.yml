@@ -70,7 +70,7 @@ matrix:
             apt:
                 sources:
                     - ubuntu-toolchain-r-test
-                    - llvm-toolchain-precise
+                    - llvm-toolchain-precise-3.9
                 packages:
                     - clang-3.9
                     - libgtest-dev
