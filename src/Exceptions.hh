@@ -3,7 +3,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#if ! defined(NDEBUG)
+
+#if 0 // ! defined(NDEBUG)
 
 #define NotImplementedException(arg) (assert(false),std::logic_error("Not implemented"))
 

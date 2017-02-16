@@ -755,7 +755,7 @@ void ValueContainer::PrintDebug() const
 	cout << "Constants:\n___________________________________\n";
 	for (auto constant : constantContainer)
 	{
-		cout << "#" << static_cast<uint64_t>(constant.first) << " = " << constant.second << " ";
+		cout << "#" << static_cast<uint64_t>(constant.first) << " = " << constant.second << std::endl;
 	}
 
 	cout << "\n\nConstraints:\n__________________________________________\n";
@@ -773,6 +773,6 @@ void ValueContainer::PrintDebug() const
 		else 
 			cout << "#" << static_cast<uint64_t>(constraint.second.second);
 
-		cout << " ";
+		cout << std::endl;
 	}
 }
