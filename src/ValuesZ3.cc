@@ -7,20 +7,12 @@ using namespace z3;
 z3::context                 Z3ValueContainer::ctx;
 std::map<ValueId, z3::expr> Z3ValueContainer::idsToExprs;
 
-boost::tribool Z3ResultToTribool(z3::check_result result)
+boost::tribool constexpr Z3ResultToTribool(z3::check_result result)
 {
-  switch (result)
-  {
-  case z3::unsat:
-    return boost::tribool::false_value;
-    break;
-  case z3::sat:
-    return boost::tribool::true_value;
-    break;
-  case z3::unknown:
-    return boost::tribool::indeterminate_value;
-    break;
-  }
+  return 
+    result == z3::unsat ? boost::tribool(false) : 
+    (result == z3::sat ? boost::tribool(true) : 
+      boost::indeterminate);
 }
 
 void Z3ValueContainer::AddValueInfoToSolver(z3::solver& s, ValueId val) const
@@ -433,7 +425,7 @@ void Z3ValueContainer::PrintDebug() const
 {
   for (auto& pair : idsToExprs)
   {
-    printf("\n%d ", pair.first);
+    printf("\n%z ", (size_t)pair.first);
     std::cout << pair.second;
   }
 }
