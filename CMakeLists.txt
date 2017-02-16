@@ -64,6 +64,8 @@ endif()
 # targets
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_custom_target(debug DEPENDS ${PROJECT_NAME})
+add_custom_target(debug TESTS)
 
 # includes
 
