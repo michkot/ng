@@ -1,0 +1,97 @@
+dist: trusty
+sudo: false
+
+matrix:
+    include:
+      - compiler: python-cpplint
+        language: python
+        install:
+            - pip install cpplint
+            - curl -o cpplint.py https://raw.githubusercontent.com/michkot/cpplint/master/cpplint.py
+        script:
+            - "python3 cpplint.py --linelength=100 --extensions=cc,hh --filter=-legal,-runtime/int,-runtime/references,-whitespace/indentaccess,-whitespace/comments src/*"
+        cache:
+
+      - compiler: gcc-4.9
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - g++-4.9
+        env:
+            - COMPILERXX="g++-4.9"
+            - COMPILERC="gcc-4.9"
+
+      - compiler: gcc-6
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - g++-6
+        env:
+            - COMPILERXX="g++-6"
+            - COMPILERC="gcc-6"
+
+      - compiler: clang-3.6
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.6
+                packages:
+                    - libgtest-dev
+                    - llvm-3.6-dev
+                    - clang-3.6
+        env:
+            - COMPILERXX="clang++-3.6"
+            - COMPILERC="clang-3.6"
+
+      - compiler: clang-3.9
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - clang-3.9
+        env:
+            - COMPILERXX="clang++-3.9"
+            - COMPILERC="clang-3.9"
+
+cache:
+    apt: true
+    directories:
+        - $HOME/gtest/
+
+install:
+    - export CXX=$COMPILERXX CC=$COMPILERC
+    - $CXX --version
+
+    - "if [ ! -f $HOME/gtest/libgtest.a ]; then mkdir -p $HOME/gtest && cd $HOME/gtest && cmake --target install -DCMAKE_INSTALL_PREFIX=$HOME/lib/ -Dgtest_disable_pthreads=ON /usr/src/gtest && cmake --build . && cd - && rm -rf $HOME/gtest/CMakeFiles/Makefile.cmake ; fi"
+    - ls $HOME/gtest
+    - export LIBRARY_PATH=$HOME/gtest/:$LIBRARY_PATH
+
+    - ls -la $HOME
+    - cd $HOME
+    - "if [ ! -d $HOME/include/boost ]; then curl -L -o $HOME/boost.tar.gz https://sourceforge.net/projects/boost/files/boost/1.63.0/boost_1_63_0.tar.gz/download && tar -xzf boost.tar.gz boost_1_63_0/boost && mkdir -p include && mv boost_1_63_0/boost/ include/boost/ ; fi"
+    - export INCLUDE=$HOME/include/:$INCLUDE
+    - cd -
+
+script: 
+    - mkdir build && cd build && cmake ../
+    - make debug
+    - make tests
