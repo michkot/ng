@@ -22,6 +22,7 @@ matrix:
                 packages:
                     - libgtest-dev
                     - llvm-3.9-dev
+                    - clang-3.9
                     - g++-4.9
         env:
             - MCXX="g++-4.9"
@@ -37,6 +38,7 @@ matrix:
                 packages:
                     - libgtest-dev
                     - llvm-3.9-dev
+                    - clang-3.9
                     - g++-6
         env:
             - MCXX="g++-6"
@@ -81,5 +83,5 @@ install:
 
 script: 
     - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../
-    - make
+    - make VERBOSE=1
     - make tests
