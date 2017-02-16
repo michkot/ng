@@ -5,9 +5,9 @@ project(ng)
 set(Z3 0)
 
 # packages
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 3.6 REQUIRED CONFIG)
 message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
-find_package(Boost REQUIRED)
+find_package(Boost 1.62 REQUIRED)
 find_package(GTest)
 if(Z3)
     # find_package(Z3)
@@ -65,7 +65,7 @@ endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 add_custom_target(debug DEPENDS ${PROJECT_NAME})
-add_custom_target(debug TESTS)
+add_custom_target(tests)
 
 # includes
 
