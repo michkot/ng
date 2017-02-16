@@ -15,14 +15,15 @@ endif()
 
 # compiler directives
 
-set(USE_SANITIZERS ON)
+set(USE_SANITIZERS OFF)
+set(CMAKE_VERBOSE_MAKEFILE off)
 
 # set(GLOBALFLAGS -fPIC)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND USE_SANITIZERS)
-    set(SANIT_FLAGS "")
-else()
+if (USE_SANITIZERS AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(SANIT_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
+else()
+    set(SANIT_FLAGS "")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -74,8 +75,6 @@ if(Z3)
 endif()
 
 # targets
-
-set(CMAKE_VERBOSE_MAKEFILE on)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 # dirty dirty dirty way -> assumes BINARY DIR is something like SRC_DIR/build etc.
