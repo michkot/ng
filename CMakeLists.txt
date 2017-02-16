@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 project(ng)
 
 # for ValuesZ3 Z3prover
 set(Z3 0)
 
 # packages
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 3.9 REQUIRED CONFIG)
 message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
-find_package(Boost REQUIRED)
+find_package(Boost 1.62 REQUIRED)
 find_package(GTest)
 if(Z3)
     # find_package(Z3)
@@ -15,7 +15,7 @@ endif()
 
 # compiler directives
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++1z)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++14)
 
 #file(GLOB SOURCE_FILES
 #    *.hh
@@ -65,7 +65,7 @@ endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 add_custom_target(debug DEPENDS ${PROJECT_NAME})
-add_custom_target(debug TESTS)
+add_custom_target(tests)
 
 # includes
 
