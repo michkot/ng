@@ -15,7 +15,17 @@ endif()
 
 # compiler directives
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++14)
+# set(GLOBALFLAGS -fPIC)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(SANIT_FLAGS "")
+else()
+    set(SANIT_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
+    set(LINK_FLAGS_DEBUG "${LINK_FLAGS} -fuse-ld=gold")
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -o3")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANIT_FLAGS} -g")
 
 #file(GLOB SOURCE_FILES
 #    *.hh
@@ -64,9 +74,8 @@ endif()
 # targets
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-add_custom_target(debug DEPENDS ${PROJECT_NAME})
-add_custom_target(tests)
-
+# dirty dirty dirty way -> assumes BINARY DIR is something like SRC_DIR/build etc.
+add_custom_target(tests DEPENDS ${PROJECT_NAME} WORKING_DIRECTORY "../" COMMAND "bash" "./compile-inputs-to-ll.sh" COMMAND "${PROJECT_BINARY_DIR}/ng")
 # includes
 
 include_directories(${LLVM_INCLUDE_DIRS})

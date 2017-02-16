@@ -67,6 +67,9 @@ cache:
 install:
     - export CXX=$MCXX CC=$MCC
     - $CXX --version
+    - alias opt=opt-3.9
+    - opt --version
+    - opt-3.9 --version
 
     - "if [ ! -f $HOME/gtest/libgtest.a ]; then mkdir -p $HOME/gtest && cd $HOME/gtest && cmake --target install -DCMAKE_INSTALL_PREFIX=$HOME/lib/ -Dgtest_disable_pthreads=ON /usr/src/gtest && cmake --build . && cd - && rm -rf $HOME/gtest/CMakeFiles/Makefile.cmake ; fi"
     # - ls $HOME/gtest
@@ -77,6 +80,6 @@ install:
     - export INCLUDE=$HOME/include/:$INCLUDE
 
 script: 
-    - mkdir build && cd build && cmake ../
-    - make debug
+    - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../
+    - make
     - make tests
