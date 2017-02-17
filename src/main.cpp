@@ -124,6 +124,6 @@ int main()
 
   vc.PrintDebug();
 
-  getchar();
+  //getchar();
   return 0;
 }

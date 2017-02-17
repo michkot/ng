@@ -680,13 +680,14 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
   llvm::SMDiagnostic err;
   llvm::LLVMContext &context = *new llvm::LLVMContext();
 
-  auto tmp = llvm::parseIRFile(fileName, err, context);
-  if (tmp == nullptr)
+  auto module = llvm::parseIRFile(fileName, err, context);
+  if (module == nullptr)
   {
     string msg{err.getMessage().str()};
     throw msg;
+    exit(1);
   }
-  return tmp;
+  return module;
 }
 
 uptr<llvm::Module> moduleHandle;

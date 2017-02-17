@@ -5,12 +5,17 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd $SCRIPTPATH
 
-clang++ -S -g -emit-llvm input1.cpp -o - | opt -lowerswitch -S -o input1.ll
-clang++ -S -g -emit-llvm input2.cpp -o - | opt -lowerswitch -S -o input2.ll
-clang++ -S -g -emit-llvm input3.cpp -o - | opt -lowerswitch -S -o input3.ll
-clang++ -S -g -emit-llvm input3.cpp -o - | opt -lowerswitch -mem2reg -S -o input3m.ll
-# clang++ -S -g -emit-llvm input-int-conv.cpp -o - | opt -lowerswitch -S -o input-int-conv.ll
-clang++ -S -g -emit-llvm input-logop.cpp -o - | opt -lowerswitch -S -o input-logop.ll
+# this needs fixing by auto-detect!!!
+COPT=opt-3.9
+CLANGXX=clang++-3.9
+CLANG=clang-3.9
+
+$CLANGXX -S -g -emit-llvm input1.cpp -o - | $COPT -lowerswitch -S -o input1.ll
+$CLANGXX -S -g -emit-llvm input2.cpp -o - | $COPT -lowerswitch -S -o input2.ll
+$CLANGXX -S -g -emit-llvm input3.cpp -o - | $COPT -lowerswitch -S -o input3.ll
+$CLANGXX -S -g -emit-llvm input3.cpp -o - | $COPT -lowerswitch -mem2reg -S -o input3m.ll
+# $CLANGXX -S -g -emit-llvm input-int-conv.cpp -o - | $COPT -lowerswitch -S -o input-int-conv.ll
+$CLANGXX -S -g -emit-llvm input-logop.cpp -o - | $COPT -lowerswitch -S -o input-logop.ll
 
 # the following set-up skips -mem2reg and -simplecfg for retaining switch-less, phi-less output
         passes_normal="-lowerswitch -globalopt -demanded-bits -branch-prob -inferattrs -ipsccp -dse -loop-simplify -scoped-noalias -barrier -adce -memdep -licm -globals-aa -rpo-functionattrs -basiccg -loop-idiom -forceattrs -early-cse -instcombine -sccp "
@@ -32,6 +37,6 @@ do
         # passes=$passes_normal
         passes=$passes_leave_deadcode
     fi
-    echo "clang -S -g -emit-llvm $dirn/$filen.c -o - | opt $passes -S -o $dirn/$filen.ll"
-    clang -S -g -emit-llvm $dirn/$filen.c -o - | opt $passes -S -o $dirn/$filen.ll
+    echo "$CLANG -S -g -emit-llvm $dirn/$filen.c -o - | $COPT $passes -S -o $dirn/$filen.ll"
+    $CLANG -S -g -emit-llvm $dirn/$filen.c -o - | $COPT $passes -S -o $dirn/$filen.ll
 done

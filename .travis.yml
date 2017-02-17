@@ -1,0 +1,87 @@
+dist: trusty
+sudo: false
+
+matrix:
+    include:
+      - compiler: python-cpplint
+        language: python
+        install:
+            - pip install cpplint
+            - curl -o cpplint.py https://raw.githubusercontent.com/michkot/cpplint/master/cpplint.py
+        script:
+            - "python3 cpplint.py --linelength=100 --extensions=cc,hh --filter=-legal,-runtime/int,-runtime/references,-whitespace/indentaccess,-whitespace/comments src/* || echo fail"
+        cache:
+
+      - compiler: gcc-4.9
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - clang-3.9
+                    - g++-4.9
+        env:
+            - MCXX="g++-4.9"
+            - MCC="gcc-4.9"
+
+      - compiler: gcc-6
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - clang-3.9
+                    - g++-6
+        env:
+            - MCXX="g++-6"
+            - MCC="gcc-6"
+
+      - compiler: clang-3.9
+        language: cpp
+        addons:
+            apt:
+                sources:
+                    - ubuntu-toolchain-r-test
+                    - llvm-toolchain-precise-3.9
+                packages:
+                    - libgtest-dev
+                    - llvm-3.9-dev
+                    - clang-3.9
+        env:
+            - MCXX="clang++-3.9"
+            - MCC="clang-3.9"
+
+cache:
+    apt: true
+    directories:
+        - $HOME/gtest/
+        - $HOME/lib/
+        - $HOME/include/boost/
+
+install:
+    - export CXX=$MCXX CC=$MCC
+    - $CXX --version
+    - alias opt=opt-3.9
+    - opt --version
+    - opt-3.9 --version
+
+    - "if [ ! -f $HOME/gtest/libgtest.a ]; then mkdir -p $HOME/gtest && cd $HOME/gtest && cmake --target install -DCMAKE_INSTALL_PREFIX=$HOME/lib/ -Dgtest_disable_pthreads=ON /usr/src/gtest && cmake --build . && cd - && rm -rf $HOME/gtest/CMakeFiles/Makefile.cmake ; fi"
+    # - ls $HOME/gtest
+    - export LIBRARY_PATH=$HOME/gtest/:$LIBRARY_PATH
+
+    # - ls -la $HOME
+    - "if [ ! -f $HOME/include/boost/utility.hpp ]; then cd $HOME && curl -L -o $HOME/boost.tar.gz https://sourceforge.net/projects/boost/files/boost/1.63.0/boost_1_63_0.tar.gz/download && tar -xzf boost.tar.gz boost_1_63_0/boost && mkdir -p include && mv -t include/boost boost_1_63_0/boost/* && ls -la include/boost/ && cd - ; fi"
+    - export INCLUDE=$HOME/include/:$INCLUDE
+
+script: 
+    - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../
+    - make
+    - make tests

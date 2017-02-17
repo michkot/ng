@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 project(ng)
 
 # for ValuesZ3 Z3prover
 set(Z3 0)
 
 # packages
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 3.9 REQUIRED CONFIG)
 message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
-find_package(Boost REQUIRED)
+find_package(Boost 1.62 REQUIRED)
 find_package(GTest)
 if(Z3)
     # find_package(Z3)
@@ -15,7 +15,20 @@ endif()
 
 # compiler directives
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++1z)
+set(USE_SANITIZERS OFF)
+set(CMAKE_VERBOSE_MAKEFILE off)
+
+# set(GLOBALFLAGS -fPIC)
+if (USE_SANITIZERS AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(SANIT_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
+else()
+    set(SANIT_FLAGS "")
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -o3")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANIT_FLAGS} -g")
 
 #file(GLOB SOURCE_FILES
 #    *.hh
@@ -64,7 +77,8 @@ endif()
 # targets
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-
+# dirty dirty dirty way -> assumes BINARY DIR is something like SRC_DIR/build etc.
+add_custom_target(tests DEPENDS ${PROJECT_NAME} WORKING_DIRECTORY "../" COMMAND "bash" "./compile-inputs-to-ll.sh" COMMAND "${PROJECT_BINARY_DIR}/ng")
 # includes
 
 include_directories(${LLVM_INCLUDE_DIRS})
