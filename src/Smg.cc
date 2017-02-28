@@ -1,0 +1,525 @@
+#include "stdafx.h"
+
+#include "Definitions.hh"
+#include "Exceptions.hh"
+#include "Type.hh"
+#include "Values.hh"
+//#include <gsl/gsl_algorithm>
+#include <vector>
+#include <set>
+#include <map>
+#include <algorithm>
+#include <string>
+#include <sstream>
+
+#include <iostream>
+
+#include <tuple>
+
+#include <range/v3/all.hpp>
+
+typedef int FrontendId;
+using ValueIdTypePair = std::tuple<ValueId, Type>;
+
+namespace Smg {
+
+namespace Impl {
+
+class Object;
+typedef Object IObject;
+
+typedef size_t ObjectSize;
+typedef ValueId ObjectId;
+typedef int ObjectType; // not used
+
+
+struct EdgeBase {
+
+public:
+
+  ValueId sourceOffset;
+  ValueId value;
+  Type    valueType; // potential place for memory optimsation, union with objecttype for PtEdge
+
+  virtual void Print(std::ostream& os) const = 0;
+  std::string ToString() const
+  {
+    std::ostringstream ss;
+    Print(ss);
+    return ss.str();
+  }
+
+  constexpr bool operator<(const ValueId& offset) const { return sourceOffset < offset; }
+
+protected:
+
+  /*ctr*/ EdgeBase(ValueId sourceOffset, ValueId value, Type type) :
+    sourceOffset{sourceOffset},
+    value{value},
+    valueType{type}
+  {
+  }
+
+  // TODO: private copy and move constructors and operator
+
+};
+
+std::ostream& operator<<(std::ostream& os, const EdgeBase& edge)
+{
+  edge.Print(os);
+  return os;
+}
+
+struct HvEdge : EdgeBase {
+  
+public:
+  /*ctr*/ HvEdge(ValueId sourceOffset, ValueId value, Type type) :
+    EdgeBase(sourceOffset, value, type)
+  {
+  }
+
+  void Modify(ValueId value, Type type)
+  {
+    this->value = value;
+    this->valueType = type;
+  }
+
+  virtual void Print(std::ostream& os) const override
+  {  
+    os << "srcOffset: " << sourceOffset << ", value: " << value;
+  }  
+
+  // TODO: using for the priate copy and move constructors and operator
+
+};
+
+class PtEdge : public HvEdge {
+
+public:
+
+  ObjectId targetObjectId; // optimization, could be replaced by map with value(address)<->object in Smg
+  ValueId  targetOffset;
+
+  /*ctr*/ PtEdge(ValueId sourceOffset, ValueId value, Type type, ObjectId targetObjectId, ValueId targetOffset) :
+    targetObjectId{targetObjectId},
+    targetOffset{targetOffset},
+    HvEdge(sourceOffset, value, type)
+  {
+  }
+
+  void Modify(ValueId value, Type type, ObjectId targetObjectId, ValueId targetOffset)
+  {
+    this->value = value;
+    this->valueType = type;
+    this->targetObjectId = targetObjectId;
+    this->targetOffset = targetOffset;
+  }
+
+  // Copy source edge in place of this and restore Offset
+  void Modify(const PtEdge& baseEdge)
+  {
+    auto tmpSourceOffset = sourceOffset;
+    *this = baseEdge;
+    sourceOffset = tmpSourceOffset;
+  }
+
+  // From existing PtEdge, different source, same target
+  PtEdge(ValueId offset, const PtEdge& baseEdge) :
+    PtEdge{baseEdge}
+  {
+    sourceOffset = offset;
+  }
+  
+  // From existing PtEdge, same source, same target object, different target field
+  PtEdge(const PtEdge& baseEdge, ValueId value, Type type, ValueId targetOffset) :
+    targetObjectId{baseEdge.targetObjectId},
+    targetOffset{targetOffset},
+    HvEdge(baseEdge.sourceOffset, value, type)
+  {
+  }
+
+  virtual void Print(std::ostream& os) const override
+  {  
+    HvEdge::Print(os);
+    os << " target: " << targetObjectId;
+  }
+
+};
+
+
+// Interface for Smg::Object
+// contains virtual methods' declarations
+
+// Base implemenetation of Object
+class Object {
+
+public:
+
+  ObjectId id;
+  ObjectSize size;
+  std::vector<HvEdge> hvEdges;
+  std::vector<PtEdge> ptEdges;
+  int32_t refCounter{0};
+
+  void IncRefCounter() { ++refCounter; }
+  void DecRefCounter() { --refCounter; }
+
+public:
+
+  virtual ~Object() = default;
+
+  ObjectId GetId() const { return id; }
+  ObjectSize GetSize() const { return size; }
+
+  //Relies on GetPtOutEdges  //GetSucessors
+  const auto  GetOutEdges() const   { return ::ranges::view::concat(hvEdges, ptEdges); }
+  const auto& GetHvOutEdges() const { return hvEdges; }
+  const auto& GetPtOutEdges() const { return ptEdges; }
+    
+        HvEdge* FindHvEdgeByValue (ValueId offset)       { return FindEdgeByValue(hvEdges, offset); }
+  const HvEdge* FindHvEdgeByValue (ValueId offset) const { return FindEdgeByValue(hvEdges, offset); }
+
+        PtEdge* FindPtEdgeByValue (ValueId offset)       { return FindEdgeByValue(ptEdges, offset); }
+  const PtEdge* FindPtEdgeByValue (ValueId offset) const { return FindEdgeByValue(ptEdges, offset); }
+    
+        HvEdge* FindHvEdgeByOffset(ValueId offset)       { return FindEdgeByOffset(hvEdges, offset); }
+  const HvEdge* FindHvEdgeByOffset(ValueId offset) const { return FindEdgeByOffset(hvEdges, offset); }
+
+        PtEdge* FindPtEdgeByOffset(ValueId offset)       { return FindEdgeByOffset(ptEdges, offset); }
+  const PtEdge* FindPtEdgeByOffset(ValueId offset) const { return FindEdgeByOffset(ptEdges, offset); }
+
+  template<typename... Args>
+  HvEdge& CreateHvEdge(Args&&... args) { return CreateEdge(hvEdges, std::forward<Args>(args)...); }
+  template<typename... Args>
+  PtEdge& CreatePtEdge(Args&&... args) { return CreateEdge(ptEdges, std::forward<Args>(args)...); }
+
+  template<typename... Args>
+  HvEdge& CreateOrModifyHvEdge(ValueId offset, Args&&... args)
+  { return CreateOrModifyEdge(hvEdges, std::forward<ValueId>(offset), std::forward<Args>(args)...); }
+  template<typename... Args>
+  PtEdge& CreateOrModifyPtEdge(ValueId offset, Args&&... args)
+  { return CreateOrModifyEdge(ptEdges, std::forward<ValueId>(offset), std::forward<Args>(args)...); }
+
+private:
+
+  template<typename T, typename... Args>
+  static inline auto& CreateEdge(std::vector<T>& container, Args&&... args)
+  {
+    container.emplace_back(std::forward<Args>(args)...);
+    return container.back();
+  }
+  
+  template<typename T, typename... Args>
+  static inline auto& CreateOrModifyEdge(std::vector<T>& container, ValueId&& offset, Args&&... args)
+  {
+    {
+      T* edge;
+      if (edge = FindEdgeByOffset(container, offset))
+      {
+        //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR OBJECTS, DEFINITELY
+        ModificationObserver<T>{}(*edge);
+        edge->Modify(std::forward<Args>(args)...);
+        return *edge;
+      }
+    }
+    return CreateEdge(container, std::forward<ValueId>(offset), std::forward<Args>(args)...);
+  }
+
+  template<typename T>
+  struct ModificationObserver;
+
+  template<>
+  struct ModificationObserver<HvEdge> 
+  {
+    void operator()(const HvEdge&) {};
+  };
+
+  template<>
+  struct ModificationObserver<PtEdge> {
+    void operator()(const PtEdge& edge) { (void)edge.targetObjectId; };
+  };
+
+  template<typename RangeT, typename ValueT = RangeT::value_type>
+  static auto FindEdgeByOffset(RangeT& range, ValueId offset)
+  {
+    using namespace ::ranges;
+    auto res = ::ranges::find(range, offset, &EdgeBase::sourceOffset);
+    if (res != end(range))
+    {
+      return &*res;
+    }
+    else
+    {
+      nullptr;
+    }
+  }
+  template<typename RangeT, typename ValueT = RangeT::value_type>
+  static auto FindEdgeByValue(RangeT& range, ValueId value)
+  {
+    using namespace ::ranges;
+    auto res = ::ranges::find(range, value, &EdgeBase::value);
+    if (res != end(range))
+    {
+      return &*res;
+    }
+    else
+    {
+      nullptr;
+    }
+  }
+/*
+  template<typename T>
+  static auto FindEdge(T&& range, ValueId value, Type type)
+  {
+    using namespace ::ranges;
+    auto res = find_if(range, [const=](auto& edge) { return edge.value == value && edge.valueType == type});
+    if (res != end(range))
+    {
+      return &*res;
+    }
+    else
+    {
+      nullptr;
+    }
+  }
+*/
+};
+
+class Region : public Object {
+
+};
+
+class Graph {
+
+public:
+
+  Object handles;
+  std::map<ObjectId, uptr<Object>> objects;
+
+  IValueContainer& GetVc();
+
+  // Returns PtEdge [object, offset, type] corresponding to given pointer value
+  // The given pointer must be bound to an existing object, otherwise it is an undefined behaviour!
+  const PtEdge& FindPtEdge(ValueId ptr)
+  {
+    // The given pointer must be bound to an existing object
+    auto objectHandle = handles.FindPtEdgeByValue(ptr);
+    assert(objectHandle != nullptr); //TODO: maybe an exception?
+    return *objectHandle;
+  }
+
+  // Returns new pointer to different field [baseOffset + offset, type] of the same object 
+  auto CreateDerivedPointer(ValueId basePtr, ValueId offset, Type type)
+  {
+    auto& baseEdge = FindPtEdge(basePtr);
+    auto derivedOffset = GetVc().Add(baseEdge.targetOffset, offset       , PTR_TYPE, ArithFlags::Default);
+    auto derivedValue  = GetVc().Add(basePtr              , derivedOffset, PTR_TYPE, ArithFlags::Default);
+    auto& derEdge = handles.CreatePtEdge(PtEdge{baseEdge, derivedValue, type, derivedOffset});
+    //std::vector<int>().em
+    return std::make_pair(derivedValue, derEdge);
+  }
+
+  enum class MemorySpace : int8_t {
+    Static,
+    ThreadLocal,
+    Stack,
+    Heap
+  };
+
+  // Returns a pointer to newly allocated object
+  ValueId AllocateObject(Type type, MemorySpace ms = MemorySpace::Heap)
+  {
+    // assign a new ObjectId and new ValueId representing the resultant pointer
+    //TODO: different aquisition of ValueId based on MemorySpace
+
+    ObjectId oid = ObjectId::GetNextId();
+    ValueId  ptr = ValueId ::GetNextId();
+
+    // move from new uptr<Object>
+    // create new object and place it into map
+    auto& obj = objects.emplace(oid, std::make_unique<Object>()).first.operator*().second.operator*(); 
+
+    // intialize the object
+    obj.id = oid;
+    obj.size = type.GetSizeOf();
+
+    return ptr;
+  }
+
+  //! objectid je nutné, protože value je nutně vázána ke konkr. offsetu (ne nutně typu)!
+  //! eg na každý možný offset v OBJ[objid] potenciálně existuje unikátní PT hrana 
+  //! (a offset může být i mimo objekt, tedy záporný, nebo > sizeof)
+
+  //template<typename UniqueOrderedMap, typename ModifiedValueType>
+  //ValueId CreateOrModifyManual(
+  //  UniqueOrderedMap& map, 
+  //  UniqueOrderedMap::key_type&& key, 
+  //  UniqueOrderedMap::mapped_type&& newValue
+  //  ModifiedValueType&& value,
+  //  ModifiedValueType* accessor = &UniqueOrderedMap::key_type
+  //  ) 
+  //{
+  //  // src: http://stackoverflow.com/a/101980
+
+  //  decltype(map)::iterator lb = map.lower_bound(arg.id);
+
+  //  if (lb != map.end() && !(map.key_comp()(arg.id, lb->first)))
+  //  {
+  //    // key already exists
+  //    // update lb->second if you care to
+  //    lb->second::*accessor = std::forward<ModifiedValueType&&>(value);
+  //    return lb->second;
+  //  }
+  //  else
+  //  {
+  //    // the key does not exist in the innerMap
+  //    // add it to the innerMap, use hint
+  //    map.insert(lb, arg.id, std::forward<mapped_type&&>(newValue));
+  //    return newValue;
+  //  }
+  //}
+
+  // Type is not potentionaly not needed, because the targetPtr must be a pointer to correctly typed edge
+  // We use it here to skip the ptrEdge.valueType.GetPointerElementType()
+  void WriteValue(ValueId ptr, ValueId value, Type type)
+  {
+    auto& ptrEdge = FindPtEdge(ptr);
+
+    // The pointer target type and the type of value beeing written must not differ
+    assert(ptrEdge.valueType.GetPointerElementType() == type);
+
+    // The object has to be valid for an operation
+    // The flag should be stored inside the object, because the edge is unique to [object, offset, type]
+    auto  objectId = ptrEdge.targetObjectId;
+    auto& object   = *objects.at(objectId);
+    auto  offset   = ptrEdge.targetOffset;
+
+    if (!ptrEdge.valueType.IsPointer()) // it is just a plain HV edge
+    {
+      object.CreateOrModifyHvEdge(offset, value, type);
+
+      //// Repeat the same logic - does the edge exists? -> modify or create       
+      //HvEdge* edge;
+      //if (edge = object.FindHvEdge(offset))
+      //{ // Then modify it 
+      //  //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR VALUES? PROBABLY NO
+      //  edge->value = value;
+      //}
+      //else
+      //{ // Create new edge
+      //  object.CreateHvEdge(HvEdge{offset, value, type});
+      //}
+
+    }
+    else /* type is pointer && and is known pointer; debug if second fails */
+    {
+      PtEdge* assignedPtr; 
+      if (assignedPtr = handles.FindPtEdgeByOffset(value))
+      {
+        object.CreateOrModifyPtEdge(offset, *assignedPtr);
+      }
+      else
+      {
+        // Throw!
+        // Or fallback to HvEdge scenario
+        // Or use undefined value / special meaning value
+        // Find out wheter it is undefined-unknwon or abstracted-unknown
+        auto status = GetVc().GetAbstractionStatus(value); 
+        std::cout << AbstractionStatusToString(status) << std::endl;
+        throw std::runtime_error{"Writing unknown pointer value"};
+      }
+    }
+
+  }
+
+
+};
+
+
+} // namespace Smg::Impl
+
+
+
+typedef Impl::Graph Graph;
+
+class Object {
+
+  ////These functions require access to whole graph, to see which edges ends in this object
+  //ImplEdgeEnumerable GetEdgesAll() const;
+
+  //ImplEdgeEnumerable GetEdgesTo(Graph) const;
+  //ImplEdgeEnumerable GetPtEdgesTo(Graph) const;
+
+  //ImplObjectEnumerable GetPredecessorObjects() const;
+};
+
+
+} // namespace Smg
+
+void playground()
+{
+  using namespace ::Smg::Impl;
+  Object o;
+  Type t = Type::CreateIntegerType(32);
+  o.hvEdges.push_back(HvEdge{ValueId{0}, ValueId{1}, t});
+  o.ptEdges.push_back(PtEdge{ValueId{4},ValueId{5},t,ObjectId{7},ValueId{8}});
+  o.hvEdges.push_back(HvEdge{ValueId{0}, ValueId{1}, t});
+  o.ptEdges.push_back(PtEdge{ValueId{4},ValueId{5},t,ObjectId{7},ValueId{8}});
+  //auto all = o.GetOutEdges();
+  //for(auto& x : all)
+  //{
+  //  std::cout << x << std::endl;
+  //}
+
+  ////o.FindPtEdge(4);
+  //o.FindHvEdge(ValueId{1});
+  //const Object& o2 = o;
+  //o2.FindHvEdge(ValueId{1});
+  ////o.CreateHvEdge(11, 12, 13);
+
+  return;
+  //gsl::
+}
+
+
+
+
+
+
+
+
+
+
+/*
+
+Meeting log
+17-02-23 17:00 UTC, Reykjavík, Brno
+
+To discuss:
+* smg - graph functions naming conventions
+* design - printing library
+* license - LGPLv3 (we want to be more permissive ATM)
+* license - most other software is BSD-like or Appache2-like, LLVM considering Appache2/GPL2
+* license - printing library is GPLv3 - what should we do if we youse it
+* next week @charvin - rework the printing library predator_wrapper in a visitor like way.
+-----
+
+questions:
+* Can we consider two pairs <object, target_specifier> "not pointing to the same object" if only the
+  target_specifiers differs? -> question is realted to object wrappers, which could replace the role
+  of target_specifier, but would introduce additional "object_id".  -> Same object accessed through
+  different wrappers could not be considerd "same" based on object_id
+
+* Is there always only on points-to edge (as per the SMG paper) pointing to object?
+
+* How is the translation from "pointers" to "objects" done?
+* How should we proceed when a pointer to an object is artihmeticaly modified in a way SMGs does not
+  know the pointer (array indexing os weird sort)?  Should we search the ValueContainer for all connected
+  values to the pointer and try to identify the object base pointer?
+* -> OWN ANSWER: All pointer manipulation should be monitored by the SMG abstraction - so "not knowing"
+  *should* not happen.  Expalanation: When creating a new pointer using computer arithmetic, a new
+  PT-Edge should be created, pointing to original object with different offset.  If the arithmetic is
+  done "manually" by converting the pointer to integer and back than "SMG's are blind to this" and the
+  only way would be to search the ValueContainer or claiming pointer to unknown address.
+
+*/
