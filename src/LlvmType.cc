@@ -1,5 +1,7 @@
 #include "Type.hh"
 
+#if TYPE_KIND == TYPE_KIND_LLVM
+
 #include "LlvmGlobals.hh"
 
 //#include <innerMap>
@@ -120,3 +122,5 @@ size_t LlvmType::GetStructElementOffset(unsigned index) const
 
   return layout->getElementOffset(index);
 }
+
+#endif
