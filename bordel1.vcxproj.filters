@@ -45,6 +45,12 @@
     <ClCompile Include="src\ValueContainerV1.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Smg.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\console.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\LlvmGlobals.hh">
@@ -114,5 +120,8 @@
     <None Include="dulezite_poznatky.md" />
     <None Include="regex_cheat_sheet.md" />
     <None Include="todo.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

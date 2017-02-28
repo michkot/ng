@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\console.cc" />
     <ClCompile Include="src\Exceptions.cc" />
     <ClCompile Include="src\FrontendLlvm.cc" />
     <ClCompile Include="src\laboratory.cc" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Smg.cc" />
     <ClCompile Include="src\StateStorage.cc" />
     <ClCompile Include="src\LlvmGlobals.cc" />
     <ClCompile Include="src\Type.cc" />
