@@ -154,6 +154,7 @@
     <ClInclude Include="..\src\IOperation.hh" />
     <ClInclude Include="..\src\IState.hh" />
     <ClInclude Include="..\src\LlvmGlobals.hh" />
+    <ClInclude Include="..\src\OperationArgs.hh" />
     <ClInclude Include="..\src\StateStorage.hh" />
     <ClInclude Include="..\src\Type.hh" />
     <ClInclude Include="..\src\ValueContainerV1.hh" />
