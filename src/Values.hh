@@ -105,6 +105,20 @@ enum class CmpFlags {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
+ENUM_FLAGS(AbstractionStatus)
+enum class AbstractionStatus {
+  Undefined = 0x0000, // Value is purely abstract and no information were given to the VC
+  Unknown = 0x0001, // Value might have had some asociated information but now purely unknown
+};
+
+constexpr const char* AbstractionStatusToString(const AbstractionStatus s)
+{
+  return
+    s == AbstractionStatus::Undefined ?
+      "Undefined" :
+      "Unknown";
+}
+
 struct BinaryOpOptions {
   BinaryOpKind opKind;
   ArithFlags   flags;
@@ -130,10 +144,10 @@ public:
   // IsCmp, IsInternalRepEq, IsZero, IsUnknown, 
   // Assume, Cmp, BinOp, BitNot, 
   // ExtendInt, TruncateInt, CreateVal, CreateConstIntVal, 
-  // GetZero,
+  // GetZero, 
   // PrintDebug
   // Other methods which analysis is probably going to use (and might be changed from NIE to pure virtual):
-  // AssumeTrue, AssumeFalse,
+  // AssumeTrue, AssumeFalse, GetAbstractionStatus
 
   // --------------------------------------------------------------------------
   // Section A - constant methods, comparison queries
@@ -157,6 +171,8 @@ public:
   virtual boost::tribool IsZero   (ValueId first) const = 0;
   // There are no informations regarding this value
   virtual bool           IsUnknown(ValueId first) const = 0;
+  //TODO: relocate, add comment
+  virtual AbstractionStatus GetAbstractionStatus(ValueId first) { throw NotImplementedException(); } 
 
   // --------------------------------------------------------------------------
   // Section B - modifying methods, constraint addition 
@@ -241,6 +257,9 @@ public:
   virtual ValueId CreateConstFloatVal(float    value, Type type) { throw NotImplementedException(); }
   // Floating point support is theoretical right now
   virtual ValueId CreateConstFloatVal(double   value, Type type) { throw NotImplementedException(); }
+
+  // --------------------------------------------------------------------------
+  // Section E - diagnostic methods
 
   // Prints current state of the container onto console
   virtual void PrintDebug() const { throw NotImplementedException(); }

@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2013, Yuri Yaryshev (aka Lord Odin)
-Copyright (c) 2016, Michal Kotoun (modifications)
+Copyright (c) 2013,       Yuri Yaryshev (aka Lord Odin)
+Copyright (c) 2016, 2017, Michal Kotoun (modifications)
 
 The MIT License (MIT)
 
@@ -66,7 +66,6 @@ Use this line before header, if you don't want flags(T x) function to be impleme
 
 
 #define ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,INT_T) \
-enum class T; \
 inline constexpr T operator & (T x, T y) { return static_cast<T> (static_cast<INT_T>(x) & static_cast<INT_T>(y)); }; \
 inline constexpr T operator | (T x, T y) { return static_cast<T> (static_cast<INT_T>(x) | static_cast<INT_T>(y)); }; \
 inline constexpr T operator ^ (T x, T y) { return static_cast<T> (static_cast<INT_T>(x) ^ static_cast<INT_T>(y)); }; \
@@ -78,12 +77,25 @@ inline constexpr bool has_flag (T x, T y) { return static_cast<T>(static_cast<IN
 
 #if(USE_ENUM_FLAGS_FUNCTION)
 
- #define ENUM_FLAGS(T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>) \
+#define ENUM_FLAGS(T) \
+enum class T; \
+ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>) \
+ inline bool   flags(T x)   { return static_cast<std::underlying_type_t<T>>(x) != 0;};
+
+#define ENUM_FLAGS_TYPED(T, UNDERLYING_TYPE) \
+enum class T : UNDERLYING_TYPE; \
+ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>) \
  inline bool   flags(T x)   { return static_cast<std::underlying_type_t<T>>(x) != 0;};
 
 #else
 
- #define ENUM_FLAGS(T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>)
+ #define ENUM_FLAGS(T) \
+enum class T; \
+ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>)
+
+ #define ENUM_FLAGS_TYPED(T, UNDERLYING_TYPE) \
+enum class T : UNDERLYING_TYPE; \
+ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,std::underlying_type_t<T>)
 
 #endif
 #endif
