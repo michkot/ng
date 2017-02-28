@@ -100,10 +100,10 @@ void Verify(boost::string_view fileName)
 #include <Windows.h>
 #endif
 
-int main()
+int main_old()
 {
 #ifdef _WIN32
-  SetConsoleTitle("NextGen");
+  SetConsoleTitleA("NextGen");
 #endif
 
   //lab_main();
