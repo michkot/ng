@@ -11,6 +11,7 @@
 /// ValueId class is an type-safe encapsulation of integer-based IDs for values
 /// </summary>
 class ValueId {
+  friend std::ostream& operator<<(std::ostream&, const ValueId&);
   // Fields
 private:
   uint64_t id;
@@ -33,14 +34,17 @@ public:
 
   // Implementation of all comparsion operators (only the operator< is needed for most STD functionality) 
   //REVIEW: to use or not use the canonical way to implement the rest of operators
-  bool operator==(const ValueId& other) const { return this->id == other.id; } // canonicaly implemented
-  bool operator!=(const ValueId& other) const { return this->id != other.id; }
-  bool operator< (const ValueId& other) const { return this->id < other.id; }  // canonicaly implemented
-  bool operator> (const ValueId& other) const { return this->id > other.id; }
-  bool operator<=(const ValueId& other) const { return this->id <= other.id; }
-  bool operator>=(const ValueId& other) const { return this->id >= other.id; }
+
+  constexpr bool operator==(const ValueId& other) const { return this->id == other.id; } // canonicaly implemented
+  constexpr bool operator!=(const ValueId& other) const { return this->id != other.id; }
+  constexpr bool operator< (const ValueId& other) const { return this->id < other.id; }  // canonicaly implemented
+  constexpr bool operator> (const ValueId& other) const { return this->id > other.id; }
+  constexpr bool operator<=(const ValueId& other) const { return this->id <= other.id; }
+  constexpr bool operator>=(const ValueId& other) const { return this->id >= other.id; }
 
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ValueId& v) { return os << v.id; }
 
 #include "enum_flags.h"
 ENUM_FLAGS(BinaryOpKind)
