@@ -5,7 +5,9 @@
 #define TYPE_KIND_LLVM  0
 #define TYPE_KIND_ANGIE 1
 
-#define TYPE_KIND TYPE_KIND_ANGIE
+#if !defined(TYPE_KIND)
+#define TYPE_KIND TYPE_KIND_LLVM
+#endif
 
 #if TYPE_KIND == TYPE_KIND_LLVM
 
@@ -23,14 +25,16 @@ typedef LlvmType Type;
 // Might be later changed to interaface(fully abstraact class) when multiple frontends are in mind
 class LlvmType {
 private:
-  const FrontendTypeId frontedId;
+  llvm::Type* frontedId;
 
 public:
-  explicit /*ctr*/ LlvmType(FrontendTypeId frontedId) : frontedId{frontedId} {}
-  const FrontendTypeId GetFrontendId() const { return frontedId; }
+  explicit /*ctr*/ LlvmType(llvm::Type* frontedId) : frontedId{frontedId} {}
+  llvm::Type* GetFrontendId() const { return frontedId; }
 
   static Type CreateVoidType();
   static Type CreateCharPointerType();
+  static Type CreateIntegerType(unsigned bitwidth);
+  static Type CreatePointerTo(Type target);
 
   bool operator==(const Type& rhs)
   {

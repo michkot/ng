@@ -21,8 +21,19 @@ Type LlvmType::CreateVoidType()
 
 Type LlvmType::CreateCharPointerType()
 {
-  static auto ptrTy = llvm::Type::getInt8PtrTy(llvmModule->getContext());
+  static llvm::Type* ptrTy = llvm::Type::getInt8PtrTy(llvmModule->getContext());
   return Type{ptrTy};
+}
+
+Type LlvmType::CreateIntegerType(unsigned bitwidth)
+{
+  //TODO@michkot: fix, suboptimal efficiency 
+  return Type{llvm::Type::getIntNTy(llvmModule->getContext(), bitwidth)};
+}
+
+Type LlvmType::CreatePointerTo(LlvmType target)
+{
+  return Type{target.GetFrontendId()->getPointerTo()};
 }
 
 void LlvmType::ToString(std::string& str) const
@@ -123,4 +134,4 @@ size_t LlvmType::GetStructElementOffset(unsigned index) const
   return layout->getElementOffset(index);
 }
 
-#endif
+#endif // #if TYPE_KIND ==

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Type.hh"
 
+#if TYPE_KIND == TYPE_KIND_ANGIE
+
 #include "Exceptions.hh"
 #include <set>
 
@@ -177,3 +179,5 @@ size_t AngieType::GetStructElementOffset(unsigned index) const
 {
   throw NotImplementedException();
 }
+
+#endif // #if TYPE_KIND ==

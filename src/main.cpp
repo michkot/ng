@@ -43,7 +43,7 @@ using namespace ::std;
 #include "IOperation.hh"
 #include "ICfgNode.hh"
 #include "ForwardNullAnalysis.hh"
-#include "FrontendLlvm.hh"
+#include "LlvmFrontend.hh"
 
 // fronta stavů ke zpracování
 ref_queue<IState> toProcess{};

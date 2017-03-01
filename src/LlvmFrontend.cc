@@ -1,4 +1,4 @@
-#include "FrontendLlvm.hh"
+#include "LlvmFrontend.hh"
 
 #include "ICfgNode.hh"
 #include "LlvmGlobals.hh"
