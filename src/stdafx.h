@@ -23,7 +23,6 @@
 
 #pragma warning(push, 3)
 #include <range/v3/all.hpp>
-#include "roaring.hh"
 #pragma warning(pop)
 
 #endif
