@@ -2,49 +2,17 @@
 
 #include "Definitions.hh"
 #include "Type.hh"
+#include "IdImpl.hh"
 
 #include "enum_flags.h"
 
 #include <boost/logic/tribool.hpp>
 
+class ValueIdToken;
 /// <summary>
 /// ValueId class is an type-safe encapsulation of integer-based IDs for values
 /// </summary>
-class ValueId {
-  friend std::ostream& operator<<(std::ostream&, const ValueId&);
-  // Fields
-private:
-  uint64_t id;
-  static ValueId nextIdToGive;
-
-  // Constructors
-public:
-  /**/     ValueId()            : id{ 0 }  { }
-  explicit ValueId(uint64_t id) : id{ id } { }
-
-  // Conversion methods
-  explicit operator uint64_t() const { return id; }
-
-  // Creator methods
-  static ValueId GetNextId() { return nextIdToGive++; }
-
-  // Methods
-  ValueId operator++()    { id++; return *this; } // prefix
-  ValueId operator++(int) { auto copy = *this; id++; return copy; } // postfix
-
-  // Implementation of all comparsion operators (only the operator< is needed for most STD functionality) 
-  //REVIEW: to use or not use the canonical way to implement the rest of operators
-
-  constexpr bool operator==(const ValueId& other) const { return this->id == other.id; } // canonicaly implemented
-  constexpr bool operator!=(const ValueId& other) const { return this->id != other.id; }
-  constexpr bool operator< (const ValueId& other) const { return this->id < other.id; }  // canonicaly implemented
-  constexpr bool operator> (const ValueId& other) const { return this->id > other.id; }
-  constexpr bool operator<=(const ValueId& other) const { return this->id <= other.id; }
-  constexpr bool operator>=(const ValueId& other) const { return this->id >= other.id; }
-
-};
-
-inline std::ostream& operator<<(std::ostream& os, const ValueId& v) { return os << v.id; }
+using ValueId = Id<ValueIdToken>;
 
 #include "enum_flags.h"
 ENUM_FLAGS(BinaryOpKind)
@@ -263,6 +231,7 @@ public:
 
   // Prints current state of the container onto console
   virtual void PrintDebug() const { throw NotImplementedException(); }
+  //virtual void Print(std::ostream& os) const { throw NotImplementedException(); }
 
 protected:
 
@@ -271,3 +240,5 @@ protected:
   // Zero of specific type/size
   virtual ValueId GetZero(Type type) const = 0;
 };
+
+//inline std::ostream& operator<<(std::ostream& os, const IValueContainer& vc) { vc.Print(os); return os; }

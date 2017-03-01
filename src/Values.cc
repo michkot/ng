@@ -1,3 +1,4 @@
 #include "Values.hh"
 
-ValueId ValueId::nextIdToGive;
+template<>
+ValueId ValueId::nextIdToGive{};

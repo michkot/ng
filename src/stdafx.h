@@ -9,8 +9,10 @@
 
 #include "Definitions.hh"
 #include "Exceptions.hh"
+//#include "Type.hh"
+//#include "Values.hh"
+
 //#include <gsl/gsl_algorithm>
-#include <range/v3/all.hpp>
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -18,5 +20,10 @@
 #include <sstream>
 
 #include <iostream>
+
+#pragma warning(push, 3)
+#include <range/v3/all.hpp>
+#include "roaring.hh"
+#pragma warning(pop)
 
 #endif

@@ -28,7 +28,7 @@ private:
   llvm::Type* frontedId;
 
 public:
-  explicit /*ctr*/ LlvmType(llvm::Type* frontedId) : frontedId{frontedId} {}
+  constexpr explicit /*ctr*/ LlvmType(llvm::Type* frontedId) : frontedId{frontedId} {}
   llvm::Type* GetFrontendId() const { return frontedId; }
 
   static Type CreateVoidType();
@@ -77,9 +77,9 @@ typedef AngieType Type;
 class AngieType {
 private:
   const AngieTypeImpl* frontedId;
-  explicit /*ctr*/ AngieType(const AngieTypeImpl* frontedId) : frontedId{frontedId} {}
 
 public:
+  constexpr explicit /*ctr*/ AngieType(const AngieTypeImpl* frontedId) : frontedId{frontedId} {}
   const AngieTypeImpl* GetFrontendId() const { return frontedId; }
 
   static Type CreateVoidType();

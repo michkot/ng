@@ -49,11 +49,12 @@ public:
     return ss.str();
   }
 
-  constexpr bool operator<(const ValueId& offset) const { return sourceOffset < offset; }
+  constexpr 
+    bool operator<(const ValueId& offset) const { return sourceOffset < offset; }
 
 protected:
 
-  /*ctr*/ EdgeBase(ValueId sourceOffset, ValueId value, Type type) :
+  constexpr /*ctr*/ EdgeBase(ValueId sourceOffset, ValueId value, Type type) :
     sourceOffset{sourceOffset},
     value{value},
     valueType{type}
@@ -147,6 +148,20 @@ public:
 };
 
 
+template<typename T>
+struct ModificationObserver;
+
+template<>
+struct ModificationObserver<HvEdge> 
+{
+  void operator()(const HvEdge&) {};
+};
+
+template<>
+struct ModificationObserver<PtEdge> {
+  void operator()(const PtEdge& edge) { (void)edge.targetObjectId; };
+};
+
 // Interface for Smg::Object
 // contains virtual methods' declarations
 
@@ -163,6 +178,76 @@ public:
 
   void IncRefCounter() { ++refCounter; }
   void DecRefCounter() { --refCounter; }
+
+private:
+
+  template<typename T, typename... Args>
+  static inline auto& CreateEdge(std::vector<T>& container, Args&&... args)
+  {
+    container.emplace_back(std::forward<Args>(args)...);
+    return container.back();
+  }
+
+  template<typename T, typename... Args>
+  static inline auto& CreateOrModifyEdge(std::vector<T>& container, ValueId&& offset, Args&&... args)
+  {
+    {
+      T* edge;
+      if (edge = FindEdgeByOffset(container, offset))
+      {
+        //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR OBJECTS, DEFINITELY
+        ModificationObserver<T>{}(*edge);
+        edge->Modify(std::forward<Args>(args)...);
+        return *edge;
+      }
+    }
+    return CreateEdge(container, std::forward<ValueId>(offset), std::forward<Args>(args)...);
+  }
+
+  template<typename RangeT, typename ValueT = typename RangeT::value_type>
+  static auto FindEdgeByOffset(RangeT& range, ValueId offset)
+  {
+    using namespace ::ranges;
+    auto res = ::ranges::find(range, offset, &EdgeBase::sourceOffset);
+    if (res != end(range))
+    {
+      return &*res;
+    }
+    else
+    {
+      nullptr;
+    }
+  }
+  template<typename RangeT, typename ValueT = typename RangeT::value_type>
+  static auto FindEdgeByValue(RangeT& range, ValueId value)
+  {
+    using namespace ::ranges;
+    auto res = ::ranges::find(range, value, &EdgeBase::value);
+    if (res != end(range))
+    {
+      return &*res;
+    }
+    else
+    {
+      nullptr;
+    }
+  }
+  /*
+  template<typename T>
+  static auto FindEdge(T&& range, ValueId value, Type type)
+  {
+  using namespace ::ranges;
+  auto res = find_if(range, [const=](auto& edge) { return edge.value == value && edge.valueType == type});
+  if (res != end(range))
+  {
+  return &*res;
+  }
+  else
+  {
+  nullptr;
+  }
+  }
+  */
 
 public:
 
@@ -200,89 +285,6 @@ public:
   PtEdge& CreateOrModifyPtEdge(ValueId offset, Args&&... args)
   { return CreateOrModifyEdge(ptEdges, std::forward<ValueId>(offset), std::forward<Args>(args)...); }
 
-private:
-
-  template<typename T, typename... Args>
-  static inline auto& CreateEdge(std::vector<T>& container, Args&&... args)
-  {
-    container.emplace_back(std::forward<Args>(args)...);
-    return container.back();
-  }
-  
-  template<typename T, typename... Args>
-  static inline auto& CreateOrModifyEdge(std::vector<T>& container, ValueId&& offset, Args&&... args)
-  {
-    {
-      T* edge;
-      if (edge = FindEdgeByOffset(container, offset))
-      {
-        //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR OBJECTS, DEFINITELY
-        ModificationObserver<T>{}(*edge);
-        edge->Modify(std::forward<Args>(args)...);
-        return *edge;
-      }
-    }
-    return CreateEdge(container, std::forward<ValueId>(offset), std::forward<Args>(args)...);
-  }
-
-  template<typename T>
-  struct ModificationObserver;
-
-  template<>
-  struct ModificationObserver<HvEdge> 
-  {
-    void operator()(const HvEdge&) {};
-  };
-
-  template<>
-  struct ModificationObserver<PtEdge> {
-    void operator()(const PtEdge& edge) { (void)edge.targetObjectId; };
-  };
-
-  template<typename RangeT, typename ValueT = RangeT::value_type>
-  static auto FindEdgeByOffset(RangeT& range, ValueId offset)
-  {
-    using namespace ::ranges;
-    auto res = ::ranges::find(range, offset, &EdgeBase::sourceOffset);
-    if (res != end(range))
-    {
-      return &*res;
-    }
-    else
-    {
-      nullptr;
-    }
-  }
-  template<typename RangeT, typename ValueT = RangeT::value_type>
-  static auto FindEdgeByValue(RangeT& range, ValueId value)
-  {
-    using namespace ::ranges;
-    auto res = ::ranges::find(range, value, &EdgeBase::value);
-    if (res != end(range))
-    {
-      return &*res;
-    }
-    else
-    {
-      nullptr;
-    }
-  }
-/*
-  template<typename T>
-  static auto FindEdge(T&& range, ValueId value, Type type)
-  {
-    using namespace ::ranges;
-    auto res = find_if(range, [const=](auto& edge) { return edge.value == value && edge.valueType == type});
-    if (res != end(range))
-    {
-      return &*res;
-    }
-    else
-    {
-      nullptr;
-    }
-  }
-*/
 };
 
 class Region : public Object {
