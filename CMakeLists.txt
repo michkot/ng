@@ -35,9 +35,12 @@ SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANIT_FLAGS} -g")
 #    *.cc
 #)
 
+add_definitions(-DNOT_COMPILE_Z3)
+
 set(SOURCE_FILES
+    src/AngieType.cc
+    src/console.cc
     src/Definitions.hh
-    src/DummyOperations.cc
     src/DummyOperations.hh
     src/DummyState.hh
     src/enum_flags.h
@@ -45,33 +48,41 @@ set(SOURCE_FILES
     src/Exceptions.hh
     src/ForwardNullAnalysis.hh
     src/FrontedValueMapper.hh
-    src/FrontendLlvm.cc
-    src/FrontendLlvm.hh
     src/General.hh
     src/ICfgNode.hh
+    src/IdImpl.hh
     src/IOperation.hh
     src/IState.hh
+    src/laboratory.cc
+    src/LlvmFrontend.cc
+    src/LlvmFrontend.hh
     src/LlvmGlobals.cc
     src/LlvmGlobals.hh
+    src/LlvmType.cc
     src/main.cpp
     src/OperationArgs.hh
+    src/Smg.cc
     src/StateStorage.cc
     src/StateStorage.hh
-    src/Type.cc
+    src/stdafx.cpp
+    src/stdafx.h
     src/Type.hh
     src/ValueContainerV1.cc
     src/ValueContainerV1.hh
     src/Values.cc
     src/Values.hh
+    src/ValuesZ3.cc
+    src/ValuesZ3.hh
 )
 
 if(Z3)
+    remove_definitions(-DNOT_COMPILE_Z3)
     add_definitions(-DUSE_Z3)
-    set(SOURCE_FILES
-        ${SOURCE_FILES}
-        src/ValuesZ3.hh
-        src/ValuesZ3.cc
-    )
+    # set(SOURCE_FILES
+    #     ${SOURCE_FILES}
+    #     src/ValuesZ3.hh
+    #     src/ValuesZ3.cc
+    # )
 endif()
 
 # targets

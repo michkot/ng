@@ -8,8 +8,10 @@
 *.ll
 
 # Others
-ignore/*
 prostata/*
+ignore/*
+tmp/*
+temp/*
 
 # Global
 *.tmp

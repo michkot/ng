@@ -1,5 +1,7 @@
 #pragma once
 
+#if !defined(NOT_COMPILE_Z3)
+
 #include "Definitions.hh"
 #include "Type.hh"
 
@@ -75,3 +77,5 @@ protected:
 
   virtual ValueId GetZero(Type type) const override { throw NotImplementedException(); }
 };
+
+#endif // #if !defined(NOT_COMPILE_Z3)

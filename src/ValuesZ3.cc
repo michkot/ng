@@ -1,3 +1,5 @@
+#if !defined(NOT_COMPILE_Z3)
+
 #include "ValuesZ3.hh"
 
 #include <z3++.h>
@@ -429,3 +431,5 @@ void Z3ValueContainer::PrintDebug() const
     std::cout << pair.second;
   }
 }
+
+#endif // #if !defined(NOT_COMPILE_Z3)
