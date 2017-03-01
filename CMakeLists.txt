@@ -37,7 +37,6 @@ SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANIT_FLAGS} -g")
 
 set(SOURCE_FILES
     src/Definitions.hh
-    src/DummyOperations.cc
     src/DummyOperations.hh
     src/DummyState.hh
     src/enum_flags.h

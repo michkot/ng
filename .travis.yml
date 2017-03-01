@@ -82,6 +82,7 @@ install:
     - export INCLUDE=$HOME/include/:$INCLUDE
 
 script: 
+    - export COPT=opt-3.9 CLANGXX=clang++-3.9 CLANG=clang-3.9
     - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../
     - make
     - make tests

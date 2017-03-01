@@ -8,5 +8,10 @@ Angie project
 Build & Run
 -----------
 ```sh
-(./compile-inputs-to-ll.sh; mkdir tmp; cd tmp; cmake ../; make; cd .. ; ./tmp/ng.exe)
+# set to your executables
+COPT=opt
+CLANGXX=clang++
+CLANG=clang
+export COPT CLANGXX CLANG
+(bash ./compile-inputs-to-ll.sh; mkdir tmp; cd tmp; cmake ../; make; cd .. ; ./tmp/ng)
 ```
