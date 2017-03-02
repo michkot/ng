@@ -86,7 +86,7 @@ install:
     - export INCLUDE=$HOME/include/:$INCLUDE
 
 #install range-v3
-    - "if [ ! -f $HOME/include/range/v3/all.hpp ]; then cd $HOME && curl -L -o $HOME/range.zip https://codeload.github.com/Microsoft/Range-V3-VS2015/zip/master && mkdir -p include/range && unzip range.zip && mv -t include/range Range-V3-VS2015-master/include/range/* && ls -la include/range/ && cd - ; fi"
+    - "if [ ! -f $HOME/include/range/v3/all.hpp ] || [ ! -f $HOME/include/meta/meta.hpp ] ; then cd $HOME && curl -L -o $HOME/range.zip https://codeload.github.com/Microsoft/Range-V3-VS2015/zip/master && mkdir -p include/range && unzip range.zip && mv -t include/ Range-V3-VS2015-master/include/* && ls -la include/range && cd - ; fi"
 
     - export INCLUDE=$HOME/include/:$INCLUDE
 

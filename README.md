@@ -24,6 +24,9 @@ and possibly also
 [CRoaring](https://github.com/RoaringBitmap/CRoaring). 
 All those are to my best knowledge distributed under compatible licenses.
 
+Proud user of:
+- https://github.com/petervanderdoes/gitflow-avh/
+
 Build & Run
 -----------
 ```sh
