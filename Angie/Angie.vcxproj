@@ -142,9 +142,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\src\Definitions.hh" />
     <ClInclude Include="..\src\DummyOperations.hh" />
     <ClInclude Include="..\src\DummyState.hh" />
@@ -160,15 +157,13 @@
     <ClInclude Include="..\src\IState.hh" />
     <ClInclude Include="..\src\LlvmGlobals.hh" />
     <ClInclude Include="..\src\OperationArgs.hh" />
-    <ClInclude Include="..\src\roaring.h" />
-    <ClInclude Include="..\src\roaring.hh" />
+    <ClInclude Include="..\..\croaring\roaring.h" />
+    <ClInclude Include="..\..\croaring\roaring.hh" />
     <ClInclude Include="..\src\StateStorage.hh" />
     <ClInclude Include="..\src\Type.hh" />
     <ClInclude Include="..\src\ValueContainerV1.hh" />
     <ClInclude Include="..\src\Values.hh" />
-    <ClInclude Include="..\src\ValuesZ3.hh">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="..\src\ValuesZ3.hh" />
     <ClInclude Include="..\src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -196,8 +191,9 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\src\roaring.c">
+    <ClCompile Include="..\..\croaring\roaring.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\Smg.cc" />
     <ClCompile Include="..\src\StateStorage.cc">
@@ -222,6 +218,21 @@
     <ClCompile Include="..\src\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="llvm.natvis" />
+    <Natvis Include="clang.natvis" />
+    <Natvis Include="custom.natvis" />
+    <Natvis Include="GSL.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+    <None Include="..\dulezite_poznatky.md" />
+    <None Include="..\regex_cheat_sheet.md" />
+    <None Include="..\todo.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Angie.licenseheader" />
