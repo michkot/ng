@@ -27,7 +27,12 @@ All those are to my best knowledge distributed under compatible licenses.
 Build & Run
 -----------
 ```sh
-(./compile-inputs-to-ll.sh; mkdir tmp; cd tmp; cmake ../; make; cd .. ; ./tmp/ng.exe)
+# set to your executables
+COPT=opt
+CLANGXX=clang++
+CLANG=clang
+export COPT CLANGXX CLANG
+(bash ./compile-inputs-to-ll.sh; mkdir tmp; cd tmp; cmake ../; make; cd .. ; ./tmp/ng)
 ```
 
 Contribution and credits

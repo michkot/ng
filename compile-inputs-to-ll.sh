@@ -6,9 +6,9 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 cd $SCRIPTPATH
 
 # this needs fixing by auto-detect!!!
-COPT=opt-3.9
-CLANGXX=clang++-3.9
-CLANG=clang-3.9
+# COPT=opt-3.9
+# CLANGXX=clang++-3.9
+# CLANG=clang-3.9
 
 # $CLANGXX -S -g -emit-llvm input1.cpp -o - | $COPT -lowerswitch -S -o input1.ll
 # $CLANGXX -S -g -emit-llvm input2.cpp -o - | $COPT -lowerswitch -S -o input2.ll
