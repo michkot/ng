@@ -508,10 +508,106 @@ void playground()
 
 
 
+/*
+
+Wrappers:
+
+ImplObject { vector<hrany>; nejake status }
+objekt.DejMiVsehcnyHranyCoNaMeVedou() ???
+smg.DejMiHrany.....(objekt)
+
+Object -> GetOutEdges();
+Region : Object
+
+HvEdge : BaseEdge
+PtEdge : BaseEdge
+
+BaseEdge
+
+*/
+//
+//typedef uint64_t ObjectId ;
+//class Smg {
+//  Object& GetHandles();
+//  };
+//  class Object {
+//  auto GetOutEges();
+//  auto GetHvEdges();
+//  auto GetPtEdges();
+//
+//  size_t GetSize();
+//  ObjectId GetId();     
+//  };
+//  class Region : public Object {
+//
+//  };
+//  class Sls : Object {
+//  uint16_t GetLevel();
+//  uint16_t GetRank();
+//  };
+//  class BaseEdge {
+//  ValueId  GetSourceOffset();
+//  ValueId  GetValue();
+//  Type     GetType();
+//};
+//class PtEdge : public BaseEdge {
+//  ObjectId GetTargetObjectId(); //GetTargetBasePtr();
+//  ValueId  GetTargetOffset();
+//};
+
+/*
+objekt -hvhrana----> hodnota ->pthrana------>objekt
+-size  -typ                  -offset -targetSpec
+
+objekt -hvhrana----> hodnota
+objekt -pthrana----  hodnota --------------->objekt
+
+17-03-02 19 UTC
+target-specifier nahradit za port
+ - je třeba víc promyslet
+Pt součástí hodnoty typu pointer - možná dělá i predátor
+Reference counter X přichozí hrany
+  x pozor na cykly - > to zůstane pořád alespon 1 pointer
+  x průchod z globálních prom / stacku, hledám cestu k objektu na kteýr sem ztratil jinak asi přístup
+  x optimalizace, hlavní myšlenka: je na mě hrana stacku/globalu- -> nekontroluji, jinak ano
+  x optimalizace: hledat zpátky cestu k stacku
+probráno
+COW - lze přes ID
+smg - multidimenzionalni problem: čas x větvění (x uroven objektů)
+PP - připomíná že by opravdu rád prošpikoval predátora analýzou a zjistil 
+   - podrobnější statistiky, o prům. počtu ukaztelů na hodnotu např.
+Printer - keep it simple, nemusí být efektivné, hlavne elegnantní
+        - připomínám návrh Rekurzivní visitor + Printer Visitor -> rekurzivní printer visitor
+
+*/
 
 
+/*
+Program 1:
+x = malloc();
+y = x;
+free(x);
+x = malloc();
+if (x == y) { ERROR }
 
 
+Program 2:
+x = malloc();
+y = x;
+x = malloc();
+free(y);
+if (x == y) { ERROR }
+
+
+první příklad, chyba může nastat - znovupřidelení
+druhý příklad - nelze
+
+Možnost optimalizovat (krom freed => možno rovnat s čímkoliv, adresu), 
+přidat NEQ hrany se všemi eixstujicim objekty
+a) při alokaci
+b) při de-alokaci
+
+*/
 
 
 /*
