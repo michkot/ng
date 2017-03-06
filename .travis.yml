@@ -63,9 +63,7 @@ cache:
     apt: true
     directories:
         - $HOME/local/lib/
-        - $HOME/local/include/gtest/
-        - $HOME/local/include/boost/
-        - $HOME/local/include/range/
+        - $HOME/local/include/
 
 install:
     - export CXX=$MCXX CC=$MCC
@@ -74,8 +72,11 @@ install:
     - opt --version
     - opt-3.9 --version
 
-#set PREFIX
-    - PREFIX=$HOME/local/
+#export PREFIX
+    - export PREFIX=$HOME/local
+
+#export all the vars
+    - sh utils/install_main.sh export && $(sh utils/install_main.sh export) && export
 
 #install google test (gtest)
     - sh utils/install_main.sh gtest
@@ -85,9 +86,6 @@ install:
 
 #install range-v3
     - sh utils/install_main.sh range-v3
-
-#export
-    - $(sh utils/install_main.sh export)
 
 script: 
     - export COPT=opt-3.9 CLANGXX=clang++-3.9 CLANG=clang-3.9
