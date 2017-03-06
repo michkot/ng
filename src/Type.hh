@@ -53,6 +53,8 @@ public:
   constexpr explicit /*ctr*/ LlvmType(llvm::Type* frontedId) : frontedId{frontedId} {}
   llvm::Type* GetFrontendId() const { return frontedId; }
 
+  static void InitTypeSystem();
+
   static Type CreateVoidType();
   static Type CreateCharPointerType();
   static Type CreateIntegerType(unsigned bitwidth);
@@ -103,6 +105,8 @@ private:
 public:
   constexpr explicit /*ctr*/ AngieType(const AngieTypeImpl* frontedId) : frontedId{frontedId} {}
   const AngieTypeImpl* GetFrontendId() const { return frontedId; }
+
+  static void InitTypeSystem() {};
 
   static Type CreateVoidType();
   static Type CreateCharPointerType();

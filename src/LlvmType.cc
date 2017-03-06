@@ -36,6 +36,11 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Support/raw_ostream.h>
 
+void LlvmType::InitTypeSystem()
+{
+  initEmptyContext();
+}
+
 Type LlvmType::CreateVoidType()
 {
   return Type(nullptr);

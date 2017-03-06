@@ -23,22 +23,25 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include <llvm/Support/CommandLine.h>
 #include <string>
 
-using namespace ::std;
-using namespace ::llvm;
+#include "Type.hh"
 
-cl::opt<string> OutputFilename("o", cl::desc("Specify output filename"), cl::value_desc("filename"), cl::init("-"));
-cl::opt<string> InputFilename(cl::Positional, cl::desc("<input file>"), cl::init(""));
-cl::opt<bool>   Analysis("a", cl::desc("Enable analysis"));
+using namespace ::std;
+using namespace ::llvm::cl;
+
+opt<string> OutputFilename("o", desc("Specify output filename"), value_desc("filename"), init("-"));
+opt<string> InputFilename(Positional, desc("<input file>"), init(""));
+opt<bool>   Analysis("a", desc("Enable analysis"));
 
 extern int main_old(void);
 extern void playground();
 
 int main(int argc, char** argv)
 {
-  cl::ParseCommandLineOptions(argc, argv);
+  ParseCommandLineOptions(argc, argv);
 
   if (!Analysis)
   {
+    Type::InitTypeSystem();
     playground();
     return 0;
   }

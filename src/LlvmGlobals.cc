@@ -38,3 +38,11 @@ void setLlvmGlobalVars(llvm::Module* module)
   llvmDataLayout = module->getDataLayout();
   llvmContext = &module->getContext();
 }
+
+void initEmptyContext()
+{
+  auto context = new llvm::LLVMContext{};
+  llvmModule = new llvm::Module("EmptyModule", *context);
+  llvmDataLayout = llvmModule->getDataLayout();
+  llvmContext = context;
+}

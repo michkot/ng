@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -78,13 +78,13 @@
     <ClInclude Include="..\src\LlvmFrontend.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\roaring.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\roaring.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\IdImpl.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\croaring\roaring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\croaring\roaring.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,11 +131,21 @@
     <ClCompile Include="..\src\AngieType.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\roaring.c">
+    <ClCompile Include="..\..\croaring\roaring.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Angie.licenseheader" />
+    <None Include="..\README.md" />
+    <None Include="..\dulezite_poznatky.md" />
+    <None Include="..\regex_cheat_sheet.md" />
+    <None Include="..\todo.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="llvm.natvis" />
+    <Natvis Include="clang.natvis" />
+    <Natvis Include="custom.natvis" />
+    <Natvis Include="GSL.natvis" />
   </ItemGroup>
 </Project>
