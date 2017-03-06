@@ -19,7 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file StateStorage.cc */
-
+#include "precompall.hh"
 #include "StateStorage.hh"
 
 vector<uptr<IState>> StatesManager::statePool{};

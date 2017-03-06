@@ -19,7 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file console.cc */
-
+#include "precompall.hh"
 #include <llvm/Support/CommandLine.h>
 #include <string>
 

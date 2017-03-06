@@ -19,7 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file main.cpp */
-
+#include "precompall.hh"
 #include <cstdio>
 #include <memory>
 

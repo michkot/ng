@@ -64,8 +64,6 @@ set(SOURCE_FILES
     src/Smg.cc
     src/StateStorage.cc
     src/StateStorage.hh
-    src/stdafx.cpp
-    src/stdafx.h
     src/Type.hh
     src/ValueContainerV1.cc
     src/ValueContainerV1.hh

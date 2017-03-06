@@ -19,11 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="clang.natvis" />
-    <Natvis Include="custom.natvis" />
-    <Natvis Include="llvm.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="dulezite_poznatky.md" />
     <None Include="regex_cheat_sheet.md" />
     <None Include="todo.md" />

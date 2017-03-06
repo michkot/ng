@@ -18,9 +18,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
-/** @file Values.cc */
-#include "precompall.hh"
-#include "Values.hh"
+/** @file precompall.hh */
 
-template<>
-ValueId ValueId::nextIdToGive{};
+// stdafx.h : include file for standard system include files,
+// or project specific include files that are used frequently, but
+// are changed infrequently
+//
+
+#pragma once
+
+#include "precompllvm.hh"
+#include "precompother.hh"

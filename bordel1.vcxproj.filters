@@ -15,11 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="clang.natvis" />
-    <Natvis Include="llvm.natvis" />
-    <Natvis Include="custom.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="dulezite_poznatky.md" />
     <None Include="regex_cheat_sheet.md" />
     <None Include="todo.md" />

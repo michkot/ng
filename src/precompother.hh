@@ -18,9 +18,23 @@ You should have received a copy of the GNU Lesser General Public License
 along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
-/** @file Values.cc */
-#include "precompall.hh"
-#include "Values.hh"
+/** @file precompother.hh */
 
-template<>
-ValueId ValueId::nextIdToGive{};
+#pragma once
+
+#if defined(_MSC_VER)
+
+//#include <gsl/gsl_algorithm>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <string>
+#include <sstream>
+
+#include <iostream>
+
+#pragma warning(push, 3)
+#include <range/v3/all.hpp>
+#pragma warning(pop)
+
+#endif

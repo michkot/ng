@@ -19,8 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file Smg.cc */
-
-#include "stdafx.h"
+#include "precompall.hh"
 
 #include "Definitions.hh"
 #include "Exceptions.hh"

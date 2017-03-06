@@ -106,7 +106,7 @@ public:
   constexpr explicit /*ctr*/ AngieType(const AngieTypeImpl* frontedId) : frontedId{frontedId} {}
   const AngieTypeImpl* GetFrontendId() const { return frontedId; }
 
-  static void InitTypeSystem() {};
+  static void InitTypeSystem() {}
 
   static Type CreateVoidType();
   static Type CreateCharPointerType();
