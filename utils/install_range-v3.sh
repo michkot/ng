@@ -13,7 +13,7 @@ BRANCH=                   # DEFAULT: master
 :                         # Archive
 FORMAT=                   # DEFAULT: tar.gz
 ARCHIVE_FILE_NAME=        # DEFAULT: "$REPO_NAME.$FORMAT"
-: ARCHIVE_ROOTDIR_NAME=   # DEFAULT:  "$REPO_NAME-$BRANCH" if EMPTY __OR__ EMPTY if NULL/NOT-SET
+: ARCHIVE_ROOTDIR_NAME=   # DEFAULT: "$REPO_NAME-$BRANCH" if NOT-SET __OR__ EMPTY if NULL/EMPTY
 ARCHIVE_WHITELIST=include # OPTIONAL: select files to extract from archive. Gets prefixed with ARCHIVE_ROOTDIR_NAME
 :                         # Download Link
 LINK=                     # DEFAULT: "https://codeload.github.com/$REPO_AUTHOR/$REPO_NAME/$FORMAT/$BRANCH"

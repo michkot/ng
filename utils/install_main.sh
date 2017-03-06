@@ -63,8 +63,8 @@ if [ -z "$SHARE_DIR" ]; then
 fi
 
 if [ "${1}" = "export" ]; then
-    echo export LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" PATH="$BIN_DIR:$PATH" CPATH="$INC_DIR:$CPATH"
-    exit 0
+	echo export LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" PATH="$BIN_DIR:$PATH" CPATH="$INC_DIR:$CPATH"
+	exit 0
 fi
 
 set -u # set -o nounset
@@ -88,7 +88,7 @@ install_main() {
 	: ${BRANCH:=master}
 	: ${FORMAT:=tar.gz} # zip | tar.gz
 	: ${ARCHIVE_FILE_NAME:=${REPO_NAME:?}.${FORMAT:?}}
-	: ${ARCHIVE_ROOTDIR_NAME=${REPO_NAME:?}-${BRANCH:?}} # set empty if is null
+	: ${ARCHIVE_ROOTDIR_NAME=${REPO_NAME:?}-${BRANCH:?}} # set empty if is null, keep is set, generate if empty
 	: ${ARCHIVE_WHITELIST:=}
 	# LINK="https://github.com/$REPO_AUTHOR/$REPO_NAME/archive/$BRANCH.$FORMAT"
 	: ${LINK:="https://codeload.github.com/$REPO_AUTHOR/$REPO_NAME/$FORMAT/$BRANCH"}
@@ -185,7 +185,8 @@ check_not_installed() {
 
 ####################################################
 
-. ./install_$1.sh
+export INSTALL_INVOKE=YES
+. $(dirname $0)/install_$1.sh
 
 mkdir -p $PREFIX $INC_DIR $BIN_DIR $LIB_DIR $SHARE_DIR
 
