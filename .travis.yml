@@ -20,7 +20,7 @@ matrix:
                     - ubuntu-toolchain-r-test
                     - llvm-toolchain-precise-3.9
                 packages:
-                    - libgtest-dev
+                    #- libgtest-dev
                     - llvm-3.9-dev
                     - clang-3.9
                     - g++-4.9
@@ -36,7 +36,7 @@ matrix:
                     - ubuntu-toolchain-r-test
                     - llvm-toolchain-precise-3.9
                 packages:
-                    - libgtest-dev
+                    #- libgtest-dev
                     - llvm-3.9-dev
                     - clang-3.9
                     - g++-6
@@ -52,7 +52,7 @@ matrix:
                     - ubuntu-toolchain-r-test
                     - llvm-toolchain-precise-3.9
                 packages:
-                    - libgtest-dev
+                    #- libgtest-dev
                     - llvm-3.9-dev
                     - clang-3.9
         env:
@@ -62,10 +62,10 @@ matrix:
 cache:
     apt: true
     directories:
-        - $HOME/gtest/
-        - $HOME/lib/
-        - $HOME/include/boost/
-        - $HOME/include/range/
+        - $HOME/local/lib/
+        - $HOME/local/include/gtest/
+        - $HOME/local/include/boost/
+        - $HOME/local/include/range/
 
 install:
     - export CXX=$MCXX CC=$MCC
@@ -74,21 +74,20 @@ install:
     - opt --version
     - opt-3.9 --version
 
-#install google text
-    - "if [ ! -f $HOME/gtest/libgtest.a ]; then mkdir -p $HOME/gtest && cd $HOME/gtest && cmake --target install -DCMAKE_INSTALL_PREFIX=$HOME/lib/ -Dgtest_disable_pthreads=ON /usr/src/gtest && cmake --build . && cd - && rm -rf $HOME/gtest/CMakeFiles/Makefile.cmake ; fi"
-    # - ls $HOME/gtest
-    - export LIBRARY_PATH=$HOME/gtest/:$LIBRARY_PATH
+#set PREFIX
+    - PREFIX=$HOME/local/
 
-    # - ls -la $HOME
+#install google test (gtest)
+    - sh utils/install_main.sh gtest
 
 #install boost
-    - "if [ ! -f $HOME/include/boost/utility.hpp ]; then cd $HOME && curl -L -o $HOME/boost.tar.gz https://fossies.org/linux/misc/boost_1_63_0.tar.gz && mkdir -p include/boost && tar -xzf boost.tar.gz boost_1_63_0/boost && mv -t include/boost boost_1_63_0/boost/* && ls -la include/boost/ && cd - ; fi"
-    - export INCLUDE=$HOME/include/:$INCLUDE
+    - sh utils/install_main.sh boost
 
 #install range-v3
-    - "if [ ! -f $HOME/include/range/v3/all.hpp ] || [ ! -f $HOME/include/meta/meta.hpp ] ; then cd $HOME && curl -L -o $HOME/range.zip https://codeload.github.com/Microsoft/Range-V3-VS2015/zip/master && mkdir -p include/range && unzip range.zip && mv -t include/ Range-V3-VS2015-master/include/* && ls -la include/range && cd - ; fi"
+    - sh utils/install_main.sh range-v3
 
-    - export INCLUDE=$HOME/include/:$INCLUDE
+#export
+    - $(sh utils/install_main.sh export)
 
 script: 
     - export COPT=opt-3.9 CLANGXX=clang++-3.9 CLANG=clang-3.9
