@@ -30,15 +30,15 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/logic/tribool.hpp>
 
+#include "enum_flags.h"
+
 class ValueIdToken;
 /// <summary>
 /// ValueId class is an type-safe encapsulation of integer-based IDs for values
 /// </summary>
 using ValueId = Id<ValueIdToken>;
 
-#include "enum_flags.h"
-ENUM_FLAGS(BinaryOpKind)
-enum class BinaryOpKind {
+enum class BinaryOpKind : int16_t {
   Default  = 0x0000, // Is an error
 
   Add      = 0x0001, // Standard two's complement operation
@@ -56,8 +56,8 @@ enum class BinaryOpKind {
   Xor      = 0x000A, // Bitwise XOR
 };
 
-ENUM_FLAGS(ArithFlags)
-enum class ArithFlags {
+ENUM_FLAGS_TYPED(ArithFlags, int16_t)
+enum class ArithFlags : int16_t {
   Default        = 0x0000, // Defaults to "C unsigned behaviour"; Error for div/rem/shr operations
   Signed         = 0x0001, // Needed for div, rem, shr
   Unsigned       = 0x0002, // Needed for div, rem, shr
@@ -71,8 +71,8 @@ enum class ArithFlags {
   FmfFlag5       = 0x0200, // Reserved for floats
 };
 
-ENUM_FLAGS(CmpFlags)
-enum class CmpFlags {
+ENUM_FLAGS_TYPED(CmpFlags, int16_t)
+enum class CmpFlags : int16_t {
   Default   = 0x0000,
   //Signed    = CmpFlags::Default, // we can not mask 0x00!
   Unsigned  = 0x0001,
@@ -95,6 +95,11 @@ enum class CmpFlags {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
+struct BinaryOpOptions {
+  BinaryOpKind opKind;
+  ArithFlags   flags;
+};
+
 ENUM_FLAGS(AbstractionStatus)
 enum class AbstractionStatus {
   Undefined = 0x0000, // Value is purely abstract and no information were given to the VC
@@ -108,11 +113,6 @@ constexpr const char* AbstractionStatusToString(const AbstractionStatus s)
       "Undefined" :
       "Unknown";
 }
-
-struct BinaryOpOptions {
-  BinaryOpKind opKind;
-  ArithFlags   flags;
-};
 
 //TODO@michkot: Document a way one should implement the following interface/abstract class
 

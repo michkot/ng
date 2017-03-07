@@ -20,34 +20,75 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 /** @file OperationArgs.hh */
 
-//#pragma once
-//
-//#include "Definitions.hh"
-//#include "General.hh"
-//
-//class OperationArgs {
-//protected:
-//  std::vector<OperArg> args;
+#pragma once
+
+#include "Definitions.hh"
+#include "General.hh"
+
+#include "Values.hh"
+
+
+enum class CastOpsEnum : int16_t {
+  Default = 0x0000,
+  Truncate = 0x0001, // Right now, both integer and floating point, might change in time
+  Extend = 0x0002,
+  FpToInt = 0x0003,
+  IntToFp = 0x0004,
+  PtrToInt = 0x0005,
+  IntToPtr = 0x0006,
+  BitCast = 0x0007, // same size, different meaning (vectors -> integers, pointers -> pointers
+  AddrSpaceCast = 0x0008,
+};
+
+struct CastOpOptions {
+  CastOpsEnum  opKind;
+  ArithFlags   flags;
+};
+
+struct FrontendIdTypePair{
+public:
+  FrontendValueId id;
+  Type type;  
+
+  /*ctr*/ FrontendIdTypePair(FrontendValueId id, Type type) : id{id}, type{type} {}
+  operator std::pair<FrontendValueId, Type>() { return {id, type}; }
+};
+
+struct OperArg {
+public:
+  union {
+    FrontendIdTypePair idTypePair;
+    BinaryOpOptions binOpOptions;
+    CastOpOptions   castOpOptions;
+  };
+};
+
+class OperationArgs {
+protected:
+  std::vector<OperArg> args;
+public:
+
+  std::vector<OperArg>& GetArgs() { return args; };
+  OperArg GetTarget() { return args[0]; }
+  OperArg GetOptions() { return args[1]; }
+};
+
+// Structrure of the created vector:
+// 0: return value | empty arg if it its void-type
+// 1: function call target | operation's cmp or arithmetic flags | empty 
+// 2+: operands
+
+class CastOperationArgs : public OperationArgs {
+public:
+  CastOpOptions GetOptions()   { args[1].castOpOptions; }
+};
+
+class BinaryOpArgs : public OperationArgs {
+public:
+  BinaryOpOptions GetOptions() { args[1].binOpOptions; }
+};
+
+//class CallOpArgs : public OperationArgs {
 //public:
-//  std::vector<OperArg>& GetArgs() { return args; };
-//  OperArg GetTarget() { return args[0]; }
-//  OperArg GetOptions() { return args[1]; }
-//};
-//
-//
-//enum class CastOpsEnum {
-//  Default = 0x0000,
-//  Truncate = 0x0001, // Right now, both integer and floating point, might change in time
-//  Extend = 0x0002,
-//  FpToInt = 0x0003,
-//  IntToFp = 0x0004,
-//  PtrToInt = 0x0005,
-//  IntToPtr = 0x0006,
-//  BitCast = 0x0007, // same size, different meaning (vectors -> integers, pointers -> pointers
-//  AddrSpaceCast = 0x0008,
-//};
-//
-//class CastOperationArgs : public OperationArgs {
-//public:
-//  CastOpsEnum GetOptions() { return static_cast<CastOpsEnum>(static_cast<uint64_t>(args[1].id)); }
+//  BinaryOpOptions GetOptions() { args[1].binOpOptions; }
 //};
