@@ -151,10 +151,6 @@ struct FrontendIdTypePair {
 struct OperArg {
 public:
   union {
-    struct {
-      [[deprecated]] FrontendValueId id; // DEPRECATED
-      [[deprecated]] Type type; // DEPRECATED
-    };
     FrontendIdTypePair idTypePair;
     BinaryOpOptions binOpOpts;
     CastOpOptions   castOpOpts;
@@ -177,6 +173,7 @@ public:
 // 1: function call target | operation's cmp or arithmetic flags | cast options | binary op options 
 // 2+: operands
 
+
 class OperationArgs {
 protected:
   std::vector<OperArg> args;
@@ -184,36 +181,35 @@ public:
   /*ctr*/ OperationArgs() = default;
   /*ctr*/ OperationArgs(std::vector<OperArg>&& args) : args{args} {}
 
-        OperArg& operator[](decltype(args)::size_type index)       { return args[index]; }
-  const OperArg& operator[](decltype(args)::size_type index) const { return args[index]; }
+  std::vector<OperArg>&     GetArgs()          { return args; }
 
-  std::vector<OperArg>& GetArgs() { return args; };
+  const FrontendIdTypePair& GetTarget()  const { return args[0].idTypePair; }
+  const OperArg&            GetOptions() const { return args[1]; }
 
-  FrontendIdTypePair GetTarget()  { return args.at(0).idTypePair; }
-  OperArg            GetOptions() { return args[1]; }
+  const FrontendIdTypePair& GetOperand(decltype(args)::size_type index) const { return args[index + 2].idTypePair; }
 };
 
-class CastOperationArgs : public OperationArgs {
+class CastOpArgs : public OperationArgs {
 public:
-  CastOpOptions      GetOptions() { args.at(1).castOpOpts; }
+  const CastOpOptions&      GetOptions() const { return args[1].castOpOpts; }
 };
 
 class BinaryOpArgs : public OperationArgs {
 public:
-  BinaryOpOptions    GetOptions() { args.at(1).binOpOpts; }
+  const BinaryOpOptions&    GetOptions() const { return args[1].binOpOpts; }
 };
 
 class CmpOpArgs : public OperationArgs {
 public:
-  CmpFlags           GetOptions() { args.at(1).cmpFlags; }
+  const CmpFlags&           GetOptions() const { return args[1].cmpFlags; }
 };
 
 class TruncExctOpArgs : public OperationArgs {
 public:
-  ArithFlags         GetOptions() { args.at(1).arithFlags; }
+  const ArithFlags&         GetOptions() const { return args[1].arithFlags; }
 };
 
 class CallOpArgs : public OperationArgs {
 public:
-  FrontendIdTypePair GetOptions() { args[1].idTypePair; }
+  const FrontendIdTypePair& GetOptions() const { return args[1].idTypePair; }
 };
