@@ -27,6 +27,26 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Values.hh"
 
+#include "enum_flags.h"
+
+
+enum class BinaryOpKind : int16_t {
+  Default  = 0x0000, // Is an error
+
+  Add      = 0x0001, // Standard two's complement operation
+  Sub      = 0x0002, // Standard two's complement operation
+  Mul      = 0x0003, // Standard two's complement operation
+
+  Div      = 0x0004,
+  Rem      = 0x0005,
+
+  Shl      = 0x0006, // Bitshift left
+  Shr      = 0x0007, // Bitshift right, unsigned(logical) or signed(arithmetic) 
+
+  And      = 0x0008, // Bitwise AND
+  Or       = 0x0009, // Bitwise OR
+  Xor      = 0x000A, // Bitwise XOR
+};
 
 enum class CastOpsEnum : int16_t {
   Default = 0x0000,
@@ -38,6 +58,50 @@ enum class CastOpsEnum : int16_t {
   IntToPtr = 0x0006,
   BitCast = 0x0007, // same size, different meaning (vectors -> integers, pointers -> pointers
   AddrSpaceCast = 0x0008,
+};
+
+ENUM_FLAGS_TYPED(ArithFlags, int16_t)
+enum class ArithFlags : int16_t {
+  Default        = 0x0000, // Defaults to "C unsigned behaviour"; Error for div/rem/shr operations
+  Signed         = 0x0001, // Needed for div, rem, shr
+  Unsigned       = 0x0002, // Needed for div, rem, shr
+  Exact          = 0x0004, // Undefined if operation would not return exact result (loss of digits/precision)
+  NoSignedWrap   = 0x0008, // Undefined on signed overflow
+  NoUnsignedWrap = 0x0010, // Undefined on unsigned overflow
+  FmfFlag1       = 0x0020, // Reserved for floats
+  FmfFlag2       = 0x0040, // Reserved for floats
+  FmfFlag3       = 0x0080, // Reserved for floats
+  FmfFlag4       = 0x0100, // Reserved for floats
+  FmfFlag5       = 0x0200, // Reserved for floats
+};
+
+ENUM_FLAGS_TYPED(CmpFlags, int16_t)
+enum class CmpFlags : int16_t {
+  Default   = 0x0000,
+  //Signed    = CmpFlags::Default, // we can not mask 0x00!
+  Unsigned  = 0x0001,
+  Eq        = 0x0002,
+  Neq       = 0x0004,
+  Gt        = 0x0008,
+  GtEq      = CmpFlags::Gt | CmpFlags::Eq,
+  Lt        = 0x0010,
+  LtEq      = CmpFlags::Lt | CmpFlags::Eq,
+  Float     = 0x0020,
+  Ordered   = CmpFlags::Default,
+  Unordered = 0x0040,
+  SigGt     = CmpFlags::Default  | CmpFlags::Gt,
+  SigGtEq   = CmpFlags::Default  | CmpFlags::GtEq,
+  SigLt     = CmpFlags::Default  | CmpFlags::Lt,
+  SigLtEq   = CmpFlags::Default  | CmpFlags::LtEq,
+  UnsigGt   = CmpFlags::Unsigned | CmpFlags::Gt,
+  UnsigGtEq = CmpFlags::Unsigned | CmpFlags::GtEq,
+  UnsigLt   = CmpFlags::Unsigned | CmpFlags::Lt,
+  UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
+};
+
+struct BinaryOpOptions {
+  BinaryOpKind opKind;
+  ArithFlags   flags;
 };
 
 struct CastOpOptions {
