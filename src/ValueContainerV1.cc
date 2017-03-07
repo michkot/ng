@@ -134,7 +134,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 				{
 				case CmpFlags::Eq:
 					//new constraint is equal to a constant -> delete all previous
-					DeleteConstraint(oldConstraintId);
+          //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+          //HACK for now just do not delete, see TODO
+          // DeleteConstraint(oldConstraintId); 
 					break;
 					//TODO::add cases for intervals
 				default:
@@ -158,7 +160,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 				{
 				case CmpFlags::Eq:
 					//new constraint is equal to a constant -> delete all previous
-					DeleteConstraint(oldConstraintId);
+          //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+          //HACK for now just do not delete, see TODO
+          // DeleteConstraint(oldConstraintId); 
 					break;
 					//TODO::add cases for intervals
 				default:
@@ -177,7 +181,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 		if (constr.second == constrContainer.at(oldConstraintId).GetOther(constr.first))
 		{
 			//delete mutual constraints
-			DeleteConstraint(oldConstraintId);
+      //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+      //HACK for now just do not delete, see TODO
+      // DeleteConstraint(oldConstraintId); 
 		}
 
 	}
