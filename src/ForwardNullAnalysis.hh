@@ -189,10 +189,10 @@ public:
           uptr<IState> CreateSuccesorTrue (IState& initialState) { return CreateSuccesor(initialState); }
   virtual uptr<IState> CreateSuccesorFalse(IState& initialState) { throw NotImplementedException(); }
 
-  virtual void         ExecuteOnNewState  (IState& newState, const vector<OperArg>& args) = 0;
+  virtual void         ExecuteOnNewState  (IState& newState, const OperationArgs& args) = 0;
 
   // Override this again to switch to branching implementation
-  virtual void Execute(IState& originalState, const vector<OperArg>& args) override
+  virtual void Execute(IState& originalState, const OperationArgs& args) override
   {
     ExecuteImplNonbranching(originalState, args);
   }
@@ -201,7 +201,7 @@ private:
 
   // non-branching variant
   ////template <bool T = isBranching, typename std::enable_if_t<!T>* = nullptr>
-  void ExecuteImplNonbranching(IState& originalState, const vector<OperArg>& args)
+  void ExecuteImplNonbranching(IState& originalState, const OperationArgs& args)
   {
     assert(!originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
@@ -230,7 +230,7 @@ private:
 
   // branching variant
   ////template <bool T = isBranching, typename std::enable_if_t<T>* = nullptr>
-  void ExecuteImplBranching(IState& originalState, const vector<OperArg>& args)
+  void ExecuteImplBranching(IState& originalState, const OperationArgs& args)
   {
     assert(originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
@@ -272,11 +272,11 @@ public:
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579
     return move(succesorPtr);
   }
-  virtual void ExecuteOnNewState(IState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(IState& newState, const OperationArgs& args) override
   {
     return ExecuteOnNewState(static_cast<ForwardNullAnalysisState&>(newState), args);
   }
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) = 0;
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) = 0;
 };
 
 
@@ -284,7 +284,7 @@ class FnaOperationBranch : public IOperation {
 public:
 
   // Override this again to switch to branching implementation
-  virtual void Execute(IState& originalState, const vector<OperArg>& args) override
+  virtual void Execute(IState& originalState, const OperationArgs& args) override
   {
     assert(originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
@@ -319,7 +319,7 @@ public:
     return move(succesorPtr);
   }
 
-  void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args, bool br)
+  void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args, bool br)
   {
     auto     lhs          = newState.GetAnyVar   (args[2].idTypePair);
 
@@ -332,7 +332,7 @@ public:
 
 
 class FnaOperationBinary : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     auto opts = args[1].binOpOpts;
 
@@ -347,7 +347,7 @@ class FnaOperationBinary : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationGetElementPtr : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     // consider packing and alligment!!!
 
@@ -376,7 +376,7 @@ class FnaOperationGetElementPtr : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationAlloca : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     auto count = newState.GetAnyVar(args[2].idTypePair);
     auto type  = args[0].idTypePair.type;
@@ -393,7 +393,7 @@ class FnaOperationAlloca : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationCall : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     auto callTargetId = args[1].id;
     auto callTargetType = args[1].idTypePair.type;
@@ -419,7 +419,7 @@ class FnaOperationCall : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationLoad : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
 
     // this operation should somehow load a value from memory to register
@@ -444,7 +444,7 @@ class FnaOperationLoad : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationStore : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
 
     // this operation should somehow Store a value in register to certain address in memory
@@ -459,7 +459,7 @@ class FnaOperationStore : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationMemset : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
 
     // this operation should somehow Store a value in register to certain address in memory
@@ -482,7 +482,7 @@ class FnaOperationMemset : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     //newstate
     ArithFlags flags = args[1].arithFlags;
@@ -496,7 +496,7 @@ class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationExtend : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     //newstate
     ArithFlags flags = args[1].arithFlags;
@@ -510,7 +510,7 @@ class FnaOperationExtend : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationCast : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);
     auto opts = args[1].castOpOpts;
@@ -528,7 +528,7 @@ class FnaOperationCast : public BaseForwardNullAnalysisOperation {
 };
 
 class FnaOperationCmp : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
     //newstate
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);

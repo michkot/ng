@@ -44,7 +44,7 @@ class LlvmCfgNode;
 //  virtual const ref_vector<INavigation> GetPrevs(); //?
 //
 //  virtual void GetDebugInfo();
-//  virtual vector<OperArg> GetArguments();
+//  virtual OperationArgs GetArguments();
 //};
 
 
@@ -62,9 +62,9 @@ public:
   virtual void PrintInstruction() const = 0;
   virtual void PrintLocation() const = 0;
   virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
-  virtual vector<OperArg> GetArguments() const = 0;
+  virtual OperationArgs GetArguments() const = 0;
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override = 0;
+  virtual void Execute(IState& s, const OperationArgs& args) override = 0;
   void Execute(IState& s)
   {
     return Execute(s, GetArguments());
@@ -105,11 +105,11 @@ public:
   virtual void PrintInstruction() const override { throw NotSupportedException{}; }
   virtual void PrintLocation() const override { throw NotSupportedException{}; }
   virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
-  virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
+  virtual OperationArgs GetArguments() const override { throw NotSupportedException{}; }
 
   virtual bool IsStartNode() override { return true; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override  { throw NotSupportedException{}; }
+  virtual void Execute(IState& s, const OperationArgs& args) override  { throw NotSupportedException{}; }
 
 private:
   /*ctr*/ StartCfgNode() {}
@@ -132,12 +132,12 @@ public:
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
   virtual void GetDebugInfo() const override { return; }
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
-  virtual vector<OperArg> GetArguments() const override { return vector<OperArg>{}; }
+  virtual OperationArgs GetArguments() const override { return OperationArgs{}; }
 
   virtual bool IsTerminalNode() override { return true; }
 
   //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
-  virtual void Execute(IState& s, const vector<OperArg>& args) override { return; }
+  virtual void Execute(IState& s, const OperationArgs& args) override { return; }
 
 private:
   /*ctr*/ TerminalCfgNode() {}
@@ -146,7 +146,7 @@ private:
 
 class CfgNode : public ICfgNode {
 private:
-  vector<OperArg> args;
+  OperationArgs args;
   IOperation& op;
   StatesManager states;
 
@@ -168,15 +168,15 @@ public:
 
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override
+  virtual void Execute(IState& s, const OperationArgs& args) override
   {
     return op.Execute(s, args);
   }
   virtual StatesManager GetStatesManager() override { return states; }
-  virtual vector<OperArg> GetArguments() const override { return args; }
+  virtual OperationArgs GetArguments() const override { return args; }
 
 protected:
-  /*ctr*/ CfgNode(IOperation& op, vector<OperArg> args, ICfgNode& prev, ICfgNode& next) :
+  /*ctr*/ CfgNode(IOperation& op, OperationArgs args, ICfgNode& prev, ICfgNode& next) :
     op{op},
     args{args},
     ICfgNode(&next, ref_vector<ICfgNode>{1, prev})

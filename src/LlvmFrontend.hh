@@ -74,7 +74,7 @@ private:
   static OperArg GetFlagsOperArg(ArithFlags flags);
   static OperArg GetFlagsOperArg(CastOpKind kind, ArithFlags flags);
 
-  vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
+  OperationArgs GetOperArgsForInstr(const llvm::Instruction& instr);
 
   bool TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode);
 

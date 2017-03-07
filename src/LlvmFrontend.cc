@@ -44,9 +44,9 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 class LlvmCfgNode : public CfgNode {
 private:
   const llvm::Instruction& innerInstruction;
-  //const vector<OperArg>
+  //const OperationArgs
 
-  /*ctr*/ LlvmCfgNode(IOperation& op, vector<OperArg> args,
+  /*ctr*/ LlvmCfgNode(IOperation& op, OperationArgs args,
     const llvm::Instruction& inner,
     ICfgNode& prev,
     ICfgNode& next
@@ -61,7 +61,7 @@ public:
   virtual void PrintLocation() const override { innerInstruction.getDebugLoc().print(llvm::errs()); llvm::errs() << "\n"; }
   virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
 
-  static LlvmCfgNode& CreateNode(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  static LlvmCfgNode& CreateNode(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *new StartCfgNode{}, *new TerminalCfgNode{}};
     ((ICfgNode&)newNode->prevs[0]).next = newNode;
@@ -72,14 +72,14 @@ public:
   //beware - adding a node after terminal node here(after inproper cast) would not raise exception
   //same applies for similar linking manipulation
 
-  LlvmCfgNode& InsertNewAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewAfter(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     this->next = newNode;
     return *newNode;
   }
 
-  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     newNode->nextFalse = new TerminalCfgNode{};
@@ -265,7 +265,7 @@ void LlvmCfgParser::constantValuesToBeCreatedInsert(const llvm::Constant* c)
 // 1: function call target | operation's cmp or arithmetic flags | empty 
 // 2+: operands
 
-vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
+OperationArgs LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
   vector<OperArg> args;
 
@@ -532,7 +532,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   } // default:
   } // switch
 
-  return args;
+  return OperationArgs{std::move(args)};
 }
 
 bool LlvmCfgParser::TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode)

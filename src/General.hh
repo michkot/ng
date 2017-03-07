@@ -172,32 +172,48 @@ public:
   static OperArg CreateEmptyArg() { return OperArg{}; };
 };
 
+// Structrure of the created vector:
+// 0: return value | empty arg if it its void-type
+// 1: function call target | operation's cmp or arithmetic flags | cast options | binary op options 
+// 2+: operands
+
 class OperationArgs {
 protected:
   std::vector<OperArg> args;
 public:
+  /*ctr*/ OperationArgs() = default;
+  /*ctr*/ OperationArgs(std::vector<OperArg>&& args) : args{args} {}
+
+        OperArg& operator[](decltype(args)::size_type index)       { return args[index]; }
+  const OperArg& operator[](decltype(args)::size_type index) const { return args[index]; }
 
   std::vector<OperArg>& GetArgs() { return args; };
-  OperArg GetTarget() { return args[0]; }
-  OperArg GetOptions() { return args[1]; }
-};
 
-// Structrure of the created vector:
-// 0: return value | empty arg if it its void-type
-// 1: function call target | operation's cmp or arithmetic flags | empty 
-// 2+: operands
+  FrontendIdTypePair GetTarget()  { return args.at(0).idTypePair; }
+  OperArg            GetOptions() { return args[1]; }
+};
 
 class CastOperationArgs : public OperationArgs {
 public:
-  CastOpOptions GetOptions()   { args.at(1).castOpOpts; }
+  CastOpOptions      GetOptions() { args.at(1).castOpOpts; }
 };
 
 class BinaryOpArgs : public OperationArgs {
 public:
-  BinaryOpOptions GetOptions() { args.at(1).binOpOpts; }
+  BinaryOpOptions    GetOptions() { args.at(1).binOpOpts; }
 };
 
-//class CallOpArgs : public OperationArgs {
-//public:
-//  BinaryOpOptions GetOptions() { args[1].binOpOptions; }
-//};
+class CmpOpArgs : public OperationArgs {
+public:
+  CmpFlags           GetOptions() { args.at(1).cmpFlags; }
+};
+
+class TruncExctOpArgs : public OperationArgs {
+public:
+  ArithFlags         GetOptions() { args.at(1).arithFlags; }
+};
+
+class CallOpArgs : public OperationArgs {
+public:
+  FrontendIdTypePair GetOptions() { args[1].idTypePair; }
+};

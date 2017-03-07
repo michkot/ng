@@ -32,12 +32,12 @@ using namespace ::std;
 class IOperation {
 public:
   //vektor kontext po provedeni, pristi instrukce
-  virtual void Execute(IState& originalState, const vector<OperArg>& args) = 0;
+  virtual void Execute(IState& originalState, const OperationArgs& args) = 0;
 };
 
 class OperationNotSupportedOperation : public IOperation {
 public:
-  virtual void Execute(IState& originalState, const vector<OperArg>& args) override 
+  virtual void Execute(IState& originalState, const OperationArgs& args) override 
   {
     throw NotSupportedException();
   }
