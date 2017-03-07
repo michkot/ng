@@ -23,7 +23,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include <llvm/Support/CommandLine.h>
 #include <string>
 #include <boost/utility/string_view.hpp>
-#include <gsl/span>
+#include <gsl/gsl>
 
 #include "Type.hh"
 

@@ -88,7 +88,7 @@ install:
     - sh utils/install_main.sh range-v3
 
 #install gsl
-    - sh utils/install_main.sh gsl
+    - sh utils/install_main.sh gsl-lite
 
 script: 
     - export COPT=opt-3.9 CLANGXX=clang++-3.9 CLANG=clang-3.9
