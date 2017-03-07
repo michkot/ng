@@ -65,7 +65,7 @@ public:
     innerMap.insert({id, value});
   }
 
-  ValueId CreateOrGetValueId(OperArg arg) 
+  ValueId CreateOrGetValueId(FrontendIdTypePair arg) 
   {
     // src: http://stackoverflow.com/a/101980
 

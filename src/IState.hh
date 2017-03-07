@@ -63,21 +63,21 @@ public:
   // meaning: Succesors of this state are un-processed
   virtual bool IsNew() { return condition == StateCondition::New; }
   
-  virtual ValueId GetAnyVar(OperArg var) = 0;
-  virtual ValueId GetOrCreateGlobalVar(OperArg var) = 0;
-  virtual ValueId GetOrCreateLocalVar (OperArg var) = 0;
-  virtual ValueId GetAnyOrCreateLocalVar (OperArg var) = 0;
-  virtual void LinkGlobalVar(OperArg var, ValueId value) = 0;
-  virtual void LinkLocalVar (OperArg var, ValueId value) = 0;
+  virtual ValueId GetAnyVar(FrontendIdTypePair var) = 0;
+  virtual ValueId GetOrCreateGlobalVar(FrontendIdTypePair var) = 0;
+  virtual ValueId GetOrCreateLocalVar (FrontendIdTypePair var) = 0;
+  virtual ValueId GetAnyOrCreateLocalVar (FrontendIdTypePair var) = 0;
+  virtual void LinkGlobalVar(FrontendIdTypePair var, ValueId value) = 0;
+  virtual void LinkLocalVar (FrontendIdTypePair var, ValueId value) = 0;
   // pro dead value analysis / memory leaks:
   // momentálně pro toto nevidím use-case, neboť nemám jak zjistit že je proměná (resp její SSA následník)
   // již out of scope.
-  virtual void DelLocalVar(OperArg var) { throw NotImplementedException(); }
+  virtual void DelLocalVar(FrontendIdTypePair var) { throw NotImplementedException(); }
 
   //předávané argumenty, návratový typ, návratová lokace/instrukce // FunctionCallInfo
   virtual void PushFrame(int info) { throw NotImplementedException(); }
   //pozn lokace návratu musí být uložena ve stavu, na adekvátní urovni, přilepena na stack frame
-  virtual void PopFrame(OperArg retVar) { throw NotImplementedException(); }
+  virtual void PopFrame(FrontendIdTypePair retVar) { throw NotImplementedException(); }
 
 
 protected:

@@ -124,23 +124,28 @@ enum class CmpFlags : int16_t {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
+#include <tuple>
+
 struct BinaryOpOptions {
   BinaryOpKind opKind;
   ArithFlags   flags;
+
+  constexpr auto ToTie() const { return std::tie(opKind, flags); };
 };
 
 struct CastOpOptions {
   CastOpKind  opKind;
-  ArithFlags   flags;
+  ArithFlags  flags;
+
+  constexpr auto ToTie() const { return std::tie(opKind, flags); };
 };
 
-struct FrontendIdTypePair{
-public:
+struct FrontendIdTypePair {
   FrontendValueId id;
   Type type;  
 
+  auto ToTie() const { return std::tie(id, type); };
   /*ctr*/ FrontendIdTypePair(FrontendValueId id, Type type) : id{id}, type{type} {}
-  operator std::pair<FrontendValueId, Type>() { return {id, type}; }
 };
 
 struct OperArg {
