@@ -43,19 +43,6 @@ public:
   }
 };
 
-ENUM_FLAGS(CastOpsEnum)
-enum class CastOpsEnum {
-  Default       = 0x0000,
-  Truncate      = 0x0001, // Right now, both integer and floating point, might change in time
-  Extend        = 0x0002,
-  FpToInt       = 0x0003,
-  IntToFp       = 0x0004,
-  PtrToInt      = 0x0005,
-  IntToPtr      = 0x0006,
-  BitCast       = 0x0007, // same size, different meaning (vectors -> integers, pointers -> pointers
-  AddrSpaceCast = 0x0008,
-};
-
 //not a true factory, shares one instance
 //might be chaned to uptr<..> then it would be true factory
 class IOperationFactory {
