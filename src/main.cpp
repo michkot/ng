@@ -122,6 +122,9 @@ void Verify(boost::string_view fileName)
 #include <Windows.h>
 #endif
 
+extern void lab_main();
+extern std::vector<std::string> GetExamples();
+
 int main_old()
 {
 #ifdef _WIN32
@@ -142,7 +145,13 @@ int main_old()
   }
   //this is end of experimental code
 
-  Verify("examples/01_mincase_01_nullptr_dereference[dead].ll");
+  //Verify("examples/01_mincase_01_nullptr_dereference[dead].ll");
+  for (auto& file : GetExamples())
+  {
+    Verify(file);
+  }
+
+
 
   vc.PrintDebug();
 
