@@ -22,6 +22,8 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include "precompall.hh"
 #include <llvm/Support/CommandLine.h>
 #include <string>
+#include <boost/utility/string_view.hpp>
+#include <gsl/span>
 
 #include "Type.hh"
 
@@ -32,7 +34,15 @@ opt<string> OutputFilename("o", desc("Specify output filename"), value_desc("fil
 opt<string> InputFilename(Positional, desc("<input file>"), init(""));
 opt<bool>   Analysis("a", desc("Enable analysis"));
 
-extern int main_old(void);
+
+// laboratory.cc
+extern void lab_main();
+extern std::vector<std::string> GetExamples();
+
+// main.cc
+extern void main_old(gsl::span<std::string> files);
+
+// smg.cc
 extern void playground();
 
 int main(int argc, char** argv)
@@ -47,8 +57,9 @@ int main(int argc, char** argv)
   }
   else
   {
-#if 0
-    return main_old();
+#if 1
+    main_old(GetExamples());
+    return 0;
 #endif
   }
 }

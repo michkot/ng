@@ -34,6 +34,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/range.hpp>
 #include <boost/logic/tribool.hpp>
 #include <boost/utility/string_view.hpp>
+#include <gsl/span>
 //KISS!!!
 
 //Q:
@@ -122,10 +123,7 @@ void Verify(boost::string_view fileName)
 #include <Windows.h>
 #endif
 
-extern void lab_main();
-extern std::vector<std::string> GetExamples();
-
-int main_old()
+void main_old(gsl::span<std::string> files)
 {
 #ifdef _WIN32
   SetConsoleTitleA("NextGen");
@@ -146,15 +144,13 @@ int main_old()
   //this is end of experimental code
 
   //Verify("examples/01_mincase_01_nullptr_dereference[dead].ll");
-  for (auto& file : GetExamples())
+  for (auto& file : files)
   {
     Verify(file);
   }
 
-
-
   vc.PrintDebug();
 
   //getchar();
-  return 0;
+  return;
 }
