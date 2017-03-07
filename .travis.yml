@@ -87,6 +87,9 @@ install:
 #install range-v3
     - sh utils/install_main.sh range-v3
 
+#install gsl
+    - sh utils/install_main.sh gsl
+
 script: 
     - export COPT=opt-3.9 CLANGXX=clang++-3.9 CLANG=clang-3.9
     - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../
