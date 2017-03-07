@@ -426,20 +426,25 @@ OperationArgs LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
       {
       // Binary instructions
       case llvm::Instruction::Add:
+      case llvm::Instruction::FAdd:
         opKind = BinaryOpKind::Add;
         break;
       case llvm::Instruction::Sub:
+      case llvm::Instruction::FSub:
         opKind = BinaryOpKind::Sub;
         break;
       case llvm::Instruction::Mul:
+      case llvm::Instruction::FMul:
         opKind = BinaryOpKind::Mul;
         break;
       case llvm::Instruction::UDiv:
       case llvm::Instruction::SDiv:
+      case llvm::Instruction::FDiv:
         opKind = BinaryOpKind::Div;
         break;
       case llvm::Instruction::URem:
       case llvm::Instruction::SRem:
+      case llvm::Instruction::FRem:
         opKind = BinaryOpKind::Rem;
         break;
 
@@ -459,6 +464,8 @@ OperationArgs LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
         break;
       case llvm::Instruction::Xor:
         opKind = BinaryOpKind::Xor;
+        break;
+      case llvm::Instruction::BinaryOps::BinaryOpsEnd:
         break;
       }
 
