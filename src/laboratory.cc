@@ -21,22 +21,41 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 /** @file laboratory.cc */
 
 #include <vector>
-#include <experimental/filesystem>
 #include <range/v3/all.hpp>
 #include <iostream>
 
-using namespace ::std::experimental::filesystem;
 using namespace ::ranges;
+
+#if defined(_MSC_VER)
+
+#include <filesystem>
+using namespace ::std::experimental;
+using namespace filesystem;
 
 std::vector<std::string> GetExamples()
 {
   auto examplesFiles = range<directory_iterator>{
     directory_iterator{current_path().append("examples")},
     directory_iterator{}
-    };
+  };
   auto llFiles = examplesFiles | view::filter([](auto dir) { return dir.path().has_extension() && dir.path().extension() == ".ll"; });
   return llFiles | view::transform([](auto file) { return file.path().generic_string(); });
 }
+
+#else
+
+std::vector<std::string> GetExamples()
+{
+  return {
+  "examples/01_mincase_01_nullptr_dereference[dead].ll",
+  "examples/01_mincase_02_non_init_dereference[dead].ll",
+  "examples/01_mincase_03_normal_dereference[dead].ll",
+  "examples/01_mincase_04_all_conditional.ll",
+  "examples/01_mincase_05_all_conditional_with_function_calls.ll",
+  };
+}
+
+#endif
 
 void lab_main()
 {
