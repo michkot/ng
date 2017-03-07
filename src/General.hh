@@ -130,14 +130,14 @@ struct BinaryOpOptions {
   BinaryOpKind opKind;
   ArithFlags   flags;
 
-  constexpr auto ToTie() const { return std::tie(opKind, flags); };
+  auto ToTie() const { return std::tie(opKind, flags); };
 };
 
 struct CastOpOptions {
   CastOpKind  opKind;
   ArithFlags  flags;
 
-  constexpr auto ToTie() const { return std::tie(opKind, flags); };
+  auto ToTie() const { return std::tie(opKind, flags); };
 };
 
 struct FrontendIdTypePair {
