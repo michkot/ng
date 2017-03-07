@@ -58,7 +58,8 @@ int main(int argc, char** argv)
   else
   {
 #if 1
-    main_old(GetExamples());
+    auto files = GetExamples();
+    main_old(files);
     return 0;
 #endif
   }
