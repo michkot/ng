@@ -702,7 +702,7 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
   auto module = llvm::parseIRFile(fileName, err, context);
   if (module == nullptr)
   {
-    string msg{err.getMessage().str()};
+    std::runtime_error msg{err.getMessage().str()};
     throw msg;
     exit(1);
   }
