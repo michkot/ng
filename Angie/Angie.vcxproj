@@ -78,6 +78,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalOptions>/permissive- /arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>precompall.hh</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)precompall.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,27 +153,32 @@
     </ClCompile>
     <ClCompile Include="..\src\Exceptions.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\LlvmFrontend.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
       <PrecompiledHeaderFile>precompall.hh</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)precompall.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\src\laboratory.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\LlvmGlobals.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
       <PrecompiledHeaderFile>precompall.hh</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)precompall.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\src\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\croaring\roaring.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
@@ -193,28 +200,34 @@
       <PrecompiledHeaderOutputFile>$(IntDir)precompother.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\src\Smg.cc">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\StateStorage.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\LlvmType.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
       <PrecompiledHeaderFile>precompall.hh</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)precompall.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\src\ValueContainerV1.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\Values.cc">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\src\ValuesZ3.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

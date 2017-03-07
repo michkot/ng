@@ -19,7 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file ValuesZ3.cc */
-#include "precompall.hh"
+
 #if !defined(NOT_COMPILE_Z3)
 
 #include "ValuesZ3.hh"

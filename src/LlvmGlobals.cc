@@ -19,7 +19,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 *******************************************************************************/
 /** @file LlvmGlobals.cc */
-#include "precompall.hh"
+
 #include <llvm/IR/Module.h>
 
 namespace llvm
