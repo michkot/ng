@@ -86,7 +86,12 @@ endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 # dirty dirty dirty way -> assumes BINARY DIR is something like SRC_DIR/build etc.
-add_custom_target(tests DEPENDS ${PROJECT_NAME} WORKING_DIRECTORY "../" COMMAND "bash" "./compile-inputs-to-ll.sh" COMMAND "${PROJECT_BINARY_DIR}/ng")
+add_custom_target(tests 
+    DEPENDS ${PROJECT_NAME} 
+    WORKING_DIRECTORY "../" 
+    COMMAND "bash" "./compile-inputs-to-ll.sh" 
+    COMMAND "${PROJECT_BINARY_DIR}/ng" "-t")
+
 # includes
 
 include_directories(${LLVM_INCLUDE_DIRS})

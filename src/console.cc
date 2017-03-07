@@ -30,10 +30,10 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 using namespace ::std;
 using namespace ::llvm::cl;
 
-opt<string> OutputFilename("o", desc("Specify output filename"), value_desc("filename"), init("-"));
-opt<string> InputFilename(Positional, desc("<input file>"), init(""));
-opt<bool>   Analysis("a", desc("Enable analysis"));
-
+OptionCategory MyCategory("Angie options");
+opt<string> OutputFilename("o", cat(MyCategory), desc("Specify output filename"), value_desc("filename"), init("-"));
+opt<string> InputFilename(Positional, cat(MyCategory), desc("<input file>"), init(""));
+opt<bool>   Test("t", cat(MyCategory), desc("Enable test analysis"));
 
 // laboratory.cc
 extern void lab_main();
@@ -47,9 +47,10 @@ extern void playground();
 
 int main(int argc, char** argv)
 {
-  ParseCommandLineOptions(argc, argv);
+  HideUnrelatedOptions(MyCategory);
+  ParseCommandLineOptions(argc, argv, "This tools does something", false);
 
-  if (!Analysis)
+  if (!Test)
   {
     Type::InitTypeSystem();
     playground();

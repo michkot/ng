@@ -34,7 +34,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/range.hpp>
 #include <boost/logic/tribool.hpp>
 #include <boost/utility/string_view.hpp>
-#include <gsl/span>
+#include <gsl/gsl>
 //KISS!!!
 
 //Q:
