@@ -131,7 +131,6 @@
     <ClInclude Include="..\src\IOperation.hh" />
     <ClInclude Include="..\src\IState.hh" />
     <ClInclude Include="..\src\LlvmGlobals.hh" />
-    <ClInclude Include="..\src\OperationArgs.hh" />
     <ClInclude Include="..\..\croaring\roaring.h" />
     <ClInclude Include="..\..\croaring\roaring.hh" />
     <ClInclude Include="..\src\precompall.hh" />

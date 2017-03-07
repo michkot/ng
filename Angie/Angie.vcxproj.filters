@@ -54,9 +54,6 @@
     <ClInclude Include="..\src\LlvmGlobals.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\OperationArgs.hh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\StateStorage.hh">
       <Filter>Header Files</Filter>
     </ClInclude>

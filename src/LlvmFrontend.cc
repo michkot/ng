@@ -41,7 +41,6 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 //std::string dbgstr;
 //llvm::raw_string_ostream dbgstr_rso(dbgstr);
 
-
 class LlvmCfgNode : public CfgNode {
 private:
   const llvm::Instruction& innerInstruction;
@@ -153,37 +152,22 @@ OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
 }
 OperArg LlvmCfgParser::GetEmptyOperArg()
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(0)),
-    Type::CreateVoidType()
-  };
+  return OperArg::CreateEmptyArg();
 }
 
 OperArg LlvmCfgParser::GetFlagsOperArg(CmpFlags flags)
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(flags)),
-    Type::CreateVoidType()
-  };
+  return OperArg{flags};
 }
 
 OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(flags)),
-    Type::CreateVoidType()
-  };
+  return OperArg{flags};
 }
 
 OperArg LlvmCfgParser::GetFlagsOperArg(CastOpKind kind, ArithFlags flags)
 {
-  return OperArg{GetValueId( 
-      (static_cast<uint64_t>(kind) << 32ull) | (static_cast<uint64_t>(flags))),
-      Type::CreateVoidType()
-      };
+  return OperArg{kind, flags};
 }
 
 IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const

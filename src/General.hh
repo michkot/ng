@@ -146,13 +146,25 @@ public:
 struct OperArg {
 public:
   union {
+    struct {
+      [[deprecated]] FrontendValueId id; // DEPRECATED
+      [[deprecated]] Type type; // DEPRECATED
+    };
     FrontendIdTypePair idTypePair;
     BinaryOpOptions binOpOpts;
     CastOpOptions   castOpOpts;
+    ArithFlags      arithFlags;
+    CmpFlags        cmpFlags;
   };
+private:
+  /*ctr*/ OperArg() : idTypePair{FrontendValueId{0}, Type{0}} {}
+public:
   /*ctr*/ OperArg(FrontendValueId id, Type type) : idTypePair{id, type} {}
   /*ctr*/ OperArg(BinaryOpKind opKind, ArithFlags flags) : binOpOpts{opKind, flags} {}
   /*ctr*/ OperArg(CastOpKind opKind, ArithFlags flags) : castOpOpts{opKind, flags} {}
+  /*ctr*/ OperArg(ArithFlags flags) : arithFlags{flags} {}
+  /*ctr*/ OperArg(CmpFlags flags) : cmpFlags{flags} {}
+  static OperArg CreateEmptyArg() { return OperArg{}; };
 };
 
 class OperationArgs {
