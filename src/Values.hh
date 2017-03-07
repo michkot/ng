@@ -149,7 +149,7 @@ public:
                             { return BinOp(first, second, type, {BinaryOpKind::Or,  ArithFlags::Default}); }
   virtual ValueId BitXor(ValueId first, ValueId second, Type type)
                             { return BinOp(first, second, type, {BinaryOpKind::Xor, ArithFlags::Default}); }
-  virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!!
+  virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!! not LLVM operation
 
   // --------------------------------------------------------------------------
   // Section D - modifying methods, others

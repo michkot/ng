@@ -188,43 +188,6 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
     op = &opFactory.Br();
     break;
 
-    // Binary instructions
-  case llvm::Instruction::Add:
-    op = &opFactory.Add();
-    break;
-  case llvm::Instruction::Sub:
-    op = &opFactory.Sub();
-    break;
-  case llvm::Instruction::Mul:
-    op = &opFactory.Mul();
-    break;
-  case llvm::Instruction::UDiv:
-  case llvm::Instruction::SDiv:
-    op = &opFactory.Div();
-    break;
-  case llvm::Instruction::URem:
-  case llvm::Instruction::SRem:
-    op = &opFactory.Rem();
-    break;
-
-    // Bitwise binary instructions
-  case llvm::Instruction::Shl:
-    op = &opFactory.Shl();
-    break;
-  case llvm::Instruction::LShr:
-  case llvm::Instruction::AShr:
-    op = &opFactory.Shr();
-    break;
-  case llvm::Instruction::And:
-    op = &opFactory.And();
-    break;
-  case llvm::Instruction::Or:
-    op = &opFactory.Or();
-    break;
-  case llvm::Instruction::Xor:
-    op = &opFactory.Xor();
-    break;
-
     // Memory access operations
   case llvm::Instruction::Alloca:
     op = &opFactory.Alloca();
@@ -266,10 +229,17 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
 
   default:
     // Cast operations
-    /**/ if(llvm::Instruction::CastOpsBegin <= opcode &&
-       llvm::Instruction::CastOpsEnd   >= opcode)
+    /**/ if(
+      llvm::Instruction::CastOpsBegin <= opcode &&
+      llvm::Instruction::CastOpsEnd   >= opcode)
     {
       op = &opFactory.Cast();
+    }
+    else if(
+      llvm::Instruction::BinaryOpsBegin <= opcode &&
+      llvm::Instruction::BinaryOpsEnd   >= opcode)
+    {
+      op = &opFactory.BinOp();
     }
     else
     {
@@ -441,7 +411,9 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     /**/ if (llvm::isa<llvm::BinaryOperator>(instr))
     {
       auto& typedInstr = static_cast<const llvm::BinaryOperator&>(instr);
-      ArithFlags flags = ArithFlags::Default;
+
+      ArithFlags   flags  = ArithFlags::Default;
+      BinaryOpKind opKind = BinaryOpKind::Default;
 
       if (llvm::isa<llvm::OverflowingBinaryOperator>(instr))
       {
@@ -449,6 +421,46 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
         flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default;
       }
       //TODO@nobody: Add more? - probably not
+
+      switch (static_cast<llvm::Instruction::BinaryOps>(instr.getOpcode()))
+      {
+      // Binary instructions
+      case llvm::Instruction::Add:
+        opKind = BinaryOpKind::Add;
+        break;
+      case llvm::Instruction::Sub:
+        opKind = BinaryOpKind::Sub;
+        break;
+      case llvm::Instruction::Mul:
+        opKind = BinaryOpKind::Mul;
+        break;
+      case llvm::Instruction::UDiv:
+      case llvm::Instruction::SDiv:
+        opKind = BinaryOpKind::Div;
+        break;
+      case llvm::Instruction::URem:
+      case llvm::Instruction::SRem:
+        opKind = BinaryOpKind::Rem;
+        break;
+
+      // Bitwise binary instructions
+      case llvm::Instruction::Shl:
+        opKind = BinaryOpKind::Shl;
+        break;
+      case llvm::Instruction::LShr:
+      case llvm::Instruction::AShr:
+        opKind = BinaryOpKind::Shr;
+        break;
+      case llvm::Instruction::And:
+        opKind = BinaryOpKind::And;
+        break;
+      case llvm::Instruction::Or:
+        opKind = BinaryOpKind::Or;
+        break;
+      case llvm::Instruction::Xor:
+        opKind = BinaryOpKind::Xor;
+        break;
+      }
 
       switch (instr.getOpcode())
       {
@@ -469,12 +481,13 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       default:
         break;
       }
-      args.push_back(GetFlagsOperArg(flags));
+
+      args.push_back(OperArg{opKind, flags});
     }
     else if (llvm::isa<llvm::CastInst>(instr))
     {
       CastOpKind opKind = CastOpKind::Default;
-      ArithFlags  flags  = ArithFlags::Default;
+      ArithFlags flags  = ArithFlags::Default;
 
       switch (static_cast<llvm::Instruction::CastOps>(instr.getOpcode()))
       {
@@ -496,7 +509,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
         opKind = CastOpKind::BitCast;
         break;
       }
-      args.push_back(GetFlagsOperArg(opKind, flags));
+      args.push_back(OperArg{opKind, flags});
     }
     else // add empty operand placeholder for flags/function target
     {
