@@ -74,8 +74,8 @@ public:
   // již out of scope.
   virtual void DelLocalVar(OperArg var) { throw NotImplementedException(); }
 
-  //předávané argumenty, návratový typ, návratová lokace/instrukce
-  virtual void PushFrame(FunctionCallInfo info) { throw NotImplementedException(); }
+  //předávané argumenty, návratový typ, návratová lokace/instrukce // FunctionCallInfo
+  virtual void PushFrame(int info) { throw NotImplementedException(); }
   //pozn lokace návratu musí být uložena ve stavu, na adekvátní urovni, přilepena na stack frame
   virtual void PopFrame(OperArg retVar) { throw NotImplementedException(); }
 

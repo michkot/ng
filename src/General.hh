@@ -61,6 +61,3 @@ public:
   /*ctr*/ OperArg(FrontendValueId id, Type type) : id{id}, type{type} {}
 
 };
-
-//předávané argumenty, návratový typ, návratová lokace/instrukce
-typedef int FunctionCallInfo;
