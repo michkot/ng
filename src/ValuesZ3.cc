@@ -353,8 +353,8 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
   assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
   expr ex = has_flag(flags, ArithFlags::Signed) ?
-    sext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size()) :
-    zext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size());
+    sext(lhs, (unsigned)targetType.GetBitWidth() - lhs.get_sort().bv_size()) :
+    zext(lhs, (unsigned)targetType.GetBitWidth() - lhs.get_sort().bv_size());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -367,7 +367,7 @@ ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targe
 
   assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
-  expr ex = lhs.extract(targetType.GetBitWidth(), 0);
+  expr ex = lhs.extract((unsigned)targetType.GetBitWidth(), 0);
   idsToExprs.insert({id, ex});
 
   return id;
@@ -376,7 +376,7 @@ ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targe
 ValueId Z3ValueContainer::CreateVal(Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort(type.GetBitWidth()));
+  auto ex = ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort((unsigned)type.GetBitWidth()));
   idsToExprs.insert({id, ex});
 
   return id;
@@ -420,7 +420,7 @@ ValueId Z3ValueContainer::CreateVal(Type type)
 ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = ctx.bv_val(value, type.GetBitWidth());
+  auto ex = ctx.bv_val(value, (unsigned)type.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -449,7 +449,7 @@ void Z3ValueContainer::PrintDebug() const
 {
   for (auto& pair : idsToExprs)
   {
-    printf("\n%z ", (size_t)pair.first);
+    printf("\n%llu ", (unsigned long long)(size_t)pair.first);
     std::cout << pair.second;
   }
 }
