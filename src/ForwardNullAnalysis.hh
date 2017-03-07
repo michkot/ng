@@ -533,14 +533,14 @@ class FnaOperationCast : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
     auto lhs         = newState.GetAnyVar(args[2]);
-    CastOpsEnum kind = static_cast<CastOpsEnum>(static_cast<uint64_t>(args[1].id) >> 32ull);
+    CastOpKind kind = static_cast<CastOpKind>(static_cast<uint64_t>(args[1].id) >> 32ull);
     //ArithFlags flags = static_cast<ArithFlags>(static_cast<uint64_t>(args[1].id) & 0xffff);
     //auto tarType     = args[0].type;
     //auto srcType     = args[2].type;
     
-    if (kind == CastOpsEnum::BitCast)
+    if (kind == CastOpKind::BitCast)
       newState.LinkLocalVar(args[0], lhs);
-    else if(kind == CastOpsEnum::Extend)      
+    else if(kind == CastOpKind::Extend)      
       newState.LinkLocalVar(args[0], lhs); //TODO: hack!
     else
       throw NotImplementedException();

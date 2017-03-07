@@ -25,8 +25,6 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #include "Definitions.hh"
 #include "General.hh"
 
-#include "Values.hh"
-
 #include "enum_flags.h"
 
 
@@ -48,7 +46,7 @@ enum class BinaryOpKind : int16_t {
   Xor      = 0x000A, // Bitwise XOR
 };
 
-enum class CastOpsEnum : int16_t {
+enum class CastOpKind : int16_t {
   Default = 0x0000,
   Truncate = 0x0001, // Right now, both integer and floating point, might change in time
   Extend = 0x0002,
@@ -105,7 +103,7 @@ struct BinaryOpOptions {
 };
 
 struct CastOpOptions {
-  CastOpsEnum  opKind;
+  CastOpKind  opKind;
   ArithFlags   flags;
 };
 
@@ -122,9 +120,12 @@ struct OperArg {
 public:
   union {
     FrontendIdTypePair idTypePair;
-    BinaryOpOptions binOpOptions;
-    CastOpOptions   castOpOptions;
+    BinaryOpOptions binOpOpts;
+    CastOpOptions   castOpOpts;
   };
+  /*ctr*/ OperArg(FrontendValueId id, Type type) : idTypePair{id, type} {}
+  /*ctr*/ OperArg(BinaryOpKind opKind, ArithFlags flags) : binOpOpts{opKind, flags} {}
+  /*ctr*/ OperArg(CastOpKind opKind, ArithFlags flags) : castOpOpts{opKind, flags} {}
 };
 
 class OperationArgs {
@@ -144,12 +145,12 @@ public:
 
 class CastOperationArgs : public OperationArgs {
 public:
-  CastOpOptions GetOptions()   { args[1].castOpOptions; }
+  CastOpOptions GetOptions()   { args.at(1).castOpOpts; }
 };
 
 class BinaryOpArgs : public OperationArgs {
 public:
-  BinaryOpOptions GetOptions() { args[1].binOpOptions; }
+  BinaryOpOptions GetOptions() { args.at(1).binOpOpts; }
 };
 
 //class CallOpArgs : public OperationArgs {

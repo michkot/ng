@@ -72,7 +72,7 @@ private:
   static OperArg GetEmptyOperArg();
   static OperArg GetFlagsOperArg(CmpFlags flags);
   static OperArg GetFlagsOperArg(ArithFlags flags);
-  static OperArg GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags);
+  static OperArg GetFlagsOperArg(CastOpKind kind, ArithFlags flags);
 
   vector<OperArg> GetOperArgsForInstr(const llvm::Instruction& instr);
 

@@ -30,7 +30,6 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/logic/tribool.hpp>
 
-#include "enum_flags.h"
 
 class ValueIdToken;
 /// <summary>

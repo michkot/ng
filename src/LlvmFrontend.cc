@@ -178,7 +178,7 @@ OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
   };
 }
 
-OperArg LlvmCfgParser::GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags)
+OperArg LlvmCfgParser::GetFlagsOperArg(CastOpKind kind, ArithFlags flags)
 {
   return OperArg{GetValueId( 
       (static_cast<uint64_t>(kind) << 32ull) | (static_cast<uint64_t>(flags))),
@@ -489,27 +489,27 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     }
     else if (llvm::isa<llvm::CastInst>(instr))
     {
-      CastOpsEnum opKind = CastOpsEnum::Default;
+      CastOpKind opKind = CastOpKind::Default;
       ArithFlags  flags  = ArithFlags::Default;
 
       switch (static_cast<llvm::Instruction::CastOps>(instr.getOpcode()))
       {
       case llvm::Instruction::CastOps::Trunc:
-        opKind = CastOpsEnum::Truncate;
+        opKind = CastOpKind::Truncate;
         break;
       case llvm::Instruction::CastOps::ZExt:
         flags  = ArithFlags ::Unsigned;
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::SExt:
         flags  = ArithFlags ::Signed;
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::FPExt:
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::BitCast:
-        opKind = CastOpsEnum::BitCast;
+        opKind = CastOpKind::BitCast;
         break;
       }
       args.push_back(GetFlagsOperArg(opKind, flags));
