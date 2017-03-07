@@ -361,7 +361,7 @@ class FnaOperationGetElementPtr : public BaseForwardNullAnalysisOperation {
     //}
     
     auto     lhs    = newState.GetAnyVar   (args[2].idTypePair);
-    uint64_t offset = static_cast<uint64_t>(args[1].idTypePair.id);    
+    uint64_t offset = static_cast<uint64_t>(args[1].idTypePair.id); //HACK relaying on ValueId == constant value stored by that id    
 
     //! We assume, that getelementptr instruction is always generated as forerunner of load/store op.
     if (newState.GetVC().IsZero(lhs))
@@ -485,7 +485,7 @@ class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
     //newstate
-    ArithFlags flags = static_cast<ArithFlags>(static_cast<uint64_t>(args[1].id));
+    ArithFlags flags = args[1].arithFlags;
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);
     auto tarType     = args[0].idTypePair.type;
     auto srcType     = args[2].idTypePair.type;
@@ -499,7 +499,7 @@ class FnaOperationExtend : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
     //newstate
-    ArithFlags flags = static_cast<ArithFlags>(static_cast<uint64_t>(args[1].id));
+    ArithFlags flags = args[1].arithFlags;
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);
     auto tarType     = args[0].idTypePair.type;
     auto srcType     = args[2].idTypePair.type;
@@ -513,14 +513,14 @@ class FnaOperationCast : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const vector<OperArg>& args) override
   {
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);
-    CastOpKind kind = static_cast<CastOpKind>(static_cast<uint64_t>(args[1].id) >> 32ull);
+    auto opts = args[1].castOpOpts;
     //ArithFlags flags = static_cast<ArithFlags>(static_cast<uint64_t>(args[1].id) & 0xffff);
     //auto tarType     = args[0].idTypePair.type;
     //auto srcType     = args[2].idTypePair.type;
     
-    if (kind == CastOpKind::BitCast)
+    if (opts.opKind == CastOpKind::BitCast)
       newState.LinkLocalVar(args[0].idTypePair, lhs);
-    else if(kind == CastOpKind::Extend)      
+    else if(opts.opKind == CastOpKind::Extend)      
       newState.LinkLocalVar(args[0].idTypePair, lhs); //TODO: hack!
     else
       throw NotImplementedException();
@@ -534,7 +534,7 @@ class FnaOperationCmp : public BaseForwardNullAnalysisOperation {
     auto lhs         = newState.GetAnyVar(args[2].idTypePair);
     auto rhs         = newState.GetAnyVar(args[3].idTypePair);
     auto srcType     = args[2].idTypePair.type;
-    auto flags       = static_cast<CmpFlags>(static_cast<uint64_t>(args[1].id));
+    auto flags       = args[1].cmpFlags;
     
     ValueId retVal = newState.GetVC().Cmp(lhs, rhs, srcType, flags);
     newState.LinkLocalVar(args[0].idTypePair, retVal);
