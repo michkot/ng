@@ -402,12 +402,47 @@ class FnaOperationAlloca : public BaseForwardNullAnalysisOperation {
   }
 };
 
-class FnaOperationCall : public BaseForwardNullAnalysisOperation {
-  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args)
+class FnaOperationCall : public IOperation {
+public:
+
+  virtual void Execute(IState& originalState, const OperationArgs& args) override
   {
-    return ExecuteOnNewStateImpl(newState, static_cast<const CallOpArgs&>(args));
+    Execute(originalState, static_cast<const CallOpArgs&>(args));
   }
-  void ExecuteOnNewStateImpl(ForwardNullAnalysisState& newState, const CallOpArgs& args)
+
+private:
+
+  void Execute(IState& originalState, const CallOpArgs& args)
+  {
+    assert(!originalState.nextCfgNode.HasTwoNext()); //TODO: comment
+
+    uptr<IState> succesor;
+    {
+      auto& typedS = dynamic_cast<ForwardNullAnalysisState&>(originalState);
+      auto& nextJump = typedS.funcMapping.GetFunction(typedS.GetAnyVar(args.GetOptions())).cfg;
+      succesor = make_unique<ForwardNullAnalysisState>(typedS, typedS.nextCfgNode, nextJump);
+    }
+    try
+    {
+      //TODO: moved into the try/catch/finally lbock, is it correct?
+      originalState.SetExplored();
+      ExecuteOnNewState(dynamic_cast<ForwardNullAnalysisState&>(*succesor), args);
+
+      // Handled in TerminalCfgNode::Execute()
+      /*if (originalState.nextCfgNode.IsTerminalNode())
+      succesor->SetExplored();*/
+
+      originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+    }
+    catch (AnalysisErrorException e)
+    {
+      originalState.nextCfgNode.PrintLocation();
+      printf("%s\n",e.what());
+    }
+
+    return;
+  }
+  void ExecuteOnNewState(ForwardNullAnalysisState& newState, const CallOpArgs& args)
   {
     auto callTargetId = args.GetOptions().id;
     auto callTargetType = args.GetOptions().type;
@@ -426,9 +461,25 @@ class FnaOperationCall : public BaseForwardNullAnalysisOperation {
     // that is, "base adress", here base address of function, beeing in unknown (abstract) value
     // and other addresses somehow based on this address
     
-    
+    auto& func = newState.funcMapping.GetFunction(newState.GetAnyVar(args.GetOptions()));
+
+    int i = 0;
+    for (auto& param : func.params.GetArgs())
+    {
+      newState.LinkLocalVar(param.idTypePair, newState.GetAnyVar(args.GetOperand(i)));
+      i++;
+    }
+
     return;
     throw NotImplementedException();
+  }
+};
+
+class FnaOperationRet : public IOperation {
+  virtual void Execute(IState & originalState, const OperationArgs & args) override 
+  {
+    (void)args;
+    return;
   }
 };
 
@@ -464,8 +515,7 @@ class FnaOperationStore : public BaseForwardNullAnalysisOperation {
     // this operation should somehow Store a value in register to certain address in memory
     // the way for the operation to handle such a "write" is completely analysis specific
     
-    //! HACK!!! this fixes the problem of main() arguments, which are defined at instr #0 without any instruction which would produce them
-    auto value  = newState.GetAnyOrCreateLocalVar(args.GetOperand(0)); //TODO fix this dircty hack kand maybe remove the GetAnyOrCreateLocalVar
+    auto value  = newState.GetAnyVar(args.GetOperand(0));
     auto target = newState.GetAnyVar(args.GetOperand(1));
 
     newState.Store(value, target);
@@ -596,13 +646,15 @@ class FnaOperationFactory : public IOperationFactory {
   IOperation* memset = new FnaOperationMemset();
   IOperation* cmp = new FnaOperationCmp();
   IOperation* br = new FnaOperationBranch();
+  IOperation* ret = new FnaOperationRet();
 public:
   /*ctr*/ FnaOperationFactory()
   {
   }
   // Inherited via IOperationFactory
-  virtual IOperation & Ret() override { return *notSupported; }
+  virtual IOperation & Ret() override { return *ret; }
   virtual IOperation & Br()  override { return *br; }
+
   virtual IOperation & BinOp() override { return *binop; }
 
   virtual IOperation & Alloca() override { return *allocaop; }
