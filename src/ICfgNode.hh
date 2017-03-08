@@ -70,11 +70,11 @@ public:
     return Execute(s, GetArguments());
   }
 
-
-
-
+  
   ICfgNode& operator=(ICfgNode&) = delete;
   ICfgNode& operator=(ICfgNode&&) = delete;
+
+  /*dst*/ virtual ~ICfgNode() noexcept = default;
 
 protected:
   ICfgNode* next;
@@ -88,7 +88,6 @@ protected:
   /*ctr*/ ICfgNode(ICfgNode* next) : next{next}, prevs{} {}
   /*ctr*/ ICfgNode(ref_vector<ICfgNode> prevs) : next{nullptr}, prevs{prevs} {}
   /*ctr*/ ICfgNode(ICfgNode* next, ref_vector<ICfgNode> prevs) : next{next}, prevs{prevs} {}
-  /*dst*/ virtual ~ICfgNode() = default;
 };
 
 
