@@ -91,6 +91,7 @@ public:
 
   // Not a supported instruction
   virtual IOperation& NotSupportedInstr() = 0;
+  virtual IOperation& Noop() = 0;
 
   /**
   * Destructor.

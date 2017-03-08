@@ -565,10 +565,18 @@ class FnaOperationCmp : public BaseForwardNullAnalysisOperation {
   }
 };
 
+class FnaOperationNoop : public BaseForwardNullAnalysisOperation {
+  virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args)
+  {
+    (void)args;
+    return;
+  }
+};
 
 
 class FnaOperationFactory : public IOperationFactory {
 
+  IOperation* noop = new FnaOperationNoop();
   IOperation* notSupported = new OperationNotSupportedOperation();
   IOperation* binop = new FnaOperationBinary();
   IOperation* gep = new FnaOperationGetElementPtr();
@@ -609,5 +617,5 @@ public:
   virtual IOperation& Free() override { return *notSupported; }
 
   virtual IOperation & NotSupportedInstr() override { return *notSupported; }
-
+  virtual IOperation & Noop() override { return *noop; }
 };

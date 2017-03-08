@@ -219,6 +219,11 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
         op = &opFactory.Memset();
         break;
       }
+      else if (func->getName().startswith("llvm.dbg"))
+      {
+        op = &opFactory.Noop();
+        break;
+      }
     }
     op = &opFactory.Call();
     break;
