@@ -36,6 +36,40 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 
 //#include <range/v3/all.hpp>
 
+typedef int FunctionInfo;
+
+class FunctionHandle {
+public:
+
+  ICfgNode& cfg;
+  OperationArgs params;
+  FunctionInfo info;
+
+  /*ctr*/ FunctionHandle(ICfgNode& cfg, OperationArgs&& params, FunctionInfo info) : cfg{cfg}, params{params}, info{info} {}
+  /*dt*/ ~FunctionHandle()
+  {
+    delete &cfg;
+  }
+
+};
+
+class FuncMapper {
+private:
+
+  std::map<ValueId, std::unique_ptr<FunctionHandle>> funcMap;
+
+public:
+
+  void RegisterFuntion(ValueId id, uptr<FunctionHandle>&& func)
+  {
+    funcMap.emplace(std::move(id), std::move(func));
+  }
+
+  FunctionHandle& GetFunction(ValueId id)
+  {
+    return *funcMap.at(id); 
+  }
+};
 
 class Mapper {
 
