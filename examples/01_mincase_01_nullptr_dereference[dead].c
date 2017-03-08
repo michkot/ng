@@ -1,8 +1,8 @@
-#include "01_mincase.h"
 #include <stdlib.h>
 #include <stddef.h>
 
 #define USE_FUNCTIONS 0
+#include "01_mincase.h"
 
 int main(int argc, char** argv)
 {

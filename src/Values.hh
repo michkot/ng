@@ -1,110 +1,56 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file Values.hh */
+
 #pragma once
 
 #include "Definitions.hh"
+#include "General.hh"
 #include "Type.hh"
+#include "IdImpl.hh"
 
 #include "enum_flags.h"
 
 #include <boost/logic/tribool.hpp>
 
+
+class ValueIdToken;
 /// <summary>
 /// ValueId class is an type-safe encapsulation of integer-based IDs for values
 /// </summary>
-class ValueId {
-  // Fields
-private:
-  uint64_t id;
-  static ValueId nextIdToGive;
+using ValueId = Id<ValueIdToken>;
 
-  // Constructors
-public:
-  /**/     ValueId()            : id{ 0 }  { }
-  explicit ValueId(uint64_t id) : id{ id } { }
-
-  // Conversion methods
-  explicit operator uint64_t() const { return id; }
-
-  // Creator methods
-  static ValueId GetNextId() { return nextIdToGive++; }
-
-  // Methods
-  ValueId operator++()    { id++; return *this; } // prefix
-  ValueId operator++(int) { auto copy = *this; id++; return copy; } // postfix
-
-  // Implementation of all comparsion operators (only the operator< is needed for most STD functionality) 
-  //REVIEW: to use or not use the canonical way to implement the rest of operators
-  bool operator==(const ValueId& other) const { return this->id == other.id; } // canonicaly implemented
-  bool operator!=(const ValueId& other) const { return this->id != other.id; }
-  bool operator< (const ValueId& other) const { return this->id < other.id; }  // canonicaly implemented
-  bool operator> (const ValueId& other) const { return this->id > other.id; }
-  bool operator<=(const ValueId& other) const { return this->id <= other.id; }
-  bool operator>=(const ValueId& other) const { return this->id >= other.id; }
-
+ENUM_FLAGS(AbstractionStatus)
+enum class AbstractionStatus {
+  Undefined = 0x0000, // Value is purely abstract and no information were given to the VC
+  Unknown = 0x0001, // Value might have had some asociated information but now purely unknown
 };
 
-#include "enum_flags.h"
-ENUM_FLAGS(BinaryOpKind)
-enum class BinaryOpKind {
-  Default  = 0x0000, // Is an error
-
-  Add      = 0x0001, // Standard two's complement operation
-  Sub      = 0x0002, // Standard two's complement operation
-  Mul      = 0x0003, // Standard two's complement operation
-
-  Div      = 0x0004,
-  Rem      = 0x0005,
-
-  Shl      = 0x0006, // Bitshift left
-  Shr      = 0x0007, // Bitshift right, unsigned(logical) or signed(arithmetic) 
-
-  And      = 0x0008, // Bitwise AND
-  Or       = 0x0009, // Bitwise OR
-  Xor      = 0x000A, // Bitwise XOR
-};
-
-ENUM_FLAGS(ArithFlags)
-enum class ArithFlags {
-  Default        = 0x0000, // Defaults to "C unsigned behaviour"; Error for div/rem/shr operations
-  Signed         = 0x0001, // Needed for div, rem, shr
-  Unsigned       = 0x0002, // Needed for div, rem, shr
-  Exact          = 0x0004, // Undefined if operation would not return exact result (loss of digits/precision)
-  NoSignedWrap   = 0x0008, // Undefined on signed overflow
-  NoUnsignedWrap = 0x0010, // Undefined on unsigned overflow
-  FmfFlag1       = 0x0020, // Reserved for floats
-  FmfFlag2       = 0x0040, // Reserved for floats
-  FmfFlag3       = 0x0080, // Reserved for floats
-  FmfFlag4       = 0x0100, // Reserved for floats
-  FmfFlag5       = 0x0200, // Reserved for floats
-};
-
-ENUM_FLAGS(CmpFlags)
-enum class CmpFlags {
-  Default   = 0x0000,
-  //Signed    = CmpFlags::Default, // we can not mask 0x00!
-  Unsigned  = 0x0001,
-  Eq        = 0x0002,
-  Neq       = 0x0004,
-  Gt        = 0x0008,
-  GtEq      = CmpFlags::Gt | CmpFlags::Eq,
-  Lt        = 0x0010,
-  LtEq      = CmpFlags::Lt | CmpFlags::Eq,
-  Float     = 0x0020,
-  Ordered   = CmpFlags::Default,
-  Unordered = 0x0040,
-  SigGt     = CmpFlags::Default  | CmpFlags::Gt,
-  SigGtEq   = CmpFlags::Default  | CmpFlags::GtEq,
-  SigLt     = CmpFlags::Default  | CmpFlags::Lt,
-  SigLtEq   = CmpFlags::Default  | CmpFlags::LtEq,
-  UnsigGt   = CmpFlags::Unsigned | CmpFlags::Gt,
-  UnsigGtEq = CmpFlags::Unsigned | CmpFlags::GtEq,
-  UnsigLt   = CmpFlags::Unsigned | CmpFlags::Lt,
-  UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
-};
-
-struct BinaryOpOptions {
-  BinaryOpKind opKind;
-  ArithFlags   flags;
-};
+constexpr const char* AbstractionStatusToString(const AbstractionStatus s)
+{
+  return
+    s == AbstractionStatus::Undefined ?
+      "Undefined" :
+      "Unknown";
+}
 
 //TODO@michkot: Document a way one should implement the following interface/abstract class
 
@@ -126,10 +72,10 @@ public:
   // IsCmp, IsInternalRepEq, IsZero, IsUnknown, 
   // Assume, Cmp, BinOp, BitNot, 
   // ExtendInt, TruncateInt, CreateVal, CreateConstIntVal, 
-  // GetZero,
+  // GetZero, 
   // PrintDebug
   // Other methods which analysis is probably going to use (and might be changed from NIE to pure virtual):
-  // AssumeTrue, AssumeFalse,
+  // AssumeTrue, AssumeFalse, GetAbstractionStatus
 
   // --------------------------------------------------------------------------
   // Section A - constant methods, comparison queries
@@ -153,6 +99,8 @@ public:
   virtual boost::tribool IsZero   (ValueId first) const = 0;
   // There are no informations regarding this value
   virtual bool           IsUnknown(ValueId first) const = 0;
+  //TODO: relocate, add comment
+  virtual AbstractionStatus GetAbstractionStatus(ValueId first) { throw NotImplementedException(); } 
 
   // --------------------------------------------------------------------------
   // Section B - modifying methods, constraint addition 
@@ -201,7 +149,7 @@ public:
                             { return BinOp(first, second, type, {BinaryOpKind::Or,  ArithFlags::Default}); }
   virtual ValueId BitXor(ValueId first, ValueId second, Type type)
                             { return BinOp(first, second, type, {BinaryOpKind::Xor, ArithFlags::Default}); }
-  virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!!
+  virtual ValueId BitNot(ValueId first, Type type) = 0; // Only unary operation !!! not LLVM operation
 
   // --------------------------------------------------------------------------
   // Section D - modifying methods, others
@@ -238,8 +186,12 @@ public:
   // Floating point support is theoretical right now
   virtual ValueId CreateConstFloatVal(double   value, Type type) { throw NotImplementedException(); }
 
+  // --------------------------------------------------------------------------
+  // Section E - diagnostic methods
+
   // Prints current state of the container onto console
   virtual void PrintDebug() const { throw NotImplementedException(); }
+  //virtual void Print(std::ostream& os) const { throw NotImplementedException(); }
 
 protected:
 
@@ -248,3 +200,5 @@ protected:
   // Zero of specific type/size
   virtual ValueId GetZero(Type type) const = 0;
 };
+
+//inline std::ostream& operator<<(std::ostream& os, const IValueContainer& vc) { vc.Print(os); return os; }

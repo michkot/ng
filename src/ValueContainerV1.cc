@@ -1,3 +1,25 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file ValueContainerV1.cc */
+
 #include "ValueContainerV1.hh"
 
 #include <climits>
@@ -112,7 +134,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 				{
 				case CmpFlags::Eq:
 					//new constraint is equal to a constant -> delete all previous
-					DeleteConstraint(oldConstraintId);
+          //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+          //HACK for now just do not delete, see TODO
+          // DeleteConstraint(oldConstraintId); 
 					break;
 					//TODO::add cases for intervals
 				default:
@@ -136,7 +160,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 				{
 				case CmpFlags::Eq:
 					//new constraint is equal to a constant -> delete all previous
-					DeleteConstraint(oldConstraintId);
+          //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+          //HACK for now just do not delete, see TODO
+          // DeleteConstraint(oldConstraintId); 
 					break;
 					//TODO::add cases for intervals
 				default:
@@ -155,7 +181,9 @@ void ValueContainer::InsertConstraint(BinaryConstraint constr)
 		if (constr.second == constrContainer.at(oldConstraintId).GetOther(constr.first))
 		{
 			//delete mutual constraints
-			DeleteConstraint(oldConstraintId);
+      //TODO@charvin FIX: invalidates iterator you are using!, 3x in this function
+      //HACK for now just do not delete, see TODO
+      // DeleteConstraint(oldConstraintId); 
 		}
 
 	}

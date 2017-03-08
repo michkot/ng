@@ -35,7 +35,11 @@ SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANIT_FLAGS} -g")
 #    *.cc
 #)
 
+add_definitions(-DNOT_COMPILE_Z3)
+
 set(SOURCE_FILES
+    src/AngieType.cc
+    src/console.cc
     src/Definitions.hh
     src/DummyOperations.hh
     src/DummyState.hh
@@ -44,40 +48,50 @@ set(SOURCE_FILES
     src/Exceptions.hh
     src/ForwardNullAnalysis.hh
     src/FrontedValueMapper.hh
-    src/FrontendLlvm.cc
-    src/FrontendLlvm.hh
     src/General.hh
     src/ICfgNode.hh
+    src/IdImpl.hh
     src/IOperation.hh
     src/IState.hh
+    src/laboratory.cc
+    src/LlvmFrontend.cc
+    src/LlvmFrontend.hh
     src/LlvmGlobals.cc
     src/LlvmGlobals.hh
-    src/main.cpp
-    src/OperationArgs.hh
+    src/LlvmType.cc
+    src/main.cc
+    src/Smg.cc
     src/StateStorage.cc
     src/StateStorage.hh
-    src/Type.cc
     src/Type.hh
     src/ValueContainerV1.cc
     src/ValueContainerV1.hh
     src/Values.cc
     src/Values.hh
+    src/ValuesZ3.cc
+    src/ValuesZ3.hh
 )
 
 if(Z3)
+    remove_definitions(-DNOT_COMPILE_Z3)
     add_definitions(-DUSE_Z3)
-    set(SOURCE_FILES
-        ${SOURCE_FILES}
-        src/ValuesZ3.hh
-        src/ValuesZ3.cc
-    )
+    # set(SOURCE_FILES
+    #     ${SOURCE_FILES}
+    #     src/ValuesZ3.hh
+    #     src/ValuesZ3.cc
+    # )
 endif()
 
 # targets
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 # dirty dirty dirty way -> assumes BINARY DIR is something like SRC_DIR/build etc.
-add_custom_target(tests DEPENDS ${PROJECT_NAME} WORKING_DIRECTORY "../" COMMAND "bash" "./compile-inputs-to-ll.sh" COMMAND "${PROJECT_BINARY_DIR}/ng")
+add_custom_target(tests 
+    DEPENDS ${PROJECT_NAME} 
+    WORKING_DIRECTORY "../" 
+    COMMAND "bash" "./compile-inputs-to-ll.sh" 
+    COMMAND "${PROJECT_BINARY_DIR}/ng" "-t")
+
 # includes
 
 include_directories(${LLVM_INCLUDE_DIRS})
@@ -88,7 +102,9 @@ include_directories(${Z3_INCLUDE_DIRS})
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
-llvm_map_components_to_libnames(LLVM_LIBS core irreader)
+llvm_map_components_to_libnames(LLVM_LIBS core irreader support)
+
+set_source_files_properties( src/console.cc PROPERTIES COMPILE_FLAGS -fno-rtti)
 
 target_link_libraries(${PROJECT_NAME} ${LLVM_LIBS} ${Z3_LIBS})
 

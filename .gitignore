@@ -1,10 +1,35 @@
-_Bin/*
-backup bordelu/*
-nouse/*
-x64/*
+# Build results
+
+[Bb]in/
+[Oo]bj/
+
+# LLVM IR files
 *.bc
 *.ll
+
+# Others
+prostata/*
+ignore/*
+tmp/*
+temp/*
+
+# Global
+*.tmp
+*.exe
+*.dll
+*.a
+*.obj
+*.o
+*.so
+
+# Visual Studio
 *.VC.db
 *.suo
+*.user
+.vs/
 
-prostata/*
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap

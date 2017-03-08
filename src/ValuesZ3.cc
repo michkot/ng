@@ -1,3 +1,27 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file ValuesZ3.cc */
+
+#if !defined(NOT_COMPILE_Z3)
+
 #include "ValuesZ3.hh"
 
 #include <z3++.h>
@@ -329,8 +353,8 @@ ValueId Z3ValueContainer::ExtendInt(ValueId first, Type sourceType, Type targetT
   assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
   expr ex = has_flag(flags, ArithFlags::Signed) ?
-    sext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size()) :
-    zext(lhs, targetType.GetBitWidth() - lhs.get_sort().bv_size());
+    sext(lhs, (unsigned)targetType.GetBitWidth() - lhs.get_sort().bv_size()) :
+    zext(lhs, (unsigned)targetType.GetBitWidth() - lhs.get_sort().bv_size());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -343,7 +367,7 @@ ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targe
 
   assert(lhs.get_sort().bv_size() == sourceType.GetBitWidth());
 
-  expr ex = lhs.extract(targetType.GetBitWidth(), 0);
+  expr ex = lhs.extract((unsigned)targetType.GetBitWidth(), 0);
   idsToExprs.insert({id, ex});
 
   return id;
@@ -352,7 +376,7 @@ ValueId Z3ValueContainer::TruncateInt(ValueId first, Type sourceType, Type targe
 ValueId Z3ValueContainer::CreateVal(Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort(type.GetBitWidth()));
+  auto ex = ctx.constant(ctx.int_symbol(static_cast<uint64_t>(id)), ctx.bv_sort((unsigned)type.GetBitWidth()));
   idsToExprs.insert({id, ex});
 
   return id;
@@ -396,7 +420,7 @@ ValueId Z3ValueContainer::CreateVal(Type type)
 ValueId Z3ValueContainer::CreateConstIntVal(uint64_t value, Type type)
 {
   auto id = ValueId::GetNextId();
-  auto ex = ctx.bv_val(value, type.GetBitWidth());
+  auto ex = ctx.bv_val(value, (unsigned)type.GetBitWidth());
   idsToExprs.insert({id, ex});
 
   return id;
@@ -425,7 +449,9 @@ void Z3ValueContainer::PrintDebug() const
 {
   for (auto& pair : idsToExprs)
   {
-    printf("\n%z ", (size_t)pair.first);
+    printf("\n%llu ", (unsigned long long)(size_t)pair.first);
     std::cout << pair.second;
   }
 }
+
+#endif // #if !defined(NOT_COMPILE_Z3)

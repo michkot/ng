@@ -1,4 +1,28 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file LlvmType.cc */
+
 #include "Type.hh"
+
+#if TYPE_KIND == TYPE_KIND_LLVM
 
 #include "LlvmGlobals.hh"
 
@@ -12,6 +36,11 @@
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Support/raw_ostream.h>
 
+void LlvmType::InitTypeSystem()
+{
+  initEmptyContext();
+}
+
 Type LlvmType::CreateVoidType()
 {
   return Type(nullptr);
@@ -19,8 +48,19 @@ Type LlvmType::CreateVoidType()
 
 Type LlvmType::CreateCharPointerType()
 {
-  static auto ptrTy = llvm::Type::getInt8PtrTy(llvmModule->getContext());
+  static llvm::Type* ptrTy = llvm::Type::getInt8PtrTy(llvmModule->getContext());
   return Type{ptrTy};
+}
+
+Type LlvmType::CreateIntegerType(unsigned bitwidth)
+{
+  //TODO@michkot: fix, suboptimal efficiency 
+  return Type{llvm::Type::getIntNTy(llvmModule->getContext(), bitwidth)};
+}
+
+Type LlvmType::CreatePointerTo(LlvmType target)
+{
+  return Type{target.GetFrontendId()->getPointerTo()};
 }
 
 void LlvmType::ToString(std::string& str) const
@@ -120,3 +160,5 @@ size_t LlvmType::GetStructElementOffset(unsigned index) const
 
   return layout->getElementOffset(index);
 }
+
+#endif // #if TYPE_KIND ==

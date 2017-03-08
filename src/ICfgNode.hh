@@ -1,3 +1,25 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file ICfgNode.hh */
+
 #pragma once
 
 #include "Definitions.hh"
@@ -22,7 +44,7 @@ class LlvmCfgNode;
 //  virtual const ref_vector<INavigation> GetPrevs(); //?
 //
 //  virtual void GetDebugInfo();
-//  virtual vector<OperArg> GetArguments();
+//  virtual OperationArgs GetArguments();
 //};
 
 
@@ -40,19 +62,19 @@ public:
   virtual void PrintInstruction() const = 0;
   virtual void PrintLocation() const = 0;
   virtual void GetDebugInfo() const = 0; //TODO@review: maybe find a btter name for this method?
-  virtual vector<OperArg> GetArguments() const = 0;
+  virtual OperationArgs GetArguments() const = 0;
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override = 0;
+  virtual void Execute(IState& s, const OperationArgs& args) override = 0;
   void Execute(IState& s)
   {
     return Execute(s, GetArguments());
   }
 
-
-
-
+  
   ICfgNode& operator=(ICfgNode&) = delete;
   ICfgNode& operator=(ICfgNode&&) = delete;
+
+  /*dst*/ virtual ~ICfgNode() noexcept = default;
 
 protected:
   ICfgNode* next;
@@ -66,7 +88,6 @@ protected:
   /*ctr*/ ICfgNode(ICfgNode* next) : next{next}, prevs{} {}
   /*ctr*/ ICfgNode(ref_vector<ICfgNode> prevs) : next{nullptr}, prevs{prevs} {}
   /*ctr*/ ICfgNode(ICfgNode* next, ref_vector<ICfgNode> prevs) : next{next}, prevs{prevs} {}
-  /*dst*/ virtual ~ICfgNode() = default;
 };
 
 
@@ -83,11 +104,11 @@ public:
   virtual void PrintInstruction() const override { throw NotSupportedException{}; }
   virtual void PrintLocation() const override { throw NotSupportedException{}; }
   virtual void GetDebugInfo() const override { throw NotSupportedException{}; }
-  virtual vector<OperArg> GetArguments() const override { throw NotSupportedException{}; }
+  virtual OperationArgs GetArguments() const override { throw NotSupportedException{}; }
 
   virtual bool IsStartNode() override { return true; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override  { throw NotSupportedException{}; }
+  virtual void Execute(IState& s, const OperationArgs& args) override  { throw NotSupportedException{}; }
 
 private:
   /*ctr*/ StartCfgNode() {}
@@ -103,19 +124,19 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
   virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void PrintInstruction() const override  { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void PrintLocation() const override { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void GetDebugInfo() const override { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
-  virtual vector<OperArg> GetArguments() const override { return vector<OperArg>{}; }
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
+  virtual OperationArgs GetArguments() const override { return OperationArgs{}; }
 
   virtual bool IsTerminalNode() override { return true; }
 
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
-  virtual void Execute(IState& s, const vector<OperArg>& args) override { return; }
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
+  virtual void Execute(IState& s, const OperationArgs& args) override { return; }
 
 private:
   /*ctr*/ TerminalCfgNode() {}
@@ -124,7 +145,7 @@ private:
 
 class CfgNode : public ICfgNode {
 private:
-  vector<OperArg> args;
+  OperationArgs args;
   IOperation& op;
   StatesManager states;
 
@@ -146,15 +167,15 @@ public:
 
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
-  virtual void Execute(IState& s, const vector<OperArg>& args) override
+  virtual void Execute(IState& s, const OperationArgs& args) override
   {
     return op.Execute(s, args);
   }
   virtual StatesManager GetStatesManager() override { return states; }
-  virtual vector<OperArg> GetArguments() const override { return args; }
+  virtual OperationArgs GetArguments() const override { return args; }
 
 protected:
-  /*ctr*/ CfgNode(IOperation& op, vector<OperArg> args, ICfgNode& prev, ICfgNode& next) :
+  /*ctr*/ CfgNode(IOperation& op, OperationArgs args, ICfgNode& prev, ICfgNode& next) :
     op{op},
     args{args},
     ICfgNode(&next, ref_vector<ICfgNode>{1, prev})

@@ -1,4 +1,26 @@
-#include "FrontendLlvm.hh"
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file LlvmFrontend.cc */
+
+#include "LlvmFrontend.hh"
 
 #include "ICfgNode.hh"
 #include "LlvmGlobals.hh"
@@ -19,13 +41,12 @@
 //std::string dbgstr;
 //llvm::raw_string_ostream dbgstr_rso(dbgstr);
 
-
 class LlvmCfgNode : public CfgNode {
 private:
   const llvm::Instruction& innerInstruction;
-  //const vector<OperArg>
+  //const OperationArgs
 
-  /*ctr*/ LlvmCfgNode(IOperation& op, vector<OperArg> args,
+  /*ctr*/ LlvmCfgNode(IOperation& op, OperationArgs args,
     const llvm::Instruction& inner,
     ICfgNode& prev,
     ICfgNode& next
@@ -36,11 +57,11 @@ private:
 
 public:
 
-  virtual void PrintInstruction() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
-  virtual void PrintLocation() const override { innerInstruction.getDebugLoc().print(llvm::errs()); llvm::errs() << "\n"; }
-  virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
+  virtual void PrintInstruction() const override { innerInstruction.print(llvm::outs()); llvm::outs() << "\n"; llvm::outs().flush();  }
+  virtual void PrintLocation() const override { innerInstruction.getDebugLoc().print(llvm::outs()); llvm::outs() << "\n"; llvm::outs().flush(); }
+  virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; llvm::errs().flush(); }
 
-  static LlvmCfgNode& CreateNode(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  static LlvmCfgNode& CreateNode(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *new StartCfgNode{}, *new TerminalCfgNode{}};
     ((ICfgNode&)newNode->prevs[0]).next = newNode;
@@ -51,14 +72,14 @@ public:
   //beware - adding a node after terminal node here(after inproper cast) would not raise exception
   //same applies for similar linking manipulation
 
-  LlvmCfgNode& InsertNewAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewAfter(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     this->next = newNode;
     return *newNode;
   }
 
-  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, vector<OperArg> args, const llvm::Instruction& inner)
+  LlvmCfgNode& InsertNewBranchAfter(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
     LlvmCfgNode* newNode = new LlvmCfgNode{op, args, inner, *this, *this->next};
     newNode->nextFalse = new TerminalCfgNode{};
@@ -121,6 +142,14 @@ FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
   return FrontendValueId{reinterpret_cast<uintptr_t>(&instr)};
 }
 
+FrontendIdTypePair LlvmCfgParser::ToIdTypePair(const llvm::Value* value)
+{
+  return FrontendIdTypePair{GetValueId(value), GetValueType(value->getType())};
+}
+FrontendIdTypePair LlvmCfgParser::ToIdTypePair(const llvm::Value& value)
+{
+  return ToIdTypePair(&value);
+}
 OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
 {
   return OperArg{GetValueId(value), GetValueType(value->getType())};
@@ -131,37 +160,22 @@ OperArg LlvmCfgParser::ToOperArg(const llvm::Value& value)
 }
 OperArg LlvmCfgParser::GetEmptyOperArg()
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(0)),
-    Type::CreateVoidType()
-  };
+  return OperArg::CreateEmptyArg();
 }
 
 OperArg LlvmCfgParser::GetFlagsOperArg(CmpFlags flags)
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(flags)),
-    Type::CreateVoidType()
-  };
+  return OperArg{flags};
 }
 
 OperArg LlvmCfgParser::GetFlagsOperArg(ArithFlags flags)
 {
-  return
-    OperArg{GetValueId(
-      static_cast<uint64_t>(flags)),
-    Type::CreateVoidType()
-  };
+  return OperArg{flags};
 }
 
-OperArg LlvmCfgParser::GetFlagsOperArg(CastOpsEnum kind, ArithFlags flags)
+OperArg LlvmCfgParser::GetFlagsOperArg(CastOpKind kind, ArithFlags flags)
 {
-  return OperArg{GetValueId( 
-      (static_cast<uint64_t>(kind) << 32ull) | (static_cast<uint64_t>(flags))),
-      Type::CreateVoidType()
-      };
+  return OperArg{kind, flags};
 }
 
 IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
@@ -180,43 +194,6 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
     break;
   case llvm::Instruction::Br:
     op = &opFactory.Br();
-    break;
-
-    // Binary instructions
-  case llvm::Instruction::Add:
-    op = &opFactory.Add();
-    break;
-  case llvm::Instruction::Sub:
-    op = &opFactory.Sub();
-    break;
-  case llvm::Instruction::Mul:
-    op = &opFactory.Mul();
-    break;
-  case llvm::Instruction::UDiv:
-  case llvm::Instruction::SDiv:
-    op = &opFactory.Div();
-    break;
-  case llvm::Instruction::URem:
-  case llvm::Instruction::SRem:
-    op = &opFactory.Rem();
-    break;
-
-    // Bitwise binary instructions
-  case llvm::Instruction::Shl:
-    op = &opFactory.Shl();
-    break;
-  case llvm::Instruction::LShr:
-  case llvm::Instruction::AShr:
-    op = &opFactory.Shr();
-    break;
-  case llvm::Instruction::And:
-    op = &opFactory.And();
-    break;
-  case llvm::Instruction::Or:
-    op = &opFactory.Or();
-    break;
-  case llvm::Instruction::Xor:
-    op = &opFactory.Xor();
     break;
 
     // Memory access operations
@@ -250,6 +227,11 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
         op = &opFactory.Memset();
         break;
       }
+      else if (func->getName().startswith("llvm.dbg"))
+      {
+        op = &opFactory.Noop();
+        break;
+      }
     }
     op = &opFactory.Call();
     break;
@@ -260,10 +242,17 @@ IOperation& LlvmCfgParser::GetOperationFor(const llvm::Instruction& instr) const
 
   default:
     // Cast operations
-    /**/ if(llvm::Instruction::CastOpsBegin <= opcode &&
-       llvm::Instruction::CastOpsEnd   >= opcode)
+    /**/ if(
+      llvm::Instruction::CastOpsBegin <= opcode &&
+      llvm::Instruction::CastOpsEnd   >= opcode)
     {
       op = &opFactory.Cast();
+    }
+    else if(
+      llvm::Instruction::BinaryOpsBegin <= opcode &&
+      llvm::Instruction::BinaryOpsEnd   >= opcode)
+    {
+      op = &opFactory.BinOp();
     }
     else
     {
@@ -284,16 +273,16 @@ void LlvmCfgParser::constantValuesToBeCreatedInsert(const llvm::Constant* c)
   constantValuesToBeCreated.push_back(c);
 }
 
-// Structrure of the created vector:
+// Structure of the created vector:
 // 0: return value | empty arg if it its void-type
 // 1: function call target | operation's cmp or arithmetic flags | empty 
 // 2+: operands
 
-vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
+OperationArgs LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
   vector<OperArg> args;
 
-  //we know that this isntructions outcome/value is never used
+  //we know that this instructions outcome/value is never used
   //if (instr.user_empty())
   //{
   //  return args;
@@ -435,7 +424,9 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
     /**/ if (llvm::isa<llvm::BinaryOperator>(instr))
     {
       auto& typedInstr = static_cast<const llvm::BinaryOperator&>(instr);
-      ArithFlags flags = ArithFlags::Default;
+
+      ArithFlags   flags  = ArithFlags::Default;
+      BinaryOpKind opKind = BinaryOpKind::Default;
 
       if (llvm::isa<llvm::OverflowingBinaryOperator>(instr))
       {
@@ -443,6 +434,53 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
         flags |= typedInstr.hasNoUnsignedWrap() ? ArithFlags::NoUnsignedWrap : ArithFlags::Default;
       }
       //TODO@nobody: Add more? - probably not
+
+      switch (static_cast<llvm::Instruction::BinaryOps>(instr.getOpcode()))
+      {
+      // Binary instructions
+      case llvm::Instruction::Add:
+      case llvm::Instruction::FAdd:
+        opKind = BinaryOpKind::Add;
+        break;
+      case llvm::Instruction::Sub:
+      case llvm::Instruction::FSub:
+        opKind = BinaryOpKind::Sub;
+        break;
+      case llvm::Instruction::Mul:
+      case llvm::Instruction::FMul:
+        opKind = BinaryOpKind::Mul;
+        break;
+      case llvm::Instruction::UDiv:
+      case llvm::Instruction::SDiv:
+      case llvm::Instruction::FDiv:
+        opKind = BinaryOpKind::Div;
+        break;
+      case llvm::Instruction::URem:
+      case llvm::Instruction::SRem:
+      case llvm::Instruction::FRem:
+        opKind = BinaryOpKind::Rem;
+        break;
+
+      // Bitwise binary instructions
+      case llvm::Instruction::Shl:
+        opKind = BinaryOpKind::Shl;
+        break;
+      case llvm::Instruction::LShr:
+      case llvm::Instruction::AShr:
+        opKind = BinaryOpKind::Shr;
+        break;
+      case llvm::Instruction::And:
+        opKind = BinaryOpKind::And;
+        break;
+      case llvm::Instruction::Or:
+        opKind = BinaryOpKind::Or;
+        break;
+      case llvm::Instruction::Xor:
+        opKind = BinaryOpKind::Xor;
+        break;
+      case llvm::Instruction::BinaryOps::BinaryOpsEnd:
+        break;
+      }
 
       switch (instr.getOpcode())
       {
@@ -463,34 +501,35 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
       default:
         break;
       }
-      args.push_back(GetFlagsOperArg(flags));
+
+      args.push_back(OperArg{opKind, flags});
     }
     else if (llvm::isa<llvm::CastInst>(instr))
     {
-      CastOpsEnum opKind = CastOpsEnum::Default;
-      ArithFlags  flags  = ArithFlags::Default;
+      CastOpKind opKind = CastOpKind::Default;
+      ArithFlags flags  = ArithFlags::Default;
 
       switch (static_cast<llvm::Instruction::CastOps>(instr.getOpcode()))
       {
       case llvm::Instruction::CastOps::Trunc:
-        opKind = CastOpsEnum::Truncate;
+        opKind = CastOpKind::Truncate;
         break;
       case llvm::Instruction::CastOps::ZExt:
         flags  = ArithFlags ::Unsigned;
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::SExt:
         flags  = ArithFlags ::Signed;
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::FPExt:
-        opKind = CastOpsEnum::Extend;
+        opKind = CastOpKind::Extend;
         break;
       case llvm::Instruction::CastOps::BitCast:
-        opKind = CastOpsEnum::BitCast;
+        opKind = CastOpKind::BitCast;
         break;
       }
-      args.push_back(GetFlagsOperArg(opKind, flags));
+      args.push_back(OperArg{opKind, flags});
     }
     else // add empty operand placeholder for flags/function target
     {
@@ -513,7 +552,7 @@ vector<OperArg> LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& inst
   } // default:
   } // switch
 
-  return args;
+  return OperationArgs{std::move(args)};
 }
 
 bool LlvmCfgParser::TryGetMappedCfgNode(const llvm::BasicBlock* bb, LlvmCfgNode** outNode)
@@ -588,23 +627,23 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
     {
     case llvm::Instruction::Br:
     {
-      auto branchIsntrPtr = static_cast<const llvm::BranchInst*>(instrPtr);
+      auto branchInstrPtr = static_cast<const llvm::BranchInst*>(instrPtr);
 
-      if (branchIsntrPtr->isUnconditional())
+      if (branchInstrPtr->isUnconditional())
       {
         // Unconditional branch - next is first instruction of target basic block
 
         // just skip its
         // currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
 
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(0), 0);
       }
-      else //if (branchIsntrPtr->isConditional())
+      else //if (branchInstrPtr->isConditional())
       {
         // Conditional branch - has two successors for true and false branches
         currentNode = &currentNode->InsertNewBranchAfter(op, args, *instrPtr);
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(1), 1);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(0), 0);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(1), 1);
       }
     }
     default:
@@ -650,12 +689,89 @@ void LlvmCfgParser::DealWithConstants()
   }
 }
 
-ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
+ICfgNode& LlvmCfgParser::ParseFunction(const llvm::Function& func)
 {
-  // Get first instruction of function main
-  auto& entryBlock = module.getFunction("main")->getEntryBlock();
+  // Get first instruction of function
+  auto& entryBlock = func.getEntryBlock();
+  return ParseBasicBlock(&entryBlock);
+}
 
-  auto& firstNode = ParseBasicBlock(&entryBlock);
+void LlvmCfgParser::ParseModule(llvm::Module& module)
+{
+  auto& ctx = module.getContext();
+  auto mainFunc = module.getFunction("main");
+
+  // -----------
+
+  for (auto& func : module.functions())
+  { 
+    if (func.isDeclaration())
+      continue;
+    auto& cfg    = ParseFunction(func);
+    auto  params = OperationArgs{};
+    for (auto& param : func.args()) // Added all formal arguments
+      params.GetArgs().push_back(ToOperArg(param));
+    auto  info   = FunctionInfo{};
+    auto  handle = std::make_unique<FunctionHandle>(cfg, std::move(params), info);
+    auto  vid    = mapper.CreateOrGetValueId(ToIdTypePair(func));
+    fmap.RegisterFunction(vid, std::move(handle));
+  }
+
+  mainCfg = &fmap.GetFunction(mapper.GetValueId(ToIdTypePair(mainFunc).id)).cfg;
+
+  // -----------
+
+  auto mainFType  = mainFunc->getFunctionType();
+
+  // -----------
+
+  auto returnType = llvm::Type::getVoidTy(ctx);
+  auto params     = mainFType->params();
+  auto ftype      = llvm::FunctionType::get(returnType, params, false);
+ 
+  auto entryFunc  = llvm::Function::Create(mainFType, llvm::GlobalValue::LinkageTypes::AvailableExternallyLinkage, "__entry", &module);
+  auto entryBlock = llvm::BasicBlock::Create(ctx, "", entryFunc);
+  auto argcType   = mainFType->getParamType(0);
+  auto argvType   = mainFType->getParamType(1);
+
+  auto argIt      = entryFunc->args().begin();
+  auto argc       = &*argIt++;
+  auto argv       = &*argIt;
+
+  //auto argc       = llvm::BinaryOperator::CreateXor(
+  //  llvm::Constant::getNullValue(argcType),
+  //  llvm::Constant::getNullValue(argcType),
+  //  "",
+  //  entryBlock
+  //  );
+  //auto argv       = llvm::BinaryOperator::CreateXor(
+  //  llvm::Constant::getNullValue(argvType),
+  //  llvm::Constant::getNullValue(argvType),
+  //  "",
+  //  entryBlock
+  //  );
+
+  // -----------
+
+  auto mainArgs   = llvm::SmallVector<llvm::Value*, 2> {
+    argc,
+    argv
+    };
+  auto mainCall   = llvm::CallInst::Create(mainFunc, mainArgs, "", entryBlock);
+
+  // -----------
+
+  auto args       = OperationArgs{};
+  args.GetArgs().push_back(GetEmptyOperArg());
+  args.GetArgs().push_back(ToOperArg(mainFunc));
+  args.GetArgs().push_back(ToOperArg(argc));
+  args.GetArgs().push_back(ToOperArg(argv));
+
+  entryPointCfg = &LlvmCfgNode::CreateNode(opFactory.Call(), args, *mainCall);
+
+  // Register argc, argv as values
+  mapper.CreateOrGetValueId(ToOperArg(argc).idTypePair);
+  mapper.CreateOrGetValueId(ToOperArg(argv).idTypePair);
 
   while (!parseAndLinkTogether.empty())
   {
@@ -671,8 +787,6 @@ ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
   }
 
   DealWithConstants();
-
-  return firstNode;
 }
 
 uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
@@ -683,7 +797,7 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
   auto module = llvm::parseIRFile(fileName, err, context);
   if (module == nullptr)
   {
-    string msg{err.getMessage().str()};
+    std::runtime_error msg{err.getMessage().str()};
     throw msg;
     exit(1);
   }
@@ -691,9 +805,9 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
 }
 
 uptr<llvm::Module> moduleHandle;
-ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(boost::string_view fileName)
+void LlvmCfgParser::ParseAndOpenIrFile(boost::string_view fileName)
 {
   moduleHandle = OpenIrFile(fileName.to_string());
   setLlvmGlobalVars(&*moduleHandle);
-  return ParseModule(*moduleHandle);
+  ParseModule(*moduleHandle);
 }

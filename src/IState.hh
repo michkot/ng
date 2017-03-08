@@ -1,3 +1,25 @@
+/*******************************************************************************
+
+Copyright (C) 2017 Michal Kotoun
+
+This file is a part of Angie project.
+
+Angie is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Angie is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Angie.  If not, see <http://www.gnu.org/licenses/>.
+
+*******************************************************************************/
+/** @file IState.hh */
+
 #pragma once
 
 #include "Definitions.hh"
@@ -41,21 +63,18 @@ public:
   // meaning: Succesors of this state are un-processed
   virtual bool IsNew() { return condition == StateCondition::New; }
   
-  virtual ValueId GetAnyVar(OperArg var) = 0;
-  virtual ValueId GetOrCreateGlobalVar(OperArg var) = 0;
-  virtual ValueId GetOrCreateLocalVar (OperArg var) = 0;
-  virtual ValueId GetAnyOrCreateLocalVar (OperArg var) = 0;
-  virtual void LinkGlobalVar(OperArg var, ValueId value) = 0;
-  virtual void LinkLocalVar (OperArg var, ValueId value) = 0;
+  virtual ValueId GetAnyVar (FrontendIdTypePair var) = 0;
+  virtual void LinkGlobalVar(FrontendIdTypePair var, ValueId value) = 0;
+  virtual void LinkLocalVar (FrontendIdTypePair var, ValueId value) = 0;
   // pro dead value analysis / memory leaks:
   // momentálně pro toto nevidím use-case, neboť nemám jak zjistit že je proměná (resp její SSA následník)
   // již out of scope.
-  virtual void DelLocalVar(OperArg var) { throw NotImplementedException(); }
+  virtual void DelLocalVar(FrontendIdTypePair var) { throw NotImplementedException(); }
 
-  //předávané argumenty, návratový typ, návratová lokace/instrukce
-  virtual void PushFrame(FunctionCallInfo info) { throw NotImplementedException(); }
+  //předávané argumenty, návratový typ, návratová lokace/instrukce // FunctionCallInfo
+  virtual void PushFrame(int info) { throw NotImplementedException(); }
   //pozn lokace návratu musí být uložena ve stavu, na adekvátní urovni, přilepena na stack frame
-  virtual void PopFrame(OperArg retVar) { throw NotImplementedException(); }
+  virtual void PopFrame(FrontendIdTypePair retVar) { throw NotImplementedException(); }
 
 
 protected:
