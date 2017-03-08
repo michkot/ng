@@ -27,8 +27,3 @@ Systém reprezentace hodnot v frameworku
   > VR_Y == VR_Z -> unknown  
 * V případě binárních relací ->> ERRR sakra!!!
   > 
-
-Návrhy na jméno:
----------------------------------
-* SVERF - Static Verfication Evolved Research Framework
-* Static Verification Evolution Neo aka SVEN
