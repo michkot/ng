@@ -85,7 +85,7 @@ void VerificationLoop()
       if (!state.IsNew())
         continue;
 
-      state.nextCfgNode.PrintInstruction();
+      state.nextCfgNode.GetDebugInfo();
       state.nextCfgNode.Execute(state);
     }
 

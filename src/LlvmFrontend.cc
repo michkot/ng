@@ -57,9 +57,9 @@ private:
 
 public:
 
-  virtual void PrintInstruction() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
-  virtual void PrintLocation() const override { innerInstruction.getDebugLoc().print(llvm::errs()); llvm::errs() << "\n"; }
-  virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; }
+  virtual void PrintInstruction() const override { innerInstruction.print(llvm::outs()); llvm::outs() << "\n"; llvm::outs().flush();  }
+  virtual void PrintLocation() const override { innerInstruction.getDebugLoc().print(llvm::outs()); llvm::outs() << "\n"; llvm::outs().flush(); }
+  virtual void GetDebugInfo() const override { innerInstruction.print(llvm::errs()); llvm::errs() << "\n"; llvm::errs().flush(); }
 
   static LlvmCfgNode& CreateNode(IOperation& op, OperationArgs args, const llvm::Instruction& inner)
   {
