@@ -35,6 +35,7 @@ public:
   // Constructors
   constexpr Id()            : id{ 0 }  { }
   explicit  Id(uint64_t id) : id{ id } { }
+           ~Id() = default;
 
   // Conversion methods
   explicit operator uint64_t() const { return id; }

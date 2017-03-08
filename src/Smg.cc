@@ -221,6 +221,7 @@ private:
         return *edge;
       }
     }
+    // In case we are using container different than vector, also provide an insertion hint
     return CreateEdge(container, std::forward<ValueId>(offset), std::forward<Args>(args)...);
   }
 
