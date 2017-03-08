@@ -23,6 +23,7 @@ along with Angie.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <cstdint>
+#include <tuple>
 
 #include "Type.hh"
 #include "enum_flags.h"
@@ -124,8 +125,6 @@ enum class CmpFlags : int16_t {
   UnsigLtEq = CmpFlags::Unsigned | CmpFlags::LtEq,
 };
 
-#include <tuple>
-
 struct BinaryOpOptions {
   BinaryOpKind opKind;
   ArithFlags   flags;
@@ -168,7 +167,7 @@ public:
   static OperArg CreateEmptyArg() { return OperArg{}; };
 };
 
-// Structrure of the created vector:
+// Structure of the created vector:
 // 0: return value | empty arg if it its void-type
 // 1: function call target | operation's cmp or arithmetic flags | cast options | binary op options 
 // 2+: operands
@@ -204,7 +203,7 @@ public:
   const CmpFlags&           GetOptions() const { return args[1].cmpFlags; }
 };
 
-class TruncExctOpArgs : public OperationArgs {
+class TruncExtendOpArgs : public OperationArgs {
 public:
   const ArithFlags&         GetOptions() const { return args[1].arithFlags; }
 };

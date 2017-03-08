@@ -273,7 +273,7 @@ void LlvmCfgParser::constantValuesToBeCreatedInsert(const llvm::Constant* c)
   constantValuesToBeCreated.push_back(c);
 }
 
-// Structrure of the created vector:
+// Structure of the created vector:
 // 0: return value | empty arg if it its void-type
 // 1: function call target | operation's cmp or arithmetic flags | empty 
 // 2+: operands
@@ -282,7 +282,7 @@ OperationArgs LlvmCfgParser::GetOperArgsForInstr(const llvm::Instruction& instr)
 {
   vector<OperArg> args;
 
-  //we know that this isntructions outcome/value is never used
+  //we know that this instructions outcome/value is never used
   //if (instr.user_empty())
   //{
   //  return args;
@@ -627,23 +627,23 @@ LlvmCfgNode& LlvmCfgParser::ParseBasicBlock(const llvm::BasicBlock* entryBlock)
     {
     case llvm::Instruction::Br:
     {
-      auto branchIsntrPtr = static_cast<const llvm::BranchInst*>(instrPtr);
+      auto branchInstrPtr = static_cast<const llvm::BranchInst*>(instrPtr);
 
-      if (branchIsntrPtr->isUnconditional())
+      if (branchInstrPtr->isUnconditional())
       {
         // Unconditional branch - next is first instruction of target basic block
 
         // just skip its
         // currentNode = &currentNode->InsertNewAfter(op, args, *instrPtr);
 
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(0), 0);
       }
-      else //if (branchIsntrPtr->isConditional())
+      else //if (branchInstrPtr->isConditional())
       {
         // Conditional branch - has two successors for true and false branches
         currentNode = &currentNode->InsertNewBranchAfter(op, args, *instrPtr);
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(0), 0);
-        LinkWithOrPlanProcessing(currentNode, branchIsntrPtr->getSuccessor(1), 1);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(0), 0);
+        LinkWithOrPlanProcessing(currentNode, branchInstrPtr->getSuccessor(1), 1);
       }
     }
     default:
@@ -714,7 +714,7 @@ void LlvmCfgParser::ParseModule(llvm::Module& module)
     auto  info   = FunctionInfo{};
     auto  handle = std::make_unique<FunctionHandle>(cfg, std::move(params), info);
     auto  vid    = mapper.CreateOrGetValueId(ToIdTypePair(func));
-    fmap.RegisterFuntion(vid, std::move(handle));
+    fmap.RegisterFunction(vid, std::move(handle));
   }
 
   mainCfg = &fmap.GetFunction(mapper.GetValueId(ToIdTypePair(mainFunc).id)).cfg;

@@ -156,7 +156,7 @@ public:
 class AnalysisErrorException : public std::logic_error {
 public:
   /*ctr*/ AnalysisErrorException()
-    : logic_error("A fatal error was discoverd by the analysis. Abstract execution can not continue in this path.")
+    : logic_error("A fatal error was discovered by the analysis. Abstract execution can not continue in this path.")
   {
   }
   /*ctr*/ AnalysisErrorException(const char* c)
@@ -169,7 +169,7 @@ public:
 class InvalidDereferenceException : public AnalysisErrorException {
 public:
   /*ctr*/ InvalidDereferenceException()
-    : AnalysisErrorException("Program tried to dereference unallocated or unintialized memmory.")
+    : AnalysisErrorException("Program tried to dereference unallocated or uninitialized memory.")
   {
   }
 };
@@ -191,9 +191,9 @@ public:
 class BaseOperation : public IOperation {
 public:
 
-  virtual uptr<IState> CreateSuccesor     (IState& initialState) = 0;
-          uptr<IState> CreateSuccesorTrue (IState& initialState) { return CreateSuccesor(initialState); }
-  virtual uptr<IState> CreateSuccesorFalse(IState& initialState) { throw NotImplementedException(); }
+  virtual uptr<IState> CreateSuccessor     (IState& initialState) = 0;
+          uptr<IState> CreateSuccessorTrue (IState& initialState) { return CreateSuccessor(initialState); }
+  virtual uptr<IState> CreateSuccessorFalse(IState& initialState) { throw NotImplementedException(); }
 
   virtual void         ExecuteOnNewState  (IState& newState, const OperationArgs& args) = 0;
 
@@ -211,19 +211,19 @@ private:
   {
     assert(!originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
-    uptr<IState> succesor;
-    succesor = CreateSuccesor(originalState);    
+    uptr<IState> successor;
+    successor = CreateSuccessor(originalState);    
     try
     {
-      //TODO: moved into the try/catch/finally lbock, is it correct?
+      //TODO: moved into the try/catch/finally block, is it correct?
       originalState.SetExplored();
-      ExecuteOnNewState(*succesor, args);
+      ExecuteOnNewState(*successor, args);
 
       // Handled in TerminalCfgNode::Execute()
       /*if (originalState.nextCfgNode.IsTerminalNode())
-        succesor->SetExplored();*/
+        successor->SetExplored();*/
 
-      originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+      originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
     }
     catch (AnalysisErrorException e)
     {
@@ -240,14 +240,14 @@ private:
   {
     assert(originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
-    uptr<IState> succesor;
-    succesor = CreateSuccesorTrue(originalState);
-    ExecuteOnNewState(*succesor, args);
-    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+    uptr<IState> successor;
+    successor = CreateSuccessorTrue(originalState);
+    ExecuteOnNewState(*successor, args);
+    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
 
-    succesor = CreateSuccesorFalse(originalState);
-    ExecuteOnNewState(*succesor, args);
-    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+    successor = CreateSuccessorFalse(originalState);
+    ExecuteOnNewState(*successor, args);
+    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
 
     originalState.SetExplored();
     return;
@@ -261,22 +261,22 @@ private:
 class BaseForwardNullAnalysisOperation : public BaseOperation/*<isBranching>*/ {
 public:
   
-  virtual uptr<IState> CreateSuccesor(IState& s) override
+  virtual uptr<IState> CreateSuccessor(IState& s) override
   {
-    auto succesorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNext());
-    auto& succesor = *succesorPtr; 
+    auto successorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNext());
+    auto& successor = *successorPtr; 
     // FIXME: when compiler is in compliance with newer copy elision rules
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579
-    return move(succesorPtr);
+    return move(successorPtr);
   }
-  virtual uptr<IState> CreateSuccesorFalse(IState& s) override
+  virtual uptr<IState> CreateSuccessorFalse(IState& s) override
   {
-    auto succesorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextFalse());
-    auto& succesor = *succesorPtr; 
+    auto successorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextFalse());
+    auto& successor = *successorPtr; 
     
     // FIXME: when compiler is in compliance with newer copy elision rules
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579
-    return move(succesorPtr);
+    return move(successorPtr);
   }
   virtual void ExecuteOnNewState(IState& newState, const OperationArgs& args) override
   {
@@ -294,35 +294,35 @@ public:
   {
     assert(originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
-    uptr<IState> succesor;
-    succesor = CreateSuccesorTrue(originalState);
-    ExecuteOnNewState(static_cast<ForwardNullAnalysisState&>(*succesor), args, true);
-    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+    uptr<IState> successor;
+    successor = CreateSuccessorTrue(originalState);
+    ExecuteOnNewState(static_cast<ForwardNullAnalysisState&>(*successor), args, true);
+    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
 
-    succesor = CreateSuccesorFalse(originalState);
-    ExecuteOnNewState(static_cast<ForwardNullAnalysisState&>(*succesor), args, false);
-    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+    successor = CreateSuccessorFalse(originalState);
+    ExecuteOnNewState(static_cast<ForwardNullAnalysisState&>(*successor), args, false);
+    originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
 
     originalState.SetExplored();
     return;
   }
 
-  uptr<IState> CreateSuccesorTrue(IState& s)
+  uptr<IState> CreateSuccessorTrue(IState& s)
   {
-    auto succesorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextTrue());
-    auto& succesor = *succesorPtr; 
+    auto successorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextTrue());
+    auto& successor = *successorPtr; 
     // FIXME: when compiler is in compliance with newer copy elision rules
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579
-    return move(succesorPtr);
+    return move(successorPtr);
   }
 
-  uptr<IState> CreateSuccesorFalse(IState& s)
+  uptr<IState> CreateSuccessorFalse(IState& s)
   {
-    auto succesorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextFalse());
-    auto& succesor = *succesorPtr; 
+    auto successorPtr = make_unique<ForwardNullAnalysisState>(dynamic_cast<ForwardNullAnalysisState&>(s), s.nextCfgNode, s.nextCfgNode.GetNextFalse());
+    auto& successor = *successorPtr; 
     // FIXME: when compiler is in compliance with newer copy elision rules
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579
-    return move(succesorPtr);
+    return move(successorPtr);
   }
 
   void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args, bool br)
@@ -359,7 +359,7 @@ class FnaOperationBinary : public BaseForwardNullAnalysisOperation {
 class FnaOperationGetElementPtr : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args) override
   {
-    // consider packing and alligment!!!
+    // consider packing and aligment!!!
 
     //auto numOfIndexes = args.size() - 2;
 
@@ -416,23 +416,23 @@ private:
   {
     assert(!originalState.nextCfgNode.HasTwoNext()); //TODO: comment
 
-    uptr<IState> succesor;
+    uptr<IState> successor;
     {
       auto& typedS = dynamic_cast<ForwardNullAnalysisState&>(originalState);
       auto& nextJump = typedS.funcMapping.GetFunction(typedS.GetAnyVar(args.GetOptions())).cfg;
-      succesor = make_unique<ForwardNullAnalysisState>(typedS, typedS.nextCfgNode, nextJump);
+      successor = make_unique<ForwardNullAnalysisState>(typedS, typedS.nextCfgNode, nextJump);
     }
     try
     {
-      //TODO: moved into the try/catch/finally lbock, is it correct?
+      //TODO: moved into the try/catch/finally block, is it correct?
       originalState.SetExplored();
-      ExecuteOnNewState(dynamic_cast<ForwardNullAnalysisState&>(*succesor), args);
+      ExecuteOnNewState(dynamic_cast<ForwardNullAnalysisState&>(*successor), args);
 
       // Handled in TerminalCfgNode::Execute()
       /*if (originalState.nextCfgNode.IsTerminalNode())
-      succesor->SetExplored();*/
+      successor->SetExplored();*/
 
-      originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(succesor));
+      originalState.nextCfgNode.GetStatesManager().InsertAndEnqueue(move(successor));
     }
     catch (AnalysisErrorException e)
     {
@@ -457,8 +457,8 @@ private:
     // support for stack frames with "return info"
     // a system which binds FunctionPointers (of all kinds) to functions
     
-    // for variable adressing of function, I propose the same idea I originaly had for stack:
-    // that is, "base adress", here base address of function, beeing in unknown (abstract) value
+    // for variable addressing of function, I propose the same idea I originaly had for stack:
+    // that is, "base address", here base address of function, beeing in unknown (abstract) value
     // and other addresses somehow based on this address
     
     auto& func = newState.funcMapping.GetFunction(newState.GetAnyVar(args.GetOptions()));
@@ -548,9 +548,9 @@ class FnaOperationMemset : public BaseForwardNullAnalysisOperation {
 class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args)
   {
-    return ExecuteOnNewStateImpl(newState, static_cast<const TruncExctOpArgs&>(args));
+    return ExecuteOnNewStateImpl(newState, static_cast<const TruncExtendOpArgs&>(args));
   }
-  void ExecuteOnNewStateImpl(ForwardNullAnalysisState& newState, const TruncExctOpArgs& args)
+  void ExecuteOnNewStateImpl(ForwardNullAnalysisState& newState, const TruncExtendOpArgs& args)
   {
     //newstate
     ArithFlags flags = args.GetOptions();
@@ -566,9 +566,9 @@ class FnaOperationTrunc : public BaseForwardNullAnalysisOperation {
 class FnaOperationExtend : public BaseForwardNullAnalysisOperation {
   virtual void ExecuteOnNewState(ForwardNullAnalysisState& newState, const OperationArgs& args)
   {
-    return ExecuteOnNewStateImpl(newState, static_cast<const TruncExctOpArgs&>(args));
+    return ExecuteOnNewStateImpl(newState, static_cast<const TruncExtendOpArgs&>(args));
   }
-  void ExecuteOnNewStateImpl(ForwardNullAnalysisState& newState, const TruncExctOpArgs& args)
+  void ExecuteOnNewStateImpl(ForwardNullAnalysisState& newState, const TruncExtendOpArgs& args)
   {
     //newstate
     ArithFlags flags = args.GetOptions();

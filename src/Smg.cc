@@ -59,7 +59,7 @@ public:
 
   ValueId sourceOffset;
   ValueId value;
-  Type    valueType; // potential place for memory optimsation, union with objecttype for PtEdge
+  Type    valueType; // potential place for memory optimisation, union with objecttype for PtEdge
 
   virtual void Print(std::ostream& os) const = 0;
   std::string ToString() const
@@ -185,7 +185,7 @@ struct ModificationObserver<PtEdge> {
 // Interface for Smg::Object
 // contains virtual methods' declarations
 
-// Base implemenetation of Object
+// Base implementation of Object
 class Object {
 
 public:
@@ -215,7 +215,7 @@ private:
       T* edge;
       if (edge = FindEdgeByOffset(container, offset))
       {
-        //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR OBJECTS, DEFINITELY
+        //TODO: edge modification -> should have a reference counter, when the original value is no longer accessible - FOR OBJECTS, DEFINITELY
         ModificationObserver<T>{}(*edge);
         edge->Modify(std::forward<Args>(args)...);
         return *edge;
@@ -362,7 +362,7 @@ public:
     // create new object and place it into map
     auto& obj = objects.emplace(oid, std::make_unique<Object>()).first.operator*().second.operator*(); 
 
-    // intialize the object
+    // initialize the object
     obj.id = oid;
     obj.size = type.GetSizeOf();
 
@@ -398,7 +398,7 @@ public:
   //  }
   //}
 
-  // Type is not potentionaly not needed, because the targetPtr must be a pointer to correctly typed edge
+  // Type is potentially not needed, because the targetPtr must be a pointer to correctly typed edge
   // We use it here to skip the ptrEdge.valueType.GetPointerElementType()
   void WriteValue(ValueId ptr, ValueId value, Type type)
   {
@@ -421,7 +421,7 @@ public:
       //HvEdge* edge;
       //if (edge = object.FindHvEdge(offset))
       //{ // Then modify it 
-      //  //TODO: edge modification -> should have a reference counter, when the original value is no longer accesible - FOR VALUES? PROBABLY NO
+      //  //TODO: edge modification -> should have a reference counter, when the original value is no longer accessible - FOR VALUES? PROBABLY NO
       //  edge->value = value;
       //}
       //else
@@ -442,7 +442,7 @@ public:
         // Throw!
         // Or fallback to HvEdge scenario
         // Or use undefined value / special meaning value
-        // Find out wheter it is undefined-unknwon or abstracted-unknown
+        // Find out whether it is undefined-unknown or abstracted-unknown
         auto status = GetVc().GetAbstractionStatus(value); 
         std::cout << AbstractionStatusToString(status) << std::endl;
         throw std::runtime_error{"Writing unknown pointer value"};

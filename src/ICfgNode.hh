@@ -124,18 +124,18 @@ public:
   virtual const ref_vector<ICfgNode>& GetPrevs() const override { return prevs; }
 
   virtual StatesManager GetStatesManager() override { throw NotSupportedException{}; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void PrintInstruction() const override  { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void PrintLocation() const override { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void GetDebugInfo() const override { return; }
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual OperationArgs GetArguments() const override { return OperationArgs{}; }
 
   virtual bool IsTerminalNode() override { return true; }
 
-  //! It mightbe worth implementing theese as no-ops -> autonomus end of analysis
+  //! It might be worth implementing theese as no-ops -> autonomous end of analysis
   virtual void Execute(IState& s, const OperationArgs& args) override { return; }
 
 private:

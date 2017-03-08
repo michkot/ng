@@ -60,7 +60,7 @@ private:
 
 public:
 
-  void RegisterFuntion(ValueId id, uptr<FunctionHandle>&& func)
+  void RegisterFunction(ValueId id, uptr<FunctionHandle>&& func)
   {
     funcMap.emplace(std::move(id), std::move(func));
   }
