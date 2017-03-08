@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -104,9 +104,6 @@
     <ClCompile Include="..\src\LlvmGlobals.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Smg.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,13 +140,17 @@
     <ClCompile Include="..\src\precompall.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\main.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Angie.licenseheader" />
+    <None Include="..\notes\dulezite_poznatky.md" />
+    <None Include="..\notes\todo.md" />
+    <None Include="..\notes\meetings.md" />
     <None Include="..\README.md" />
-    <None Include="..\dulezite_poznatky.md" />
     <None Include="..\regex_cheat_sheet.md" />
-    <None Include="..\todo.md" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="llvm.natvis" />

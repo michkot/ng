@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugNoLlvm|x64">
@@ -239,10 +239,11 @@
     <Natvis Include="GSL.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\notes\meetings.md" />
+    <None Include="..\notes\dulezite_poznatky.md" />
+    <None Include="..\notes\todo.md" />
     <None Include="..\README.md" />
-    <None Include="..\dulezite_poznatky.md" />
     <None Include="..\regex_cheat_sheet.md" />
-    <None Include="..\todo.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\CMakeLists.txt" />
