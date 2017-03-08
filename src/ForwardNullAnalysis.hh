@@ -102,22 +102,22 @@ public:
     try { return globalMapping.GetValueId(var.id); }
     catch (exception e) { return localMapping.GetValueId(var.id); }
   }
-  // DO NOT USE - use GetAnyOrCreateLocalVar
-  virtual ValueId GetOrCreateGlobalVar(FrontendIdTypePair var) override
-  {
-    return globalMapping.CreateOrGetValueId(var);
-  }
-  // DO NOT USE - use GetAnyOrCreateLocalVar
-  virtual ValueId GetOrCreateLocalVar(FrontendIdTypePair var) override
-  {
-    return localMapping.CreateOrGetValueId(var);
-  }
+  //// DO NOT USE - use GetAnyOrCreateLocalVar
+  //[[deprecated]] virtual ValueId GetOrCreateGlobalVar(FrontendIdTypePair var) override
+  //{
+  //  return globalMapping.CreateOrGetValueId(var);
+  //}
+  //// DO NOT USE - use GetAnyOrCreateLocalVar
+  //[[deprecated]] virtual ValueId GetOrCreateLocalVar(FrontendIdTypePair var) override
+  //{
+  //  return localMapping.CreateOrGetValueId(var);
+  //}
 
-  virtual ValueId GetAnyOrCreateLocalVar(FrontendIdTypePair var) override
-  {
-    try { return globalMapping.GetValueId(var.id); }
-    catch(exception e) { return localMapping.CreateOrGetValueId(var); }
-  }
+  //[[deprecated]] virtual ValueId GetAnyOrCreateLocalVar(FrontendIdTypePair var) override
+  //{
+  //  try { return globalMapping.GetValueId(var.id); }
+  //  catch(exception e) { return localMapping.CreateOrGetValueId(var); }
+  //}
   virtual void LinkGlobalVar(FrontendIdTypePair var, ValueId value) override
   {
     globalMapping.LinkToValueId(var.id, value);

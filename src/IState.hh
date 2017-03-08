@@ -63,10 +63,7 @@ public:
   // meaning: Succesors of this state are un-processed
   virtual bool IsNew() { return condition == StateCondition::New; }
   
-  virtual ValueId GetAnyVar(FrontendIdTypePair var) = 0;
-  virtual ValueId GetOrCreateGlobalVar(FrontendIdTypePair var) = 0;
-  virtual ValueId GetOrCreateLocalVar (FrontendIdTypePair var) = 0;
-  virtual ValueId GetAnyOrCreateLocalVar (FrontendIdTypePair var) = 0;
+  virtual ValueId GetAnyVar (FrontendIdTypePair var) = 0;
   virtual void LinkGlobalVar(FrontendIdTypePair var, ValueId value) = 0;
   virtual void LinkLocalVar (FrontendIdTypePair var, ValueId value) = 0;
   // pro dead value analysis / memory leaks:
