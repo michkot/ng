@@ -59,7 +59,7 @@ set(SOURCE_FILES
     src/LlvmGlobals.cc
     src/LlvmGlobals.hh
     src/LlvmType.cc
-    src/main.cpp
+    src/main.cc
     src/Smg.cc
     src/StateStorage.cc
     src/StateStorage.hh

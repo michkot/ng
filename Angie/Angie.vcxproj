@@ -175,7 +175,7 @@
       <PrecompiledHeaderFile>precompall.hh</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)precompall.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="..\src\main.cpp">
+    <ClCompile Include="..\src\main.cc">
       <ExcludedFromBuild Condition="'$(Configuration)'=='DebugNoLlvm'">true</ExcludedFromBuild>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>precompall.hh</ForcedIncludeFiles>
