@@ -142,6 +142,14 @@ FrontendValueId LlvmCfgParser::GetValueId(const llvm::Value& instr)
   return FrontendValueId{reinterpret_cast<uintptr_t>(&instr)};
 }
 
+FrontendIdTypePair LlvmCfgParser::ToIdTypePair(const llvm::Value* value)
+{
+  return FrontendIdTypePair{GetValueId(value), GetValueType(value->getType())};
+}
+FrontendIdTypePair LlvmCfgParser::ToIdTypePair(const llvm::Value& value)
+{
+  return ToIdTypePair(&value);
+}
 OperArg LlvmCfgParser::ToOperArg(const llvm::Value* value)
 {
   return OperArg{GetValueId(value), GetValueType(value->getType())};
@@ -681,12 +689,89 @@ void LlvmCfgParser::DealWithConstants()
   }
 }
 
-ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
+ICfgNode& LlvmCfgParser::ParseFunction(const llvm::Function& func)
 {
-  // Get first instruction of function main
-  auto& entryBlock = module.getFunction("main")->getEntryBlock();
+  // Get first instruction of function
+  auto& entryBlock = func.getEntryBlock();
+  return ParseBasicBlock(&entryBlock);
+}
 
-  auto& firstNode = ParseBasicBlock(&entryBlock);
+void LlvmCfgParser::ParseModule(llvm::Module& module)
+{
+  auto& ctx = module.getContext();
+  auto mainFunc = module.getFunction("main");
+
+  // -----------
+
+  for (auto& func : module.functions())
+  { 
+    if (func.isDeclaration())
+      continue;
+    auto& cfg    = ParseFunction(func);
+    auto  params = OperationArgs{};
+    for (auto& param : func.args()) // Added all formal arguments
+      params.GetArgs().push_back(ToOperArg(param));
+    auto  info   = FunctionInfo{};
+    auto  handle = std::make_unique<FunctionHandle>(cfg, std::move(params), info);
+    auto  vid    = mapper.CreateOrGetValueId(ToIdTypePair(func));
+    fmap.RegisterFuntion(vid, std::move(handle));
+  }
+
+  mainCfg = &fmap.GetFunction(mapper.GetValueId(ToIdTypePair(mainFunc).id)).cfg;
+
+  // -----------
+
+  auto mainFType  = mainFunc->getFunctionType();
+
+  // -----------
+
+  auto returnType = llvm::Type::getVoidTy(ctx);
+  auto params     = mainFType->params();
+  auto ftype      = llvm::FunctionType::get(returnType, params, false);
+ 
+  auto entryFunc  = llvm::Function::Create(mainFType, llvm::GlobalValue::LinkageTypes::AvailableExternallyLinkage, "__entry", &module);
+  auto entryBlock = llvm::BasicBlock::Create(ctx, "", entryFunc);
+  auto argcType   = mainFType->getParamType(0);
+  auto argvType   = mainFType->getParamType(1);
+
+  auto argIt      = entryFunc->args().begin();
+  auto argc       = &*argIt++;
+  auto argv       = &*argIt;
+
+  //auto argc       = llvm::BinaryOperator::CreateXor(
+  //  llvm::Constant::getNullValue(argcType),
+  //  llvm::Constant::getNullValue(argcType),
+  //  "",
+  //  entryBlock
+  //  );
+  //auto argv       = llvm::BinaryOperator::CreateXor(
+  //  llvm::Constant::getNullValue(argvType),
+  //  llvm::Constant::getNullValue(argvType),
+  //  "",
+  //  entryBlock
+  //  );
+
+  // -----------
+
+  auto mainArgs   = llvm::SmallVector<llvm::Value*, 2> {
+    argc,
+    argv
+    };
+  auto mainCall   = llvm::CallInst::Create(mainFunc, mainArgs, "", entryBlock);
+
+  // -----------
+
+  auto args       = OperationArgs{};
+  args.GetArgs().push_back(GetEmptyOperArg());
+  args.GetArgs().push_back(ToOperArg(mainFunc));
+  args.GetArgs().push_back(ToOperArg(argc));
+  args.GetArgs().push_back(ToOperArg(argv));
+
+  entryPointCfg = &LlvmCfgNode::CreateNode(opFactory.Call(), args, *mainCall);
+
+  // Register argc, argv as values
+  mapper.CreateOrGetValueId(ToOperArg(argc).idTypePair);
+  mapper.CreateOrGetValueId(ToOperArg(argv).idTypePair);
 
   while (!parseAndLinkTogether.empty())
   {
@@ -702,8 +787,6 @@ ICfgNode& LlvmCfgParser::ParseModule(const llvm::Module& module)
   }
 
   DealWithConstants();
-
-  return firstNode;
 }
 
 uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
@@ -722,9 +805,9 @@ uptr<llvm::Module> LlvmCfgParser::OpenIrFile(string fileName)
 }
 
 uptr<llvm::Module> moduleHandle;
-ICfgNode& LlvmCfgParser::ParseAndOpenIrFile(boost::string_view fileName)
+void LlvmCfgParser::ParseAndOpenIrFile(boost::string_view fileName)
 {
   moduleHandle = OpenIrFile(fileName.to_string());
   setLlvmGlobalVars(&*moduleHandle);
-  return ParseModule(*moduleHandle);
+  ParseModule(*moduleHandle);
 }

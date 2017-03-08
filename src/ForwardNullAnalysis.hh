@@ -47,9 +47,12 @@ public:
 // ForwardNullAnalysis
 class ForwardNullAnalysisState : public IState {
 private:
-
-  Mapper globalMapping;
-  Mapper localMapping;
+  
+  Mapper&     globalMapping;
+public:
+  FuncMapper& funcMapping;
+private:
+  Mapper      localMapping;
 
 public:
 
@@ -57,11 +60,13 @@ public:
       ICfgNode& lastCfgNode, 
       ICfgNode& nextCfgNode,
       IValueContainer& vc,
-      Mapper& globalMapping
+      Mapper& globalMapping,
+      FuncMapper& funcMapping
       ) :
     IState(lastCfgNode, nextCfgNode),
     vc(&vc),
     globalMapping(globalMapping),
+    funcMapping(funcMapping),
     localMapping(vc)
   {
     //stack.push_back(StackFrame{});
@@ -79,6 +84,7 @@ public:
     IState(lastCfgNode, nextCfgNode),
     vc(state.vc),
     globalMapping(state.globalMapping),
+    funcMapping(state.funcMapping),
     localMapping(state.localMapping),
     //stack(state.stack),
     //stackMemory(state.stackMemory),

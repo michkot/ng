@@ -104,15 +104,18 @@ ValueContainer vc;
 #endif
 
 #include "FrontedValueMapper.hh"
-Mapper mapper{vc};
 
 void Verify(boost::string_view fileName)
 {
-  auto f = FnaOperationFactory{};
-  LlvmCfgParser parser{f, vc, mapper};
-  auto& firstNode = parser.ParseAndOpenIrFile(fileName);//("input-int-conv.ll");
+  Mapper mapper{vc};
+  FuncMapper fmap;
 
-  auto emptyStateUPtr = make_unique<ForwardNullAnalysisState>(firstNode.GetPrevs()[0], firstNode, vc, mapper);
+  auto f = FnaOperationFactory{};
+  LlvmCfgParser parser{f, vc, mapper, fmap};
+  parser.ParseAndOpenIrFile(fileName);//("input-int-conv.ll");
+  auto& firstNode = parser.GetEntryPoint();
+
+  auto emptyStateUPtr = make_unique<ForwardNullAnalysisState>(firstNode.GetPrevs()[0], firstNode, vc, mapper, fmap);
 
   firstNode.GetStatesManager().InsertAndEnqueue(move(emptyStateUPtr));
 
@@ -149,7 +152,7 @@ void main_old(gsl::span<std::string> files)
     Verify(file);
   }
 
-  vc.PrintDebug();
+  //vc.PrintDebug();
 
   //getchar();
   return;

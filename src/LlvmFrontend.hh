@@ -37,6 +37,7 @@ namespace llvm
 {
   class BasicBlock;
   class Module;
+  class Function;
   class Instruction;
   class Value;
   class Type;
@@ -47,12 +48,16 @@ class LlvmCfgParser {
   IOperationFactory& opFactory;
   IValueContainer& vc;
   Mapper& mapper;
+  FuncMapper& fmap;
 
   map<const llvm::BasicBlock*, LlvmCfgNode*> copyMapping;
   queue<tuple<const llvm::BasicBlock*, LlvmCfgNode*, unsigned int>> parseAndLinkTogether;
 
+  ICfgNode* entryPointCfg = nullptr;
+  ICfgNode* mainCfg = nullptr;
+
 public:
-  LlvmCfgParser(IOperationFactory& opFactory, IValueContainer& vc, Mapper& mapper) : opFactory{opFactory}, vc{vc}, mapper{mapper} {}
+  LlvmCfgParser(IOperationFactory& opFactory, IValueContainer& vc, Mapper& mapper, FuncMapper& fmap) : opFactory{opFactory}, vc{vc}, mapper{mapper}, fmap{fmap} {}
 
 private:
   IOperation& GetOperationFor(const llvm::Instruction& instruction) const;
@@ -66,6 +71,9 @@ private:
   static FrontendValueId GetValueId(uint64_t id);
   static FrontendValueId GetValueId(const llvm::Value* value);
   static FrontendValueId GetValueId(const llvm::Value& value);
+
+  FrontendIdTypePair ToIdTypePair(const llvm::Value* value);
+  FrontendIdTypePair ToIdTypePair(const llvm::Value& value);
 
   static OperArg ToOperArg(const llvm::Value* value);
   static OperArg ToOperArg(const llvm::Value& value);
@@ -88,11 +96,15 @@ private:
 
   void DealWithConstants();
 
+  ICfgNode& ParseFunction(const llvm::Function& func);
+
 public:
-  ICfgNode& ParseModule(const llvm::Module& module);
+  void ParseModule(llvm::Module& module);
 
   uptr<llvm::Module> OpenIrFile(string fileName);
 
-  ICfgNode& ParseAndOpenIrFile(boost::string_view fileName);
+  void ParseAndOpenIrFile(boost::string_view fileName);
 
+  ICfgNode& GetEntryPoint() { return *entryPointCfg; }
+  ICfgNode& GetMain() { return *mainCfg; }
 };
